@@ -1,13 +1,14 @@
 import { Watch, Car, Palette, Gem, Wine, BarChart3, Sparkles } from 'lucide-react';
-import { Collection, formatCurrency, convertToEUR } from '@/lib/data';
+import { formatCurrency, convertToEUR } from '@/lib/currency';
 import { cn } from '@/lib/utils';
+import { Collection } from '@/hooks/useCollections';
 
 interface CollectionCardProps {
   collection: Collection;
   delay?: number;
 }
 
-const categoryIcons = {
+const categoryIcons: Record<string, typeof Watch> = {
   'watch': Watch,
   'vehicle': Car,
   'art': Palette,
@@ -17,7 +18,7 @@ const categoryIcons = {
   'other': Sparkles,
 };
 
-const categoryLabels = {
+const categoryLabels: Record<string, string> = {
   'watch': 'Watch',
   'vehicle': 'Vehicle',
   'art': 'Art',
@@ -28,10 +29,10 @@ const categoryLabels = {
 };
 
 export function CollectionCard({ collection, delay = 0 }: CollectionCardProps) {
-  const Icon = categoryIcons[collection.category];
-  const eurValue = convertToEUR(collection.currentValue, collection.currency);
-  const appreciation = collection.purchasePrice 
-    ? ((collection.currentValue - collection.purchasePrice) / collection.purchasePrice) * 100 
+  const Icon = categoryIcons[collection.type] || Sparkles;
+  const eurValue = convertToEUR(collection.current_value, collection.currency);
+  const appreciation = collection.purchase_value 
+    ? ((collection.current_value - collection.purchase_value) / collection.purchase_value) * 100 
     : 0;
 
   return (
@@ -48,13 +49,13 @@ export function CollectionCard({ collection, delay = 0 }: CollectionCardProps) {
         <div>
           <h4 className="font-medium text-foreground">{collection.name}</h4>
           <p className="text-sm text-muted-foreground">
-            {categoryLabels[collection.category]} · {collection.country}
+            {categoryLabels[collection.type] || collection.type} · {collection.country}
           </p>
         </div>
 
         <div className="flex items-baseline justify-between">
           <span className="text-lg font-semibold text-foreground tabular-nums">
-            {formatCurrency(collection.currentValue, collection.currency)}
+            {formatCurrency(collection.current_value, collection.currency)}
           </span>
           {collection.currency !== 'EUR' && (
             <span className="text-sm text-muted-foreground tabular-nums">
@@ -63,10 +64,10 @@ export function CollectionCard({ collection, delay = 0 }: CollectionCardProps) {
           )}
         </div>
 
-        {collection.purchasePrice && (
+        {collection.purchase_value && (
           <div className="flex items-center justify-between pt-2 border-t border-border">
             <span className="text-sm text-muted-foreground">
-              Purchased: {formatCurrency(collection.purchasePrice, collection.currency)}
+              Purchased: {formatCurrency(collection.purchase_value, collection.currency)}
             </span>
             <span className={cn(
               "text-sm font-medium",

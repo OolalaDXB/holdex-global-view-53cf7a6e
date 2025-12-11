@@ -1,35 +1,32 @@
 import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, TrendingDown } from 'lucide-react';
-import { Asset, formatCurrency, convertToEUR } from '@/lib/data';
+import { formatCurrency, convertToEUR } from '@/lib/currency';
 import { cn } from '@/lib/utils';
+import { Asset } from '@/hooks/useAssets';
 
 interface AssetCardProps {
   asset: Asset;
   delay?: number;
 }
 
-const typeIcons = {
+const typeIcons: Record<string, typeof Building2> = {
   'real-estate': Building2,
   'bank': Landmark,
   'investment': TrendingUp,
   'crypto': Bitcoin,
   'business': Briefcase,
-  'liability': TrendingDown,
 };
 
-const typeLabels = {
+const typeLabels: Record<string, string> = {
   'real-estate': 'Real Estate',
   'bank': 'Bank Account',
   'investment': 'Investment',
   'crypto': 'Crypto',
   'business': 'Business Equity',
-  'liability': 'Liability',
 };
 
 export function AssetCard({ asset, delay = 0 }: AssetCardProps) {
-  const Icon = typeIcons[asset.type];
-  const eurValue = convertToEUR(asset.currentValue, asset.currency);
-  const isLiability = asset.type === 'liability';
-  const isPositiveChange = asset.change24h && asset.change24h > 0;
+  const Icon = typeIcons[asset.type] || TrendingUp;
+  const eurValue = convertToEUR(asset.current_value, asset.currency);
 
   return (
     <div 
@@ -38,20 +35,17 @@ export function AssetCard({ asset, delay = 0 }: AssetCardProps) {
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className={cn(
-            "w-10 h-10 rounded-md flex items-center justify-center",
-            isLiability ? "bg-destructive/10" : "bg-primary/10"
-          )}>
+          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-primary/10">
             <Icon 
               size={20} 
               strokeWidth={1.5} 
-              className={isLiability ? "text-destructive" : "text-primary"} 
+              className="text-primary" 
             />
           </div>
           <div>
             <h4 className="font-medium text-foreground">{asset.name}</h4>
             <p className="text-sm text-muted-foreground">
-              {asset.country} · {typeLabels[asset.type]}
+              {asset.country} · {typeLabels[asset.type] || asset.type}
             </p>
           </div>
         </div>
@@ -59,11 +53,8 @@ export function AssetCard({ asset, delay = 0 }: AssetCardProps) {
 
       <div className="space-y-2">
         <div className="flex items-baseline justify-between">
-          <span className={cn(
-            "text-xl font-semibold tabular-nums",
-            isLiability ? "text-destructive" : "text-foreground"
-          )}>
-            {formatCurrency(asset.currentValue, asset.currency)}
+          <span className="text-xl font-semibold tabular-nums text-foreground">
+            {formatCurrency(asset.current_value, asset.currency)}
           </span>
           {asset.currency !== 'EUR' && (
             <span className="text-sm text-muted-foreground tabular-nums">
@@ -72,42 +63,34 @@ export function AssetCard({ asset, delay = 0 }: AssetCardProps) {
           )}
         </div>
 
-        {asset.type === 'crypto' && asset.cryptoQuantity && asset.cryptoToken && (
+        {asset.type === 'crypto' && asset.quantity && asset.ticker && (
           <div className="flex items-center justify-between pt-2 border-t border-border">
             <span className="text-sm text-muted-foreground">
-              {asset.cryptoQuantity} {asset.cryptoToken}
-            </span>
-            {asset.change24h !== undefined && (
-              <span className={cn(
-                "text-sm font-medium",
-                isPositiveChange ? "text-positive" : "text-negative"
-              )}>
-                24h: {isPositiveChange ? '↑' : '↓'} {Math.abs(asset.change24h).toFixed(1)}%
-              </span>
-            )}
-          </div>
-        )}
-
-        {asset.rentalIncome && (
-          <div className="pt-2 border-t border-border">
-            <span className="text-sm text-muted-foreground">
-              Rental: {formatCurrency(asset.rentalIncome, asset.currency)}/yr
+              {asset.quantity} {asset.ticker}
             </span>
           </div>
         )}
 
-        {asset.ownershipPercent && asset.ownershipPercent < 100 && (
+        {asset.rental_income && (
           <div className="pt-2 border-t border-border">
             <span className="text-sm text-muted-foreground">
-              Your share: {asset.ownershipPercent}%
+              Rental: {formatCurrency(asset.rental_income, asset.currency)}/yr
             </span>
           </div>
         )}
 
-        {asset.platform && (
+        {asset.ownership_percentage && asset.ownership_percentage < 100 && (
           <div className="pt-2 border-t border-border">
             <span className="text-sm text-muted-foreground">
-              {asset.platform}
+              Your share: {asset.ownership_percentage}%
+            </span>
+          </div>
+        )}
+
+        {asset.institution && (
+          <div className="pt-2 border-t border-border">
+            <span className="text-sm text-muted-foreground">
+              {asset.institution}
             </span>
           </div>
         )}

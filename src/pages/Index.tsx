@@ -4,21 +4,37 @@ import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { AssetCard } from '@/components/assets/AssetCard';
-import { assets, collections, netWorthHistory, convertToEUR } from '@/lib/data';
+import { useAssets } from '@/hooks/useAssets';
+import { useCollections } from '@/hooks/useCollections';
+import { useLiabilities } from '@/hooks/useLiabilities';
+import { useNetWorthHistory } from '@/hooks/useNetWorthHistory';
+import { convertToEUR } from '@/lib/currency';
 
 const Dashboard = () => {
+  const { data: assets = [], isLoading: assetsLoading } = useAssets();
+  const { data: collections = [], isLoading: collectionsLoading } = useCollections();
+  const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
+  const { data: netWorthHistoryData = [] } = useNetWorthHistory();
+
+  const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
+
   // Calculate totals
   const totalAssets = assets.reduce((sum, asset) => {
-    const eurValue = convertToEUR(asset.currentValue, asset.currency);
+    const eurValue = convertToEUR(asset.current_value, asset.currency);
     return sum + eurValue;
   }, 0);
 
   const totalCollections = collections.reduce((sum, item) => {
-    const eurValue = convertToEUR(item.currentValue, item.currency);
+    const eurValue = convertToEUR(item.current_value, item.currency);
     return sum + eurValue;
   }, 0);
 
-  const netWorth = totalAssets + totalCollections;
+  const totalLiabilities = liabilities.reduce((sum, item) => {
+    const eurValue = convertToEUR(item.current_balance, item.currency);
+    return sum + eurValue;
+  }, 0);
+
+  const netWorth = totalAssets + totalCollections - totalLiabilities;
 
   // Calculate breakdowns
   const assetsByType = [
@@ -30,25 +46,26 @@ const Dashboard = () => {
   ];
 
   assets.forEach(asset => {
-    const eurValue = convertToEUR(asset.currentValue, asset.currency);
+    const eurValue = convertToEUR(asset.current_value, asset.currency);
     if (asset.type === 'real-estate') assetsByType[0].value += eurValue;
     else if (asset.type === 'investment' || asset.type === 'crypto') assetsByType[1].value += eurValue;
     else if (asset.type === 'business') assetsByType[2].value += eurValue;
     else if (asset.type === 'bank') assetsByType[4].value += eurValue;
   });
 
+  const totalGross = totalAssets + totalCollections;
   assetsByType.forEach(item => {
-    item.percentage = netWorth > 0 ? (item.value / netWorth) * 100 : 0;
+    item.percentage = totalGross > 0 ? (item.value / totalGross) * 100 : 0;
   });
 
   // By country
   const countryMap: Record<string, number> = {};
   assets.forEach(asset => {
-    const eurValue = convertToEUR(asset.currentValue, asset.currency);
+    const eurValue = convertToEUR(asset.current_value, asset.currency);
     countryMap[asset.country] = (countryMap[asset.country] || 0) + eurValue;
   });
   collections.forEach(item => {
-    const eurValue = convertToEUR(item.currentValue, item.currency);
+    const eurValue = convertToEUR(item.current_value, item.currency);
     countryMap[item.country] = (countryMap[item.country] || 0) + eurValue;
   });
 
@@ -56,7 +73,7 @@ const Dashboard = () => {
     .map(([label, value]) => ({
       label,
       value,
-      percentage: netWorth > 0 ? (value / netWorth) * 100 : 0,
+      percentage: totalGross > 0 ? (value / totalGross) * 100 : 0,
     }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
@@ -64,61 +81,107 @@ const Dashboard = () => {
   // By currency
   const currencyMap: Record<string, number> = {};
   assets.forEach(asset => {
-    const eurValue = convertToEUR(asset.currentValue, asset.currency);
+    const eurValue = convertToEUR(asset.current_value, asset.currency);
     currencyMap[asset.currency] = (currencyMap[asset.currency] || 0) + eurValue;
   });
 
   const currencyBreakdown = Object.entries(currencyMap)
     .map(([currency, value]) => ({
       currency,
-      percentage: netWorth > 0 ? (value / netWorth) * 100 : 0,
+      percentage: totalGross > 0 ? (value / totalGross) * 100 : 0,
     }))
     .sort((a, b) => b.percentage - a.percentage);
 
   // Recent assets (last 5)
   const recentAssets = assets.slice(0, 5);
 
+  // Chart data
+  const chartData = netWorthHistoryData.length > 0 
+    ? netWorthHistoryData.map(item => ({
+        month: new Date(item.snapshot_date).toLocaleDateString('en-US', { month: 'short' }),
+        value: item.net_worth_eur,
+      }))
+    : [{ month: 'Now', value: netWorth }];
+
+  // Calculate MTD change
+  const previousValue = netWorthHistoryData.length > 1 
+    ? netWorthHistoryData[netWorthHistoryData.length - 2]?.net_worth_eur 
+    : netWorth;
+  const change = previousValue > 0 
+    ? ((netWorth - previousValue) / previousValue) * 100 
+    : 0;
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="p-8 lg:p-12 max-w-7xl flex items-center justify-center min-h-[60vh]">
+          <div className="text-muted-foreground">Loading your wealth data...</div>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const hasData = assets.length > 0 || collections.length > 0;
+
   return (
     <AppLayout>
       <div className="p-8 lg:p-12 max-w-7xl">
         {/* Header */}
         <header className="mb-12">
-          <NetWorthCard totalValue={netWorth} change={3.2} />
+          <NetWorthCard totalValue={netWorth} change={change} />
         </header>
 
-        {/* Chart */}
-        <section className="mb-12">
-          <NetWorthChart data={netWorthHistory} />
-        </section>
+        {hasData ? (
+          <>
+            {/* Chart */}
+            <section className="mb-12">
+              <NetWorthChart data={chartData} />
+            </section>
 
-        {/* Breakdowns */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-          <BreakdownBar 
-            title="By Asset Type" 
-            items={assetsByType.filter(i => i.percentage > 0)} 
-            delay={200}
-          />
-          <BreakdownBar 
-            title="By Country" 
-            items={assetsByCountry} 
-            delay={300}
-          />
-        </section>
+            {/* Breakdowns */}
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+              <BreakdownBar 
+                title="By Asset Type" 
+                items={assetsByType.filter(i => i.percentage > 0)} 
+                delay={200}
+              />
+              <BreakdownBar 
+                title="By Country" 
+                items={assetsByCountry} 
+                delay={300}
+              />
+            </section>
 
-        {/* Currency */}
-        <section className="mb-12 pb-12 border-b border-border">
-          <CurrencyBreakdown items={currencyBreakdown} delay={400} />
-        </section>
+            {/* Currency */}
+            {currencyBreakdown.length > 0 && (
+              <section className="mb-12 pb-12 border-b border-border">
+                <CurrencyBreakdown items={currencyBreakdown} delay={400} />
+              </section>
+            )}
 
-        {/* Recent Updates */}
-        <section>
-          <h3 className="font-serif text-lg font-medium text-foreground mb-6">Recent Updates</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {recentAssets.map((asset, index) => (
-              <AssetCard key={asset.id} asset={asset} delay={500 + (index * 100)} />
-            ))}
-          </div>
-        </section>
+            {/* Recent Updates */}
+            {recentAssets.length > 0 && (
+              <section>
+                <h3 className="font-serif text-lg font-medium text-foreground mb-6">Recent Updates</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {recentAssets.map((asset, index) => (
+                    <AssetCard key={asset.id} asset={asset} delay={500 + (index * 100)} />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        ) : (
+          <section className="text-center py-16">
+            <p className="text-muted-foreground mb-4">No assets yet. Start building your wealth portfolio.</p>
+            <a 
+              href="/add" 
+              className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            >
+              Add Your First Asset
+            </a>
+          </section>
+        )}
       </div>
     </AppLayout>
   );

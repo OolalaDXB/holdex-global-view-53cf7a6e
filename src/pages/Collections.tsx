@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CollectionCard } from '@/components/collections/CollectionCard';
-import { collections, Collection } from '@/lib/data';
+import { useCollections, Collection } from '@/hooks/useCollections';
 import { cn } from '@/lib/utils';
 
-type FilterType = 'all' | Collection['category'];
+type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'lp-position' | 'other';
 
 const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -19,10 +19,11 @@ const filterOptions: { value: FilterType; label: string }[] = [
 
 const CollectionsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
+  const { data: collections = [], isLoading } = useCollections();
 
   const filteredCollections = filter === 'all' 
     ? collections 
-    : collections.filter(c => c.category === filter);
+    : collections.filter(c => c.type === filter);
 
   return (
     <AppLayout>
@@ -50,17 +51,38 @@ const CollectionsPage = () => {
           ))}
         </div>
 
-        {/* Collections Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredCollections.map((collection, index) => (
-            <CollectionCard key={collection.id} collection={collection} delay={index * 50} />
-          ))}
-        </div>
-
-        {filteredCollections.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground">No items found in this category.</p>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <p className="text-muted-foreground">Loading collections...</p>
           </div>
+        ) : (
+          <>
+            {/* Collections Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredCollections.map((collection, index) => (
+                <CollectionCard key={collection.id} collection={collection} delay={index * 50} />
+              ))}
+            </div>
+
+            {filteredCollections.length === 0 && (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground mb-4">
+                  {collections.length === 0 
+                    ? "No collections yet. Add your first piece to get started." 
+                    : "No items found in this category."
+                  }
+                </p>
+                {collections.length === 0 && (
+                  <a 
+                    href="/add" 
+                    className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Add Collection Item
+                  </a>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </AppLayout>
