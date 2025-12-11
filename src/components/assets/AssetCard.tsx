@@ -1,12 +1,13 @@
-import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase } from 'lucide-react';
+import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2 } from 'lucide-react';
 import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
-import { cn } from '@/lib/utils';
 import { Asset } from '@/hooks/useAssets';
 
 interface AssetCardProps {
   asset: Asset;
   rates?: Record<string, number>;
   delay?: number;
+  onEdit?: (asset: Asset) => void;
+  onDelete?: (asset: Asset) => void;
 }
 
 const typeIcons: Record<string, typeof Building2> = {
@@ -25,14 +26,14 @@ const typeLabels: Record<string, string> = {
   'business': 'Business Equity',
 };
 
-export function AssetCard({ asset, rates, delay = 0 }: AssetCardProps) {
+export function AssetCard({ asset, rates, delay = 0, onEdit, onDelete }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
   const eurValue = convertToEUR(asset.current_value, asset.currency, activeRates);
 
   return (
     <div 
-      className="asset-card animate-fade-in"
+      className="asset-card animate-fade-in group"
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="flex items-start justify-between mb-4">
@@ -51,6 +52,29 @@ export function AssetCard({ asset, rates, delay = 0 }: AssetCardProps) {
             </p>
           </div>
         </div>
+        
+        {(onEdit || onDelete) && (
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onEdit && (
+              <button
+                onClick={() => onEdit(asset)}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                title="Edit"
+              >
+                <Pencil size={14} />
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={() => onDelete(asset)}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                title="Delete"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">

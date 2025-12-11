@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
-import { useAssets } from '@/hooks/useAssets';
+import { EditAssetDialog } from '@/components/assets/EditAssetDialog';
+import { DeleteAssetDialog } from '@/components/assets/DeleteAssetDialog';
+import { useAssets, Asset } from '@/hooks/useAssets';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
@@ -19,6 +21,9 @@ const filterOptions: { value: FilterType; label: string }[] = [
 
 const AssetsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
+  const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
+  
   const { data: assets = [], isLoading } = useAssets();
   const { data: exchangeRates } = useExchangeRates();
   
@@ -63,7 +68,14 @@ const AssetsPage = () => {
             {/* Assets Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredAssets.map((asset, index) => (
-                <AssetCard key={asset.id} asset={asset} rates={rates} delay={index * 50} />
+                <AssetCard 
+                  key={asset.id} 
+                  asset={asset} 
+                  rates={rates} 
+                  delay={index * 50}
+                  onEdit={setEditingAsset}
+                  onDelete={setDeletingAsset}
+                />
               ))}
             </div>
 
@@ -88,6 +100,20 @@ const AssetsPage = () => {
           </>
         )}
       </div>
+
+      {/* Edit Dialog */}
+      <EditAssetDialog
+        asset={editingAsset}
+        open={!!editingAsset}
+        onOpenChange={(open) => !open && setEditingAsset(null)}
+      />
+
+      {/* Delete Dialog */}
+      <DeleteAssetDialog
+        asset={deletingAsset}
+        open={!!deletingAsset}
+        onOpenChange={(open) => !open && setDeletingAsset(null)}
+      />
     </AppLayout>
   );
 };
