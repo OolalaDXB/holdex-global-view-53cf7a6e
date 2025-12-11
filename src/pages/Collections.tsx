@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CollectionCard } from '@/components/collections/CollectionCard';
-import { useCollections, Collection } from '@/hooks/useCollections';
+import { useCollections } from '@/hooks/useCollections';
+import { useExchangeRates } from '@/hooks/useExchangeRates';
+import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'lp-position' | 'other';
@@ -20,6 +22,9 @@ const filterOptions: { value: FilterType; label: string }[] = [
 const CollectionsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const { data: collections = [], isLoading } = useCollections();
+  const { data: exchangeRates } = useExchangeRates();
+  
+  const rates = exchangeRates?.rates || fallbackRates;
 
   const filteredCollections = filter === 'all' 
     ? collections 
@@ -60,7 +65,7 @@ const CollectionsPage = () => {
             {/* Collections Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredCollections.map((collection, index) => (
-                <CollectionCard key={collection.id} collection={collection} delay={index * 50} />
+                <CollectionCard key={collection.id} collection={collection} rates={rates} delay={index * 50} />
               ))}
             </div>
 
