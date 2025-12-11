@@ -1,5 +1,5 @@
-// Exchange rates (EUR as base)
-export const exchangeRates: Record<string, number> = {
+// Fallback exchange rates (EUR as base) - used when API is unavailable
+export const fallbackRates: Record<string, number> = {
   EUR: 1,
   USD: 1.08,
   AED: 3.97,
@@ -8,9 +8,38 @@ export const exchangeRates: Record<string, number> = {
   RUB: 98.5,
 };
 
-export const convertToEUR = (amount: number, currency: string): number => {
-  const rate = exchangeRates[currency] || 1;
+// Convert to EUR using provided rates or fallback
+export const convertToEUR = (
+  amount: number, 
+  currency: string, 
+  rates?: Record<string, number>
+): number => {
+  if (currency === 'EUR') return amount;
+  
+  const activeRates = rates || fallbackRates;
+  const rate = activeRates[currency];
+  
+  if (!rate) return amount;
+  
+  // If using live rates (EUR-based), divide by rate
+  // If using fallback rates, also divide
   return amount / rate;
+};
+
+// Convert from EUR to target currency
+export const convertFromEUR = (
+  amount: number,
+  currency: string,
+  rates?: Record<string, number>
+): number => {
+  if (currency === 'EUR') return amount;
+  
+  const activeRates = rates || fallbackRates;
+  const rate = activeRates[currency];
+  
+  if (!rate) return amount;
+  
+  return amount * rate;
 };
 
 export const formatCurrency = (amount: number, currency: string = 'EUR'): string => {

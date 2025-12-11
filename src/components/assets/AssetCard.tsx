@@ -1,10 +1,11 @@
-import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, TrendingDown } from 'lucide-react';
-import { formatCurrency, convertToEUR } from '@/lib/currency';
+import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase } from 'lucide-react';
+import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Asset } from '@/hooks/useAssets';
 
 interface AssetCardProps {
   asset: Asset;
+  rates?: Record<string, number>;
   delay?: number;
 }
 
@@ -24,9 +25,10 @@ const typeLabels: Record<string, string> = {
   'business': 'Business Equity',
 };
 
-export function AssetCard({ asset, delay = 0 }: AssetCardProps) {
+export function AssetCard({ asset, rates, delay = 0 }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
-  const eurValue = convertToEUR(asset.current_value, asset.currency);
+  const activeRates = rates || fallbackRates;
+  const eurValue = convertToEUR(asset.current_value, asset.currency, activeRates);
 
   return (
     <div 

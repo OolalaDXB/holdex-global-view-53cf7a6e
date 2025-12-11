@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
-import { useAssets, Asset } from '@/hooks/useAssets';
+import { useAssets } from '@/hooks/useAssets';
+import { useExchangeRates } from '@/hooks/useExchangeRates';
+import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
@@ -18,6 +20,9 @@ const filterOptions: { value: FilterType; label: string }[] = [
 const AssetsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const { data: assets = [], isLoading } = useAssets();
+  const { data: exchangeRates } = useExchangeRates();
+  
+  const rates = exchangeRates?.rates || fallbackRates;
 
   const filteredAssets = filter === 'all' 
     ? assets 
@@ -58,7 +63,7 @@ const AssetsPage = () => {
             {/* Assets Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {filteredAssets.map((asset, index) => (
-                <AssetCard key={asset.id} asset={asset} delay={index * 50} />
+                <AssetCard key={asset.id} asset={asset} rates={rates} delay={index * 50} />
               ))}
             </div>
 

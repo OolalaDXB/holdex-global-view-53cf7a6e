@@ -8,29 +8,33 @@ import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useNetWorthHistory } from '@/hooks/useNetWorthHistory';
-import { convertToEUR } from '@/lib/currency';
+import { useExchangeRates } from '@/hooks/useExchangeRates';
+import { convertToEUR, fallbackRates } from '@/lib/currency';
+import { RefreshCw } from 'lucide-react';
 
 const Dashboard = () => {
   const { data: assets = [], isLoading: assetsLoading } = useAssets();
   const { data: collections = [], isLoading: collectionsLoading } = useCollections();
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: netWorthHistoryData = [] } = useNetWorthHistory();
+  const { data: exchangeRates, isLoading: ratesLoading, dataUpdatedAt } = useExchangeRates();
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
+  const rates = exchangeRates?.rates || fallbackRates;
 
-  // Calculate totals
+  // Calculate totals using live rates
   const totalAssets = assets.reduce((sum, asset) => {
-    const eurValue = convertToEUR(asset.current_value, asset.currency);
+    const eurValue = convertToEUR(asset.current_value, asset.currency, rates);
     return sum + eurValue;
   }, 0);
 
   const totalCollections = collections.reduce((sum, item) => {
-    const eurValue = convertToEUR(item.current_value, item.currency);
+    const eurValue = convertToEUR(item.current_value, item.currency, rates);
     return sum + eurValue;
   }, 0);
 
   const totalLiabilities = liabilities.reduce((sum, item) => {
-    const eurValue = convertToEUR(item.current_balance, item.currency);
+    const eurValue = convertToEUR(item.current_balance, item.currency, rates);
     return sum + eurValue;
   }, 0);
 
@@ -46,7 +50,7 @@ const Dashboard = () => {
   ];
 
   assets.forEach(asset => {
-    const eurValue = convertToEUR(asset.current_value, asset.currency);
+    const eurValue = convertToEUR(asset.current_value, asset.currency, rates);
     if (asset.type === 'real-estate') assetsByType[0].value += eurValue;
     else if (asset.type === 'investment' || asset.type === 'crypto') assetsByType[1].value += eurValue;
     else if (asset.type === 'business') assetsByType[2].value += eurValue;
@@ -61,11 +65,11 @@ const Dashboard = () => {
   // By country
   const countryMap: Record<string, number> = {};
   assets.forEach(asset => {
-    const eurValue = convertToEUR(asset.current_value, asset.currency);
+    const eurValue = convertToEUR(asset.current_value, asset.currency, rates);
     countryMap[asset.country] = (countryMap[asset.country] || 0) + eurValue;
   });
   collections.forEach(item => {
-    const eurValue = convertToEUR(item.current_value, item.currency);
+    const eurValue = convertToEUR(item.current_value, item.currency, rates);
     countryMap[item.country] = (countryMap[item.country] || 0) + eurValue;
   });
 
@@ -81,7 +85,7 @@ const Dashboard = () => {
   // By currency
   const currencyMap: Record<string, number> = {};
   assets.forEach(asset => {
-    const eurValue = convertToEUR(asset.current_value, asset.currency);
+    const eurValue = convertToEUR(asset.current_value, asset.currency, rates);
     currencyMap[asset.currency] = (currencyMap[asset.currency] || 0) + eurValue;
   });
 
@@ -111,6 +115,11 @@ const Dashboard = () => {
     ? ((netWorth - previousValue) / previousValue) * 100 
     : 0;
 
+  // Format last updated time
+  const lastUpdated = dataUpdatedAt 
+    ? new Date(dataUpdatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    : null;
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -129,6 +138,12 @@ const Dashboard = () => {
         {/* Header */}
         <header className="mb-12">
           <NetWorthCard totalValue={netWorth} change={change} />
+          {lastUpdated && (
+            <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
+              <RefreshCw size={12} className={ratesLoading ? 'animate-spin' : ''} />
+              <span>FX rates updated at {lastUpdated}</span>
+            </div>
+          )}
         </header>
 
         {hasData ? (
@@ -165,7 +180,7 @@ const Dashboard = () => {
                 <h3 className="font-serif text-lg font-medium text-foreground mb-6">Recent Updates</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {recentAssets.map((asset, index) => (
-                    <AssetCard key={asset.id} asset={asset} delay={500 + (index * 100)} />
+                    <AssetCard key={asset.id} asset={asset} rates={rates} delay={500 + (index * 100)} />
                   ))}
                 </div>
               </section>

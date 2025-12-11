@@ -1,10 +1,11 @@
 import { Watch, Car, Palette, Gem, Wine, BarChart3, Sparkles } from 'lucide-react';
-import { formatCurrency, convertToEUR } from '@/lib/currency';
+import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Collection } from '@/hooks/useCollections';
 
 interface CollectionCardProps {
   collection: Collection;
+  rates?: Record<string, number>;
   delay?: number;
 }
 
@@ -28,9 +29,10 @@ const categoryLabels: Record<string, string> = {
   'other': 'Other',
 };
 
-export function CollectionCard({ collection, delay = 0 }: CollectionCardProps) {
+export function CollectionCard({ collection, rates, delay = 0 }: CollectionCardProps) {
   const Icon = categoryIcons[collection.type] || Sparkles;
-  const eurValue = convertToEUR(collection.current_value, collection.currency);
+  const activeRates = rates || fallbackRates;
+  const eurValue = convertToEUR(collection.current_value, collection.currency, activeRates);
   const appreciation = collection.purchase_value 
     ? ((collection.current_value - collection.purchase_value) / collection.purchase_value) * 100 
     : 0;
