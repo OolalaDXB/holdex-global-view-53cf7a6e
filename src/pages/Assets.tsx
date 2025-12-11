@@ -5,8 +5,10 @@ import { EditAssetDialog } from '@/components/assets/EditAssetDialog';
 import { DeleteAssetDialog } from '@/components/assets/DeleteAssetDialog';
 import { useAssets, Asset } from '@/hooks/useAssets';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
+import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
+import { RefreshCw } from 'lucide-react';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 
@@ -26,12 +28,19 @@ const AssetsPage = () => {
   
   const { data: assets = [], isLoading } = useAssets();
   const { data: exchangeRates } = useExchangeRates();
+  const { data: cryptoPrices, isLoading: cryptoLoading, dataUpdatedAt } = useCryptoPrices();
   
   const rates = exchangeRates?.rates || fallbackRates;
+  const prices = cryptoPrices || fallbackCryptoPrices;
 
   const filteredAssets = filter === 'all' 
     ? assets 
     : assets.filter(a => a.type === filter);
+
+  const hasCryptoAssets = assets.some(a => a.type === 'crypto');
+  const lastCryptoUpdate = dataUpdatedAt 
+    ? new Date(dataUpdatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    : null;
 
   return (
     <AppLayout>
@@ -39,6 +48,12 @@ const AssetsPage = () => {
         <header className="mb-8">
           <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>
           <p className="text-muted-foreground">Your wealth portfolio across all categories.</p>
+          {hasCryptoAssets && lastCryptoUpdate && (
+            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+              <RefreshCw size={12} className={cryptoLoading ? 'animate-spin' : ''} />
+              <span>Crypto prices updated at {lastCryptoUpdate}</span>
+            </div>
+          )}
         </header>
 
         {/* Filters */}
@@ -71,7 +86,8 @@ const AssetsPage = () => {
                 <AssetCard 
                   key={asset.id} 
                   asset={asset} 
-                  rates={rates} 
+                  rates={rates}
+                  cryptoPrices={prices}
                   delay={index * 50}
                   onEdit={setEditingAsset}
                   onDelete={setDeletingAsset}

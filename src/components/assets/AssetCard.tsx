@@ -1,10 +1,17 @@
 import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2 } from 'lucide-react';
 import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
 import { Asset } from '@/hooks/useAssets';
+import { cn } from '@/lib/utils';
+
+interface CryptoPrice {
+  price: number;
+  change24h: number;
+}
 
 interface AssetCardProps {
   asset: Asset;
   rates?: Record<string, number>;
+  cryptoPrices?: Record<string, CryptoPrice>;
   delay?: number;
   onEdit?: (asset: Asset) => void;
   onDelete?: (asset: Asset) => void;
@@ -26,10 +33,24 @@ const typeLabels: Record<string, string> = {
   'business': 'Business Equity',
 };
 
-export function AssetCard({ asset, rates, delay = 0, onEdit, onDelete }: AssetCardProps) {
+export function AssetCard({ asset, rates, cryptoPrices, delay = 0, onEdit, onDelete }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
-  const eurValue = convertToEUR(asset.current_value, asset.currency, activeRates);
+  
+  // Calculate crypto value from live prices if available
+  let displayValue = asset.current_value;
+  let change24h: number | undefined;
+  
+  if (asset.type === 'crypto' && asset.ticker && asset.quantity && cryptoPrices) {
+    const cryptoPrice = cryptoPrices[asset.ticker.toUpperCase()];
+    if (cryptoPrice) {
+      displayValue = cryptoPrice.price * asset.quantity;
+      change24h = cryptoPrice.change24h;
+    }
+  }
+  
+  const eurValue = convertToEUR(displayValue, asset.currency, activeRates);
+  const isPositiveChange = change24h !== undefined && change24h > 0;
 
   return (
     <div 
@@ -80,7 +101,7 @@ export function AssetCard({ asset, rates, delay = 0, onEdit, onDelete }: AssetCa
       <div className="space-y-2">
         <div className="flex items-baseline justify-between">
           <span className="text-xl font-semibold tabular-nums text-foreground">
-            {formatCurrency(asset.current_value, asset.currency)}
+            {formatCurrency(displayValue, asset.currency)}
           </span>
           {asset.currency !== 'EUR' && (
             <span className="text-sm text-muted-foreground tabular-nums">
@@ -94,6 +115,14 @@ export function AssetCard({ asset, rates, delay = 0, onEdit, onDelete }: AssetCa
             <span className="text-sm text-muted-foreground">
               {asset.quantity} {asset.ticker}
             </span>
+            {change24h !== undefined && (
+              <span className={cn(
+                "text-sm font-medium",
+                isPositiveChange ? "text-positive" : "text-negative"
+              )}>
+                24h: {isPositiveChange ? '↑' : '↓'} {Math.abs(change24h).toFixed(1)}%
+              </span>
+            )}
           </div>
         )}
 
