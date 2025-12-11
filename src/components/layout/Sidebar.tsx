@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 import { 
   LayoutDashboard, 
   Wallet, 
@@ -9,7 +10,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  User
+  User,
+  LogOut
 } from 'lucide-react';
 
 const navigation = [
@@ -21,6 +23,9 @@ const navigation = [
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
   return (
     <aside 
@@ -100,11 +105,22 @@ export function Sidebar() {
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">Alexander V.</p>
-                <p className="text-xs text-muted-foreground truncate">Premium</p>
+                <p className="text-sm font-medium truncate">{displayName}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
               </div>
             )}
           </div>
+
+          <button
+            onClick={signOut}
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200 w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              collapsed && "justify-center"
+            )}
+          >
+            <LogOut size={20} strokeWidth={1.5} />
+            {!collapsed && <span>Sign Out</span>}
+          </button>
         </div>
       </div>
     </aside>

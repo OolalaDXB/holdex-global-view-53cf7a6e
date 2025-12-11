@@ -1,8 +1,12 @@
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { NetWorthHistory } from '@/lib/data';
+
+interface ChartDataPoint {
+  month: string;
+  value: number;
+}
 
 interface NetWorthChartProps {
-  data: NetWorthHistory[];
+  data: ChartDataPoint[];
 }
 
 export function NetWorthChart({ data }: NetWorthChartProps) {

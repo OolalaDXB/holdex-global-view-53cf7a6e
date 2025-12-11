@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
-import { assets, Asset } from '@/lib/data';
+import { useAssets, Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
 
-type FilterType = 'all' | Asset['type'];
+type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 
 const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'all', label: 'All Assets' },
@@ -13,11 +13,11 @@ const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'investment', label: 'Investments' },
   { value: 'crypto', label: 'Crypto' },
   { value: 'business', label: 'Business' },
-  { value: 'liability', label: 'Liabilities' },
 ];
 
 const AssetsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
+  const { data: assets = [], isLoading } = useAssets();
 
   const filteredAssets = filter === 'all' 
     ? assets 
@@ -49,17 +49,38 @@ const AssetsPage = () => {
           ))}
         </div>
 
-        {/* Assets Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredAssets.map((asset, index) => (
-            <AssetCard key={asset.id} asset={asset} delay={index * 50} />
-          ))}
-        </div>
-
-        {filteredAssets.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground">No assets found in this category.</p>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <p className="text-muted-foreground">Loading assets...</p>
           </div>
+        ) : (
+          <>
+            {/* Assets Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filteredAssets.map((asset, index) => (
+                <AssetCard key={asset.id} asset={asset} delay={index * 50} />
+              ))}
+            </div>
+
+            {filteredAssets.length === 0 && (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground mb-4">
+                  {assets.length === 0 
+                    ? "No assets yet. Add your first asset to get started." 
+                    : "No assets found in this category."
+                  }
+                </p>
+                {assets.length === 0 && (
+                  <a 
+                    href="/add" 
+                    className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Add Asset
+                  </a>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
     </AppLayout>

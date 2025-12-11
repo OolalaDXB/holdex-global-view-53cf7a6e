@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { useCreateAsset } from '@/hooks/useAssets';
+import { useCreateCollection } from '@/hooks/useCollections';
+import { useCreateLiability } from '@/hooks/useLiabilities';
 
 type Step = 'category' | 'type' | 'form';
 type Category = 'wealth' | 'collections';
@@ -36,9 +38,14 @@ const countries = ['UAE', 'Portugal', 'France', 'Germany', 'Switzerland', 'USA',
 const AddAssetPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const createAsset = useCreateAsset();
+  const createCollection = useCreateCollection();
+  const createLiability = useCreateLiability();
+  
   const [step, setStep] = useState<Step>('category');
   const [category, setCategory] = useState<Category | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -50,6 +57,7 @@ const AddAssetPage = () => {
     cryptoToken: '',
     cryptoQuantity: '',
     notes: '',
+    institution: '',
   });
 
   const handleCategorySelect = (cat: Category) => {
@@ -62,13 +70,65 @@ const AddAssetPage = () => {
     setStep('form');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Asset added",
-      description: `${formData.name} has been added to your portfolio.`,
-    });
-    navigate('/');
+    
+    if (!selectedType || !formData.country) return;
+    
+    setIsSubmitting(true);
+
+    try {
+      if (selectedType === 'liability') {
+        await createLiability.mutateAsync({
+          name: formData.name,
+          type: 'loan',
+          country: formData.country,
+          currency: formData.currency,
+          current_balance: parseFloat(formData.currentValue) || 0,
+          original_amount: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
+          institution: formData.institution || null,
+          notes: formData.notes || null,
+        });
+      } else if (category === 'collections') {
+        await createCollection.mutateAsync({
+          name: formData.name,
+          type: selectedType,
+          country: formData.country,
+          currency: formData.currency,
+          current_value: parseFloat(formData.currentValue) || 0,
+          purchase_value: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
+          notes: formData.notes || null,
+        });
+      } else {
+        await createAsset.mutateAsync({
+          name: formData.name,
+          type: selectedType,
+          country: formData.country,
+          currency: formData.currency,
+          current_value: parseFloat(formData.currentValue) || 0,
+          purchase_value: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
+          ownership_percentage: parseFloat(formData.ownershipPercent) || 100,
+          ticker: formData.cryptoToken || null,
+          quantity: formData.cryptoQuantity ? parseFloat(formData.cryptoQuantity) : null,
+          institution: formData.institution || null,
+          notes: formData.notes || null,
+        });
+      }
+
+      toast({
+        title: "Asset added",
+        description: `${formData.name} has been added to your portfolio.`,
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add asset. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -212,7 +272,9 @@ const AddAssetPage = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="currentValue">Current Value</Label>
+                  <Label htmlFor="currentValue">
+                    {selectedType === 'liability' ? 'Outstanding Balance' : 'Current Value'}
+                  </Label>
                   <Input
                     id="currentValue"
                     type="number"
@@ -269,8 +331,22 @@ const AddAssetPage = () => {
                   </div>
                 )}
 
+                {(selectedType === 'bank' || selectedType === 'investment' || selectedType === 'liability') && (
+                  <div className="space-y-2">
+                    <Label htmlFor="institution">Institution</Label>
+                    <Input
+                      id="institution"
+                      value={formData.institution}
+                      onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                      placeholder="e.g., Emirates NBD"
+                    />
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  <Label htmlFor="purchasePrice">Purchase Price (optional)</Label>
+                  <Label htmlFor="purchasePrice">
+                    {selectedType === 'liability' ? 'Original Amount (optional)' : 'Purchase Price (optional)'}
+                  </Label>
                   <Input
                     id="purchasePrice"
                     type="number"
@@ -282,8 +358,8 @@ const AddAssetPage = () => {
               </div>
 
               <div className="flex gap-4 pt-4">
-                <Button type="submit" className="flex-1">
-                  Add Asset
+                <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                  {isSubmitting ? 'Adding...' : 'Add Asset'}
                 </Button>
                 <Button type="button" variant="outline" onClick={() => navigate('/')}>
                   Cancel
