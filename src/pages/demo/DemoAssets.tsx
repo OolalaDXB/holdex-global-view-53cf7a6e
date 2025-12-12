@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { useDemo } from '@/contexts/DemoContext';
 import { fallbackRates } from '@/lib/currency';
 import { fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { cn } from '@/lib/utils';
-import { Search, Info, Ruler } from 'lucide-react';
+import { Search, Info, Ruler, LayoutGrid, List, ArrowUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,8 +13,11 @@ import { Asset } from '@/hooks/useAssets';
 import { DemoEditAssetDialog } from '@/components/demo/DemoEditAssetDialog';
 import { DemoDeleteAssetDialog } from '@/components/demo/DemoDeleteAssetDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
+type SortOption = 'name' | 'value-desc' | 'value-asc' | 'date-desc' | 'date-asc';
+type ViewMode = 'grid' | 'list';
 
 const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'all', label: 'All Assets' },
@@ -23,6 +26,14 @@ const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'investment', label: 'Investments' },
   { value: 'crypto', label: 'Digital Assets' },
   { value: 'business', label: 'Business' },
+];
+
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'value-desc', label: 'Value (High to Low)' },
+  { value: 'value-asc', label: 'Value (Low to High)' },
+  { value: 'name', label: 'Name (A-Z)' },
+  { value: 'date-desc', label: 'Newest First' },
+  { value: 'date-asc', label: 'Oldest First' },
 ];
 
 const DemoAssetsPage = () => {
@@ -36,6 +47,10 @@ const DemoAssetsPage = () => {
   const [minRooms, setMinRooms] = useState('');
   const [minSize, setMinSize] = useState('');
   
+  // Sorting and view
+  const [sortBy, setSortBy] = useState<SortOption>('value-desc');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  
   const { assets, entities, profile, updateProfile } = useDemo();
   const rates = fallbackRates;
   const prices = fallbackCryptoPrices;
@@ -45,39 +60,59 @@ const DemoAssetsPage = () => {
     updateProfile({ area_unit: areaUnit === 'sqm' ? 'sqft' : 'sqm' });
   };
 
-  const filteredAssets = assets
-    .filter(a => filter === 'all' || a.type === filter)
-    .filter(a => {
-      if (!searchQuery.trim()) return true;
-      const query = searchQuery.toLowerCase();
-      return (
-        a.name.toLowerCase().includes(query) ||
-        a.institution?.toLowerCase().includes(query) ||
-        a.ticker?.toLowerCase().includes(query) ||
-        a.country.toLowerCase().includes(query)
-      );
-    })
-    // Property type filter (only for real estate)
-    .filter(a => {
-      if (propertyTypeFilter === 'all') return true;
-      if (a.type !== 'real-estate') return filter !== 'real-estate'; // Show non-real-estate if not filtering by real-estate
-      return a.property_type === propertyTypeFilter;
-    })
-    // Min rooms filter
-    .filter(a => {
-      if (!minRooms) return true;
-      if (a.type !== 'real-estate') return true;
-      return (a.rooms || 0) >= parseInt(minRooms);
-    })
-    // Min size filter (input is in display unit, convert to sqm for comparison)
-    .filter(a => {
-      if (!minSize) return true;
-      if (a.type !== 'real-estate') return true;
-      const minSizeNum = parseFloat(minSize);
-      const assetSizeSqm = a.size_sqm || 0;
-      const compareSize = areaUnit === 'sqft' ? minSizeNum / 10.7639 : minSizeNum;
-      return assetSizeSqm >= compareSize;
-    });
+  const filteredAndSortedAssets = useMemo(() => {
+    let result = assets
+      .filter(a => filter === 'all' || a.type === filter)
+      .filter(a => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase();
+        return (
+          a.name.toLowerCase().includes(query) ||
+          a.institution?.toLowerCase().includes(query) ||
+          a.ticker?.toLowerCase().includes(query) ||
+          a.country.toLowerCase().includes(query)
+        );
+      })
+      .filter(a => {
+        if (propertyTypeFilter === 'all') return true;
+        if (a.type !== 'real-estate') return filter !== 'real-estate';
+        return a.property_type === propertyTypeFilter;
+      })
+      .filter(a => {
+        if (!minRooms) return true;
+        if (a.type !== 'real-estate') return true;
+        return (a.rooms || 0) >= parseInt(minRooms);
+      })
+      .filter(a => {
+        if (!minSize) return true;
+        if (a.type !== 'real-estate') return true;
+        const minSizeNum = parseFloat(minSize);
+        const assetSizeSqm = a.size_sqm || 0;
+        const compareSize = areaUnit === 'sqft' ? minSizeNum / 10.7639 : minSizeNum;
+        return assetSizeSqm >= compareSize;
+      });
+
+    // Sorting
+    switch (sortBy) {
+      case 'name':
+        result = result.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'value-desc':
+        result = result.sort((a, b) => b.current_value - a.current_value);
+        break;
+      case 'value-asc':
+        result = result.sort((a, b) => a.current_value - b.current_value);
+        break;
+      case 'date-desc':
+        result = result.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+        break;
+      case 'date-asc':
+        result = result.sort((a, b) => new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime());
+        break;
+    }
+
+    return result;
+  }, [assets, filter, searchQuery, propertyTypeFilter, minRooms, minSize, areaUnit, sortBy]);
 
   return (
     <AppLayout isDemo>
@@ -109,16 +144,43 @@ const DemoAssetsPage = () => {
 
         {/* Search and Filters */}
         <div className="space-y-4 mb-8">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search assets..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-secondary border-border"
-            />
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search assets..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-secondary border-border"
+              />
+            </div>
+            
+            {/* Sort dropdown */}
+            <div className="flex items-center gap-2">
+              <ArrowUpDown size={14} className="text-muted-foreground" />
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                <SelectTrigger className="w-44 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* View toggle */}
+            <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
+              <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3">
+                <LayoutGrid size={16} />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="List view" className="px-3">
+                <List size={16} />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             {filterOptions.map((option) => (
               <button
@@ -136,7 +198,7 @@ const DemoAssetsPage = () => {
             ))}
           </div>
 
-          {/* Property-specific filters - show when real-estate selected or all */}
+          {/* Property-specific filters */}
           {(filter === 'all' || filter === 'real-estate') && (
             <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
               <div className="flex items-center gap-2">
@@ -184,9 +246,13 @@ const DemoAssetsPage = () => {
           )}
         </div>
 
-        {/* Assets Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filteredAssets.map((asset, index) => (
+        {/* Assets Grid/List */}
+        <div className={cn(
+          viewMode === 'grid' 
+            ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+            : "flex flex-col gap-3"
+        )}>
+          {filteredAndSortedAssets.map((asset, index) => (
             <AssetCard 
               key={asset.id} 
               asset={asset as any} 
@@ -201,7 +267,7 @@ const DemoAssetsPage = () => {
           ))}
         </div>
 
-        {filteredAssets.length === 0 && (
+        {filteredAndSortedAssets.length === 0 && (
           <div className="text-center py-16">
             <p className="text-muted-foreground mb-4">
               {assets.length === 0 
