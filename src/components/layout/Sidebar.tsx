@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -11,21 +11,29 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
-  LogOut
+  LogOut,
+  LogIn
 } from 'lucide-react';
 
+interface SidebarProps {
+  isDemo?: boolean;
+}
+
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Assets', href: '/assets', icon: Wallet },
-  { name: 'Collections', href: '/collections', icon: Gem },
-  { name: 'Add Asset', href: '/add', icon: Plus },
+  { name: 'Dashboard', href: '/', demoHref: '/demo', icon: LayoutDashboard },
+  { name: 'Assets', href: '/assets', demoHref: '/demo', icon: Wallet },
+  { name: 'Collections', href: '/collections', demoHref: '/demo', icon: Gem },
+  { name: 'Add Asset', href: '/add', demoHref: '/demo', icon: Plus },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isDemo = false }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { user, signOut } = useAuth();
 
-  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const displayName = isDemo 
+    ? 'Lucas Soleil' 
+    : (user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User');
+  const displayEmail = isDemo ? 'demo@holdex.app' : user?.email;
 
   return (
     <aside 
@@ -61,11 +69,12 @@ export function Sidebar() {
           {navigation.map((item) => (
             <NavLink
               key={item.name}
-              to={item.href}
+              to={isDemo ? item.demoHref : item.href}
+              end={item.href === '/'}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
-                  isActive 
+                  (isActive || (isDemo && item.href === '/')) 
                     ? "bg-sidebar-accent text-sidebar-primary" 
                     : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   collapsed && "justify-center"
@@ -80,21 +89,23 @@ export function Sidebar() {
 
         {/* Bottom section */}
         <div className="border-t border-sidebar-border p-3 space-y-1">
-          <NavLink
-            to="/settings"
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
-                isActive 
-                  ? "bg-sidebar-accent text-sidebar-primary" 
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                collapsed && "justify-center"
-              )
-            }
-          >
-            <Settings size={20} strokeWidth={1.5} />
-            {!collapsed && <span>Settings</span>}
-          </NavLink>
+          {!isDemo && (
+            <NavLink
+              to="/settings"
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
+                  isActive 
+                    ? "bg-sidebar-accent text-sidebar-primary" 
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  collapsed && "justify-center"
+                )
+              }
+            >
+              <Settings size={20} strokeWidth={1.5} />
+              {!collapsed && <span>Settings</span>}
+            </NavLink>
+          )}
           
           <div className={cn(
             "flex items-center gap-3 px-3 py-2.5 text-sidebar-foreground",
@@ -106,21 +117,34 @@ export function Sidebar() {
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{displayName}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+                <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
               </div>
             )}
           </div>
 
-          <button
-            onClick={signOut}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200 w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              collapsed && "justify-center"
-            )}
-          >
-            <LogOut size={20} strokeWidth={1.5} />
-            {!collapsed && <span>Sign Out</span>}
-          </button>
+          {isDemo ? (
+            <Link
+              to="/auth"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200 w-full text-primary hover:bg-sidebar-accent",
+                collapsed && "justify-center"
+              )}
+            >
+              <LogIn size={20} strokeWidth={1.5} />
+              {!collapsed && <span>Sign Up / Login</span>}
+            </Link>
+          ) : (
+            <button
+              onClick={signOut}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200 w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                collapsed && "justify-center"
+              )}
+            >
+              <LogOut size={20} strokeWidth={1.5} />
+              {!collapsed && <span>Sign Out</span>}
+            </button>
+          )}
         </div>
       </div>
     </aside>
