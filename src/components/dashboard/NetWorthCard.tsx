@@ -10,9 +10,9 @@ interface NetWorthCardProps {
 const currencySymbols: Record<string, string> = {
   EUR: '€',
   USD: '$',
-  AED: 'د.إ',
+  AED: 'AED ',
   GBP: '£',
-  CHF: 'CHF ',
+  CHF: 'Fr.',
   RUB: '₽',
 };
 
