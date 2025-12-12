@@ -21,9 +21,9 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/', demoHref: '/demo', icon: LayoutDashboard },
-  { name: 'Assets', href: '/assets', demoHref: '/demo', icon: Wallet },
-  { name: 'Collections', href: '/collections', demoHref: '/demo', icon: Gem },
-  { name: 'Add Asset', href: '/add', demoHref: '/demo', icon: Plus },
+  { name: 'Assets', href: '/assets', demoHref: '/demo/assets', icon: Wallet },
+  { name: 'Collections', href: '/collections', demoHref: '/demo/collections', icon: Gem },
+  { name: 'Add Asset', href: '/add', demoHref: '/demo/add', icon: Plus },
 ];
 
 export function Sidebar({ isDemo = false }: SidebarProps) {
@@ -70,11 +70,11 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
             <NavLink
               key={item.name}
               to={isDemo ? item.demoHref : item.href}
-              end={item.href === '/'}
+              end={item.href === '/' || item.demoHref === '/demo'}
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
-                  (isActive || (isDemo && item.href === '/')) 
+                  isActive
                     ? "bg-sidebar-accent text-sidebar-primary" 
                     : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   collapsed && "justify-center"

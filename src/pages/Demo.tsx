@@ -4,17 +4,15 @@ import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { AssetCard } from '@/components/assets/AssetCard';
-import { demoAssets, demoCollections, demoLiabilities, demoNetWorthHistory } from '@/data/demoData';
+import { useDemo } from '@/contexts/DemoContext';
 import { convertToEUR, fallbackRates } from '@/lib/currency';
 import { fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { RefreshCw, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
 
 const Demo = () => {
-  const assets = demoAssets;
-  const collections = demoCollections;
-  const liabilities = demoLiabilities;
-  const netWorthHistoryData = demoNetWorthHistory;
+  const { assets, collections, liabilities, netWorthHistory } = useDemo();
 
   // Use fallback rates for demo (realistic static rates)
   const rates = fallbackRates;
@@ -119,14 +117,14 @@ const Demo = () => {
     .slice(0, 5);
 
   // Chart data
-  const chartData = netWorthHistoryData.map(item => ({
+  const chartData = netWorthHistory.map(item => ({
     month: new Date(item.snapshot_date).toLocaleDateString('en-US', { month: 'short' }),
     value: item.net_worth_eur,
   }));
 
   // Calculate MTD change
-  const previousValue = netWorthHistoryData.length > 1 
-    ? netWorthHistoryData[netWorthHistoryData.length - 2]?.net_worth_eur 
+  const previousValue = netWorthHistory.length > 1 
+    ? netWorthHistory[netWorthHistory.length - 2]?.net_worth_eur 
     : netWorth;
   const change = previousValue > 0 
     ? ((netWorth - previousValue) / previousValue) * 100 
@@ -140,11 +138,14 @@ const Demo = () => {
           <Info size={20} className="text-primary mt-0.5 flex-shrink-0" />
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-medium text-foreground">Demo Mode</span>
+              <span className="font-medium text-foreground">Mode Démo</span>
               <Badge variant="outline" className="text-xs">Lucas Soleil</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              This is a demo dashboard with sample data. Sign up to create your own private wealth portfolio.
+              Explorez toutes les fonctionnalités avec des données fictives. 
+              <Link to="/auth" className="text-primary hover:underline ml-1">
+                Créez un compte
+              </Link> pour gérer votre propre patrimoine.
             </p>
           </div>
         </div>
