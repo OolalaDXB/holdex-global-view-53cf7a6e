@@ -18,7 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { CountrySelect } from '@/components/ui/country-select';
 import { CertaintySelect } from '@/components/ui/certainty-select';
 import { EntitySelect } from '@/components/entities/EntitySelect';
-import { useCreateLiability, useUpdateLiability, Liability, getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
+import { useCreateLiability, useUpdateLiability, Liability, getFilteredFinancingTypes, isIslamicFinancing, LIABILITY_TYPES } from '@/hooks/useLiabilities';
 import { useAssets } from '@/hooks/useAssets';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { useToast } from '@/hooks/use-toast';
@@ -31,9 +31,6 @@ interface LiabilityDialogProps {
 }
 
 const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
-
-// Use centralized LIABILITY_TYPES from useLiabilities hook
-import { LIABILITY_TYPES } from '@/hooks/useLiabilities';
 
 export function LiabilityDialog({ open, onOpenChange, liability }: LiabilityDialogProps) {
   const { toast } = useToast();
