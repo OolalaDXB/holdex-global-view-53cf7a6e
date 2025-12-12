@@ -96,6 +96,7 @@ const DemoAddAssetPage = () => {
           start_date: null,
           end_date: null,
           linked_asset_id: null,
+          entity_id: null,
         });
       } else if (category === 'collections') {
         addCollection({
@@ -116,6 +117,9 @@ const DemoAddAssetPage = () => {
           called_amount: null,
           distribution_status: null,
           image_url: formData.image_url,
+          entity_id: null,
+          acquisition_type: 'purchase',
+          acquisition_from: null,
         });
       } else {
         addAsset({
@@ -136,6 +140,9 @@ const DemoAddAssetPage = () => {
           notes: formData.notes || null,
           rental_income: null,
           image_url: formData.image_url,
+          entity_id: null,
+          acquisition_type: 'purchase',
+          acquisition_from: null,
         });
       }
 
