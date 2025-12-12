@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountrySelect } from '@/components/ui/country-select';
+import { ImageUpload } from '@/components/ui/image-upload';
+import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { Collection } from '@/hooks/useCollections';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +24,8 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
   const { updateCollection } = useDemo();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: '',
     country: '',
@@ -31,6 +35,7 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
     brand: '',
     model: '',
     year: '',
+    image_url: null as string | null,
   });
 
   useEffect(() => {
@@ -44,6 +49,7 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
         brand: collection.brand || '',
         model: collection.model || '',
         year: collection.year?.toString() || '',
+        image_url: collection.image_url || null,
       });
     }
   }, [collection]);
@@ -63,6 +69,7 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
         brand: formData.brand || null,
         model: formData.model || null,
         year: formData.year ? parseInt(formData.year) : null,
+        image_url: formData.image_url,
       });
 
       toast({
@@ -91,6 +98,16 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <Label>Image</Label>
+            <ImageUpload
+              value={formData.image_url}
+              onChange={(url) => setFormData({ ...formData, image_url: url })}
+              assetId={collection.id}
+              onGenerateAI={() => setShowAIDialog(true)}
+            />
+          </div>
+          
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name">Name</Label>
@@ -187,6 +204,17 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
           </div>
         </form>
       </DialogContent>
+      
+      <AIImageDialog
+        open={showAIDialog}
+        onOpenChange={setShowAIDialog}
+        assetType={collection.type}
+        name={formData.name}
+        brand={formData.brand}
+        model={formData.model}
+        country={formData.country}
+        onImageGenerated={(url) => setFormData({ ...formData, image_url: url })}
+      />
     </Dialog>
   );
 }

@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountrySelect } from '@/components/ui/country-select';
+import { ImageUpload } from '@/components/ui/image-upload';
+import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { Asset } from '@/hooks/useAssets';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +24,8 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
   const { updateAsset } = useDemo();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: '',
     country: '',
@@ -33,6 +37,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
     quantity: '',
     institution: '',
     rental_income: '',
+    image_url: null as string | null,
   });
 
   useEffect(() => {
@@ -48,6 +53,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         quantity: asset.quantity?.toString() || '',
         institution: asset.institution || '',
         rental_income: asset.rental_income?.toString() || '',
+        image_url: asset.image_url || null,
       });
     }
   }, [asset]);
@@ -69,6 +75,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         quantity: formData.quantity ? parseFloat(formData.quantity) : null,
         institution: formData.institution || null,
         rental_income: formData.rental_income ? parseFloat(formData.rental_income) : null,
+        image_url: formData.image_url,
       });
 
       toast({
@@ -97,6 +104,16 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          <div className="space-y-2">
+            <Label>Image</Label>
+            <ImageUpload
+              value={formData.image_url}
+              onChange={(url) => setFormData({ ...formData, image_url: url })}
+              assetId={asset.id}
+              onGenerateAI={() => setShowAIDialog(true)}
+            />
+          </div>
+          
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name">Name</Label>
@@ -225,6 +242,16 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
           </div>
         </form>
       </DialogContent>
+      
+      <AIImageDialog
+        open={showAIDialog}
+        onOpenChange={setShowAIDialog}
+        assetType={asset.type}
+        name={formData.name}
+        brand={formData.institution}
+        country={formData.country}
+        onImageGenerated={(url) => setFormData({ ...formData, image_url: url })}
+      />
     </Dialog>
   );
 }
