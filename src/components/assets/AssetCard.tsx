@@ -49,7 +49,7 @@ const typeLabels: Record<string, string> = {
   'real-estate': 'Real Estate',
   'bank': 'Bank Account',
   'investment': 'Investment',
-  'crypto': 'Crypto',
+  'crypto': 'Digital Assets',
   'business': 'Business Equity',
 };
 

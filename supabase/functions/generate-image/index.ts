@@ -42,7 +42,7 @@ const generatePrompt = (req: GenerateRequest): string => {
       return `${req.name}, corporate headquarters building, modern glass architecture, executive business environment, professional corporate imagery, ${baseStyle}`;
     
     case 'crypto':
-      return `Digital cryptocurrency concept art, ${req.name}, futuristic blockchain visualization, glowing digital currency, tech-forward aesthetic, abstract digital asset representation, ${baseStyle}`;
+      return `Digital asset concept art, ${req.name}, futuristic blockchain visualization, glowing digital currency tokens, tech-forward aesthetic, abstract digital asset representation, ${baseStyle}`;
     
     default:
       return `${req.name}, ${req.description || ''}, premium luxury item, ${baseStyle}`;

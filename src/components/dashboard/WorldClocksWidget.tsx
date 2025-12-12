@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Sun, Moon, Cloud, CloudRain, CloudSnow, CloudSun, CloudLightning, CloudFog } from 'lucide-react';
+import { useWeather } from '@/hooks/useWeather';
 
 interface City {
   name: string;
@@ -7,10 +9,45 @@ interface City {
 
 interface WorldClocksWidgetProps {
   cities: City[];
+  showWeather?: boolean;
 }
 
-export const WorldClocksWidget: React.FC<WorldClocksWidgetProps> = ({ cities }) => {
+const WeatherIcon: React.FC<{ condition: string; isNight: boolean; className?: string }> = ({ 
+  condition, 
+  isNight,
+  className = "w-4 h-4"
+}) => {
+  if (isNight && condition === 'clear') {
+    return <Moon className={`${className} text-blue-300`} />;
+  }
+
+  switch (condition) {
+    case 'clear':
+      return <Sun className={`${className} text-amber-400`} />;
+    case 'partly-cloudy':
+      return isNight 
+        ? <Cloud className={`${className} text-muted-foreground`} />
+        : <CloudSun className={`${className} text-amber-300`} />;
+    case 'cloudy':
+      return <Cloud className={`${className} text-muted-foreground`} />;
+    case 'rain':
+      return <CloudRain className={`${className} text-blue-400`} />;
+    case 'snow':
+      return <CloudSnow className={`${className} text-blue-200`} />;
+    case 'thunderstorm':
+      return <CloudLightning className={`${className} text-purple-400`} />;
+    case 'fog':
+      return <CloudFog className={`${className} text-muted-foreground`} />;
+    default:
+      return isNight 
+        ? <Moon className={`${className} text-blue-300`} />
+        : <Sun className={`${className} text-amber-400`} />;
+  }
+};
+
+export const WorldClocksWidget: React.FC<WorldClocksWidgetProps> = ({ cities, showWeather = true }) => {
   const [times, setTimes] = useState<Record<string, string>>({});
+  const { data: weatherData } = useWeather(showWeather ? cities : []);
 
   useEffect(() => {
     const updateTimes = () => {
@@ -41,15 +78,26 @@ export const WorldClocksWidget: React.FC<WorldClocksWidgetProps> = ({ cities }) 
   return (
     <section className="mb-8">
       <div className="flex flex-wrap items-center gap-6 text-sm">
-        {cities.map((city, index) => (
-          <div key={city.name} className="flex items-center gap-2">
-            <span className="text-muted-foreground">{city.name}</span>
-            <span className="font-mono text-foreground">{times[city.name] || '--:--'}</span>
-            {index < cities.length - 1 && (
-              <span className="text-border ml-4">|</span>
-            )}
-          </div>
-        ))}
+        {cities.map((city, index) => {
+          const weather = weatherData?.[city.name];
+          
+          return (
+            <div key={city.name} className="flex items-center gap-2">
+              <span className="text-muted-foreground">{city.name}</span>
+              {showWeather && weather && (
+                <WeatherIcon 
+                  condition={weather.condition} 
+                  isNight={weather.isNight}
+                  className="w-4 h-4"
+                />
+              )}
+              <span className="font-mono text-foreground">{times[city.name] || '--:--'}</span>
+              {index < cities.length - 1 && (
+                <span className="text-border ml-4">|</span>
+              )}
+            </div>
+          );
+        })}
       </div>
     </section>
   );

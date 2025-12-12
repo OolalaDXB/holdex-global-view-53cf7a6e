@@ -9,6 +9,7 @@ import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
 import { ExpiringDocumentsWidget } from '@/components/dashboard/ExpiringDocumentsWidget';
 import { LeaseholdRemindersWidget } from '@/components/dashboard/LeaseholdRemindersWidget';
 import { WorldClocksWidget } from '@/components/dashboard/WorldClocksWidget';
+import { NewsTicker } from '@/components/dashboard/NewsTicker';
 import { BlurToggle } from '@/components/dashboard/BlurToggle';
 import { PendingReceivablesWidget } from '@/components/dashboard/PendingReceivablesWidget';
 import { EntityBreakdown } from '@/components/dashboard/EntityBreakdown';
@@ -254,8 +255,14 @@ const Dashboard = () => {
       <div className="p-8 lg:p-12 max-w-7xl">
         {/* World Clocks Widget */}
         {showWidget('world_clocks') && favoriteCities.length > 0 && (
-          <WorldClocksWidget cities={favoriteCities} />
+          <WorldClocksWidget 
+            cities={favoriteCities} 
+            showWeather={showWidget('weather_with_clocks')}
+          />
         )}
+
+        {/* News Ticker */}
+        {showWidget('news_ticker') && <NewsTicker />}
 
         {/* Header */}
         <header className="mb-12">

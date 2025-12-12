@@ -66,7 +66,7 @@ export const getAssetTypeIcon = (type: string): string => {
     'real-estate': '🏠',
     'bank': '🏦',
     'investment': '📈',
-    'crypto': '₿',
+    'crypto': '🪙',
     'business': '🏢',
     'liability': '📉',
   };

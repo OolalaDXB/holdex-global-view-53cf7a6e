@@ -28,7 +28,7 @@ const paymentMethods = [
   { value: 'bank_transfer', label: 'Bank Transfer' },
   { value: 'cash', label: 'Cash' },
   { value: 'check', label: 'Check' },
-  { value: 'crypto', label: 'Crypto' },
+  { value: 'crypto', label: 'Digital Assets' },
   { value: 'other', label: 'Other' },
 ];
 
