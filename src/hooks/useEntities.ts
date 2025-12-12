@@ -8,15 +8,15 @@ export type EntityInsert = TablesInsert<'entities'>;
 export type EntityUpdate = TablesUpdate<'entities'>;
 
 export const ENTITY_TYPES = [
-  { value: 'personal', label: 'Personal', icon: '👤', category: 'individual' },
-  { value: 'spouse', label: 'Spouse', icon: '👤', category: 'individual' },
-  { value: 'couple', label: 'Couple', icon: '👫', category: 'relationship' },
-  { value: 'company', label: 'Company', icon: '🏢', category: 'legal_entity' },
-  { value: 'holding', label: 'Holding', icon: '🏛️', category: 'legal_entity' },
-  { value: 'spv', label: 'SPV', icon: '📦', category: 'legal_entity' },
-  { value: 'trust', label: 'Trust', icon: '🔒', category: 'trust' },
-  { value: 'family', label: 'Family', icon: '👨‍👩‍👧‍👦', category: 'group' },
-  { value: 'huf', label: 'HUF (Hindu Undivided Family)', icon: '🪷', category: 'huf' },
+  { value: 'personal', label: 'Personal', icon: 'User', category: 'individual' },
+  { value: 'spouse', label: 'Spouse', icon: 'UserCircle', category: 'individual' },
+  { value: 'couple', label: 'Couple', icon: 'Users', category: 'relationship' },
+  { value: 'company', label: 'Company', icon: 'Building2', category: 'legal_entity' },
+  { value: 'holding', label: 'Holding', icon: 'Landmark', category: 'legal_entity' },
+  { value: 'spv', label: 'SPV', icon: 'FolderClosed', category: 'legal_entity' },
+  { value: 'trust', label: 'Trust', icon: 'Shield', category: 'trust' },
+  { value: 'family', label: 'Family', icon: 'Users', category: 'group' },
+  { value: 'huf', label: 'HUF (Hindu Undivided Family)', icon: 'Home', category: 'huf' },
 ] as const;
 
 export const MATRIMONIAL_REGIMES = [
