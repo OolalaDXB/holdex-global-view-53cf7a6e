@@ -7,10 +7,12 @@ interface ChartDataPoint {
 
 interface NetWorthChartProps {
   data: ChartDataPoint[];
+  isBlurred?: boolean;
 }
 
-export function NetWorthChart({ data }: NetWorthChartProps) {
+export function NetWorthChart({ data, isBlurred = false }: NetWorthChartProps) {
   const formatValue = (value: number) => {
+    if (isBlurred) return '•••••';
     if (value >= 1000000) {
       return `€${(value / 1000000).toFixed(1)}M`;
     }

@@ -11,6 +11,7 @@ interface BreakdownBarProps {
   title: string;
   items: BreakdownItem[];
   delay?: number;
+  isBlurred?: boolean;
 }
 
 const defaultColors = [
@@ -21,7 +22,7 @@ const defaultColors = [
   'bg-warm-gray',
 ];
 
-export function BreakdownBar({ title, items, delay = 0 }: BreakdownBarProps) {
+export function BreakdownBar({ title, items, delay = 0, isBlurred = false }: BreakdownBarProps) {
   return (
     <div 
       className="animate-fade-in" 
@@ -33,7 +34,7 @@ export function BreakdownBar({ title, items, delay = 0 }: BreakdownBarProps) {
           <div key={item.label} className="space-y-1.5">
             <div className="flex justify-between items-center text-sm">
               <span className="text-foreground">{item.label}</span>
-              <span className="text-muted-foreground tabular-nums">{item.percentage.toFixed(0)}%</span>
+              <span className="text-muted-foreground tabular-nums">{isBlurred ? '•••' : `${item.percentage.toFixed(0)}%`}</span>
             </div>
             <div className="stat-bar">
               <div 

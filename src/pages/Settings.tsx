@@ -14,7 +14,21 @@ import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
+import { FavoriteCitiesSelect } from '@/components/settings/FavoriteCitiesSelect';
+import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
 import { X } from 'lucide-react';
+
+interface City {
+  name: string;
+  timezone: string;
+}
+
+const FISCAL_YEAR_OPTIONS = [
+  { value: '01-01', label: 'January 1 (Default)' },
+  { value: '04-01', label: 'April 1 (UK)' },
+  { value: '04-06', label: 'April 6 (UK Tax)' },
+  { value: '07-01', label: 'July 1 (Australia)' },
+];
 
 const SettingsPage = () => {
   const { toast } = useToast();
@@ -37,6 +51,15 @@ const SettingsPage = () => {
   const [complianceMode, setComplianceMode] = useState('none');
   const [inviteEmail, setInviteEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  
+  // New preference states
+  const [favoriteCities, setFavoriteCities] = useState<City[]>([]);
+  const [dashboardWidgets, setDashboardWidgets] = useState<string[]>([
+    'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
+    'leasehold_reminders', 'expiring_documents'
+  ]);
+  const [blurAmounts, setBlurAmounts] = useState(false);
+  const [fiscalYearStart, setFiscalYearStart] = useState('01-01');
 
   // Get all available currencies from exchange rates API
   const availableCurrencies = exchangeRates?.rates 
@@ -51,6 +74,15 @@ const SettingsPage = () => {
       setSecondaryCurrency2(profile.secondary_currency_2 || 'AED');
       setDarkMode(profile.dark_mode ?? true);
       setComplianceMode(profile.compliance_mode || 'none');
+      
+      // New preferences
+      setFavoriteCities((profile as any).favorite_cities || []);
+      setDashboardWidgets((profile as any).dashboard_widgets || [
+        'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
+        'leasehold_reminders', 'expiring_documents'
+      ]);
+      setBlurAmounts((profile as any).blur_amounts || false);
+      setFiscalYearStart((profile as any).fiscal_year_start || '01-01');
     }
   }, [profile]);
 
@@ -64,7 +96,11 @@ const SettingsPage = () => {
         secondary_currency_2: secondaryCurrency2,
         dark_mode: darkMode,
         compliance_mode: complianceMode,
-      });
+        favorite_cities: favoriteCities,
+        dashboard_widgets: dashboardWidgets,
+        blur_amounts: blurAmounts,
+        fiscal_year_start: fiscalYearStart,
+      } as any);
       toast({
         title: "Settings saved",
         description: "Your preferences have been updated.",
@@ -254,19 +290,95 @@ const SettingsPage = () => {
 
           <Separator />
 
+          {/* Favorite Cities Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Favorite Cities</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Select cities to display world clocks on your dashboard.
+            </p>
+            <FavoriteCitiesSelect
+              value={favoriteCities}
+              onChange={setFavoriteCities}
+              maxCities={5}
+            />
+          </section>
+
+          <Separator />
+
+          {/* Dashboard Widgets Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Dashboard Widgets</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose which widgets to display on your dashboard.
+            </p>
+            <DashboardWidgetsSelect
+              value={dashboardWidgets}
+              onChange={setDashboardWidgets}
+            />
+          </section>
+
+          <Separator />
+
           {/* Display Preferences Section */}
           <section>
             <h2 className="font-serif text-xl font-medium text-foreground mb-4">Display</h2>
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="darkMode">Dark Mode</Label>
-                <p className="text-xs text-muted-foreground">Use dark theme for the interface.</p>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="darkMode">Dark Mode</Label>
+                  <p className="text-xs text-muted-foreground">Use dark theme for the interface.</p>
+                </div>
+                <Switch
+                  id="darkMode"
+                  checked={darkMode}
+                  onCheckedChange={setDarkMode}
+                />
               </div>
-              <Switch
-                id="darkMode"
-                checked={darkMode}
-                onCheckedChange={setDarkMode}
-              />
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Privacy Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Privacy</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="blurAmounts">Blur Amounts</Label>
+                  <p className="text-xs text-muted-foreground">Hide monetary values with ••••• for privacy.</p>
+                </div>
+                <Switch
+                  id="blurAmounts"
+                  checked={blurAmounts}
+                  onCheckedChange={setBlurAmounts}
+                />
+              </div>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Fiscal Year Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Fiscal Year</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Set your fiscal year start for charts and annual calculations.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="fiscalYear">Fiscal Year Starts</Label>
+              <Select value={fiscalYearStart} onValueChange={setFiscalYearStart}>
+                <SelectTrigger className="w-64">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FISCAL_YEAR_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </section>
 
