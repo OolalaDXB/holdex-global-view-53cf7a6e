@@ -4,6 +4,7 @@ import { NetWorthCard } from '@/components/dashboard/NetWorthCard';
 import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
+import { CollapsibleSection } from '@/components/dashboard/CollapsibleSection';
 import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { DemoDebtToIncomeWidget } from '@/components/dashboard/DemoDebtToIncomeWidget';
 import { DemoNetWorthProjectionWidget } from '@/components/dashboard/DemoNetWorthProjectionWidget';
@@ -334,7 +335,30 @@ const Demo = () => {
           )}
         </section>
 
-        {/* Certainty Breakdown */}
+        {/* Collapsible Breakdowns */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+          <CollapsibleSection id="demo_breakdown_type" title="By Asset Type">
+            <BreakdownBar 
+              items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
+              delay={0}
+            />
+          </CollapsibleSection>
+          
+          <CollapsibleSection id="demo_breakdown_country" title="By Country">
+            <BreakdownBar 
+              items={assetsByCountry} 
+              delay={0}
+            />
+          </CollapsibleSection>
+          
+          {currencyBreakdown.length > 0 && (
+            <CollapsibleSection id="demo_breakdown_currency" title="By Currency">
+              <CurrencyBreakdown items={currencyBreakdown} delay={0} />
+            </CollapsibleSection>
+          )}
+        </section>
+
+        {/* Optional widgets shown in demo to showcase features */}
         {projectedNetWorth > 0 && (
           <CertaintyBreakdownWidget
             confirmedValue={confirmedNetWorth}
@@ -344,32 +368,9 @@ const Demo = () => {
           />
         )}
 
-        {/* Debt-to-Income Ratio */}
         <DemoDebtToIncomeWidget delay={175} />
 
-        {/* Net Worth Projection */}
         <DemoNetWorthProjectionWidget delay={180} />
-
-        {/* Breakdowns */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-          <BreakdownBar 
-            title="By Asset Type" 
-            items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
-            delay={200}
-          />
-          <BreakdownBar 
-            title="By Country" 
-            items={assetsByCountry} 
-            delay={300}
-          />
-        </section>
-
-        {/* Currency */}
-        {currencyBreakdown.length > 0 && (
-          <section className="mb-12 pb-12 border-b border-border">
-            <CurrencyBreakdown items={currencyBreakdown} delay={400} />
-          </section>
-        )}
 
         {/* Collections Gallery - only show if collections are included */}
         {showCollections && <CollectionsGallery collections={collections as any} />}

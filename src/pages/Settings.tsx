@@ -59,10 +59,7 @@ const SettingsPage = () => {
   
   // New preference states
   const [favoriteCities, setFavoriteCities] = useState<City[]>([]);
-  const [dashboardWidgets, setDashboardWidgets] = useState<string[]>([
-    'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
-    'leasehold_reminders', 'expiring_documents'
-  ]);
+  const [dashboardWidgets, setDashboardWidgets] = useState<string[]>([]);
   const [blurAmounts, setBlurAmounts] = useState(false);
   const [fiscalYearStart, setFiscalYearStart] = useState('01-01');
   const [newsSources, setNewsSources] = useState<string[]>(['bloomberg', 'reuters']);
@@ -88,10 +85,7 @@ const SettingsPage = () => {
       
       // New preferences
       setFavoriteCities((profile as any).favorite_cities || []);
-      setDashboardWidgets((profile as any).dashboard_widgets || [
-        'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
-        'leasehold_reminders', 'expiring_documents'
-      ]);
+      setDashboardWidgets((profile as any).dashboard_widgets || []);
       setBlurAmounts((profile as any).blur_amounts || false);
       setFiscalYearStart((profile as any).fiscal_year_start || '01-01');
       setNewsSources((profile as any).news_sources || ['bloomberg', 'reuters']);

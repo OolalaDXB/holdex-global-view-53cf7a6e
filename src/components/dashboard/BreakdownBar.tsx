@@ -8,7 +8,7 @@ interface BreakdownItem {
 }
 
 interface BreakdownBarProps {
-  title: string;
+  title?: string;
   items: BreakdownItem[];
   delay?: number;
   isBlurred?: boolean;
@@ -28,7 +28,7 @@ export function BreakdownBar({ title, items, delay = 0, isBlurred = false }: Bre
       className="animate-fade-in" 
       style={{ animationDelay: `${delay}ms` }}
     >
-      <h3 className="font-serif text-lg font-medium text-foreground mb-4">{title}</h3>
+      {title && <h3 className="font-serif text-lg font-medium text-foreground mb-4">{title}</h3>}
       <div className="space-y-3">
         {items.map((item, index) => (
           <div key={item.label} className="space-y-1.5">
