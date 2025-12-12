@@ -7,6 +7,8 @@ import { convertToEUR, convertFromEUR, fallbackRates, formatCurrency } from '@/l
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { EntityIcon, getEntityIconName } from '@/components/entities/EntityIcon';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { Package } from 'lucide-react';
 
 interface EntityBreakdownProps {
   delay?: number;
@@ -14,6 +16,7 @@ interface EntityBreakdownProps {
 }
 
 export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdownProps) {
+  const navigate = useNavigate();
   const { data: entities = [] } = useEntities();
   const { data: assets = [] } = useAssets();
   const { data: collections = [] } = useCollections();
@@ -77,7 +80,13 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
   // Calculate total for percentages
   const totalNetEUR = sortedEntities.reduce((sum, [_, values]) => sum + Math.max(0, values.net), 0);
 
-  if (sortedEntities.length === 0) return null;
+  const handleEntityClick = (entityId: string) => {
+    if (entityId === 'unassigned') {
+      navigate('/assets?entity=unassigned');
+    } else {
+      navigate(`/entities?selected=${entityId}`);
+    }
+  };
 
   const getEntity = (id: string) => entities.find(e => e.id === id);
 
@@ -94,7 +103,11 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
           const displayValue = convertFromEUR(values.net, displayCurrency, rates);
           
           return (
-            <div key={entityId} className="space-y-1.5">
+            <div 
+              key={entityId} 
+              className="space-y-1.5 cursor-pointer hover:bg-muted/50 -mx-2 px-2 py-1.5 rounded-lg transition-colors"
+              onClick={() => handleEntityClick(entityId)}
+            >
               <div className="flex justify-between items-center text-sm">
                 <div className="flex items-center gap-2">
                   {entity ? (
@@ -107,7 +120,10 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
                       <span className="text-foreground">{entity.name}</span>
                     </>
                   ) : (
-                    <span className="text-muted-foreground">Unassigned</span>
+                    <>
+                      <Package className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground hover:text-foreground transition-colors">Unassigned</span>
+                    </>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
