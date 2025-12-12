@@ -16,7 +16,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CertaintyBadge } from '@/components/ui/certainty-badge';
-import { ChevronDown, ChevronUp, Landmark, TrendingDown, Pencil, Trash2, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Landmark, TrendingDown, Pencil, Trash2, Plus, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
 function LiabilityCard({ 
   liability, 
@@ -168,6 +172,22 @@ const LiabilitiesPage = () => {
   const [editingLiability, setEditingLiability] = useState<Liability | null>(null);
   const [deletingLiability, setDeletingLiability] = useState<Liability | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
+
+  const filteredLiabilities = liabilities.filter(l => {
+    // Search filter
+    if (searchQuery && !l.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
+        !l.institution?.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    // Certainty filter
+    if (certaintyFilter === 'all') return true;
+    const cert = l.certainty || 'certain';
+    if (certaintyFilter === 'certain') return cert === 'certain';
+    if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
+    return true;
+  });
   
   return (
     <AppLayout>
@@ -187,6 +207,29 @@ const LiabilitiesPage = () => {
             </Button>
           </div>
         </header>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1 max-w-sm">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search liabilities..."
+              className="pl-9"
+            />
+          </div>
+          <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
+            <SelectTrigger className="w-40 h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Certainty</SelectItem>
+              <SelectItem value="certain">Certain Only</SelectItem>
+              <SelectItem value="exclude-optional">Exclude Optional</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         
         {/* Monthly Payment Summary Widget */}
         <MonthlyPaymentSummary />
@@ -195,18 +238,22 @@ const LiabilitiesPage = () => {
           <div className="flex items-center justify-center py-16">
             <p className="text-muted-foreground">Loading liabilities...</p>
           </div>
-        ) : liabilities.length === 0 ? (
+        ) : filteredLiabilities.length === 0 ? (
           <div className="text-center py-16">
             <TrendingDown className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground mb-4">No liabilities yet.</p>
-            <Button onClick={() => setShowAddDialog(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              Add Liability
-            </Button>
+            <p className="text-muted-foreground mb-4">
+              {liabilities.length === 0 ? 'No liabilities yet.' : 'No liabilities match your filters.'}
+            </p>
+            {liabilities.length === 0 && (
+              <Button onClick={() => setShowAddDialog(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Liability
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
-            {liabilities.map((liability) => (
+            {filteredLiabilities.map((liability) => (
               <LiabilityCard 
                 key={liability.id} 
                 liability={liability}
