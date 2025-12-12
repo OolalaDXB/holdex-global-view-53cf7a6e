@@ -126,6 +126,7 @@ const DemoAddAssetPage = () => {
           institution: formData.institution || null,
           notes: formData.notes || null,
           rental_income: null,
+          image_url: null,
         });
       }
 
