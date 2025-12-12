@@ -7,6 +7,8 @@ import { useCollections, Collection } from '@/hooks/useCollections';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
+import { Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'lp-position' | 'other';
 
@@ -23,6 +25,7 @@ const filterOptions: { value: FilterType; label: string }[] = [
 
 const CollectionsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
   
@@ -31,9 +34,19 @@ const CollectionsPage = () => {
   
   const rates = exchangeRates?.rates || fallbackRates;
 
-  const filteredCollections = filter === 'all' 
-    ? collections 
-    : collections.filter(c => c.type === filter);
+  const filteredCollections = collections
+    .filter(c => filter === 'all' || c.type === filter)
+    .filter(c => {
+      if (!searchQuery.trim()) return true;
+      const query = searchQuery.toLowerCase();
+      return (
+        c.name.toLowerCase().includes(query) ||
+        c.brand?.toLowerCase().includes(query) ||
+        c.model?.toLowerCase().includes(query) ||
+        c.country.toLowerCase().includes(query) ||
+        c.notes?.toLowerCase().includes(query)
+      );
+    });
 
   return (
     <AppLayout>
@@ -43,22 +56,34 @@ const CollectionsPage = () => {
           <p className="text-muted-foreground">Your curated collection of fine objects and alternative investments.</p>
         </header>
 
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {filterOptions.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => setFilter(option.value)}
-              className={cn(
-                "px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200",
-                filter === option.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground hover:bg-accent"
-              )}
-            >
-              {option.label}
-            </button>
-          ))}
+        {/* Search and Filters */}
+        <div className="space-y-4 mb-8">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search collections..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-secondary border-border"
+            />
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {filterOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setFilter(option.value)}
+                className={cn(
+                  "px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200",
+                  filter === option.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-accent"
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {isLoading ? (
@@ -86,7 +111,9 @@ const CollectionsPage = () => {
                 <p className="text-muted-foreground mb-4">
                   {collections.length === 0 
                     ? "No collections yet. Add your first piece to get started." 
-                    : "No items found in this category."
+                    : searchQuery
+                      ? `No items found matching "${searchQuery}".`
+                      : "No items found in this category."
                   }
                 </p>
                 {collections.length === 0 && (
