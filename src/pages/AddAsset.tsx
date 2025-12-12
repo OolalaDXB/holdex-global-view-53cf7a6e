@@ -98,6 +98,7 @@ const AddAssetPage = () => {
           current_value: parseFloat(formData.currentValue) || 0,
           purchase_value: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
           notes: formData.notes || null,
+          image_url: null,
         });
       } else {
         await createAsset.mutateAsync({
@@ -112,6 +113,7 @@ const AddAssetPage = () => {
           quantity: formData.cryptoQuantity ? parseFloat(formData.cryptoQuantity) : null,
           institution: formData.institution || null,
           notes: formData.notes || null,
+          image_url: null,
         });
       }
 
