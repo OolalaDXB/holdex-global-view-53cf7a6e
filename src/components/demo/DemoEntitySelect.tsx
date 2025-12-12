@@ -1,9 +1,9 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useEntities, ENTITY_TYPES } from '@/hooks/useEntities';
-import { Loader2, User } from 'lucide-react';
+import { useDemo } from '@/contexts/DemoContext';
+import { User } from 'lucide-react';
 import { useMemo } from 'react';
 
-interface EntitySelectProps {
+interface DemoEntitySelectProps {
   value?: string | null;
   onChange: (value: string | null) => void;
   className?: string;
@@ -11,39 +11,28 @@ interface EntitySelectProps {
   disabled?: boolean;
 }
 
-export const EntitySelect = ({
+export const DemoEntitySelect = ({
   value,
   onChange,
   className,
   placeholder = 'Select owner',
   disabled,
-}: EntitySelectProps) => {
-  const { data: entities, isLoading } = useEntities();
+}: DemoEntitySelectProps) => {
+  const { entities } = useDemo();
 
   // Find personal entity and sort entities for better UX
   const { personalEntity, otherEntities } = useMemo(() => {
-    if (!entities) return { personalEntity: null, otherEntities: [] };
-    
     const personal = entities.find(e => e.type === 'personal');
     const others = entities.filter(e => e.type !== 'personal');
     
     return { personalEntity: personal, otherEntities: others };
   }, [entities]);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center gap-2 h-10 px-3 border rounded-md text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span className="text-sm">Loading...</span>
-      </div>
-    );
-  }
-
   // Get display name for selected value
   const getSelectedDisplay = () => {
     if (!value || value === 'none') return placeholder;
     
-    const entity = entities?.find(e => e.id === value);
+    const entity = entities.find(e => e.id === value);
     if (!entity) return placeholder;
     
     if (entity.type === 'personal') {
@@ -55,14 +44,12 @@ export const EntitySelect = ({
       );
     }
     
-    const typeInfo = ENTITY_TYPES.find(t => t.value === entity.type);
     return (
       <div className="flex items-center gap-2">
         <span 
           className="w-2 h-2 rounded-full"
           style={{ backgroundColor: entity.color || '#C4785A' }}
         />
-        <span>{entity.icon || typeInfo?.icon}</span>
         <span>{entity.name}</span>
         {entity.ownership_percentage && entity.ownership_percentage < 100 && (
           <span className="text-muted-foreground text-xs">({entity.ownership_percentage}%)</span>
@@ -99,25 +86,21 @@ export const EntitySelect = ({
           <div className="h-px bg-border my-1" />
         )}
         
-        {/* Other entities: spouse, companies, trusts, etc. */}
-        {otherEntities.map((entity) => {
-          const typeInfo = ENTITY_TYPES.find(t => t.value === entity.type);
-          return (
-            <SelectItem key={entity.id} value={entity.id}>
-              <div className="flex items-center gap-2">
-                <span 
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: entity.color || '#C4785A' }}
-                />
-                <span>{entity.icon || typeInfo?.icon}</span>
-                <span>{entity.name}</span>
-                {entity.ownership_percentage && entity.ownership_percentage < 100 && (
-                  <span className="text-muted-foreground text-xs">({entity.ownership_percentage}%)</span>
-                )}
-              </div>
-            </SelectItem>
-          );
-        })}
+        {/* Other entities: companies, holdings, etc. */}
+        {otherEntities.map((entity) => (
+          <SelectItem key={entity.id} value={entity.id}>
+            <div className="flex items-center gap-2">
+              <span 
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: entity.color || '#C4785A' }}
+              />
+              <span>{entity.name}</span>
+              {entity.ownership_percentage && entity.ownership_percentage < 100 && (
+                <span className="text-muted-foreground text-xs">({entity.ownership_percentage}%)</span>
+              )}
+            </div>
+          </SelectItem>
+        ))}
         
         {/* No specific owner option at the end */}
         {(personalEntity || otherEntities.length > 0) && (
@@ -131,12 +114,11 @@ export const EntitySelect = ({
   );
 };
 
-// Hook to get the default entity (Personal) for new assets
-export const useDefaultEntity = () => {
-  const { data: entities } = useEntities();
+// Hook to get the default entity (Personal) for demo mode
+export const useDemoDefaultEntity = () => {
+  const { entities } = useDemo();
   
   return useMemo(() => {
-    if (!entities) return null;
     const personal = entities.find(e => e.type === 'personal');
     return personal?.id || null;
   }, [entities]);

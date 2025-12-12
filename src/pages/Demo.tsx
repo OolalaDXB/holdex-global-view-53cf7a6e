@@ -32,7 +32,7 @@ const currencySymbols: Record<string, string> = {
 
 const Demo = () => {
   const { toast } = useToast();
-  const { assets, collections, liabilities, netWorthHistory, profile } = useDemo();
+  const { assets, collections, liabilities, netWorthHistory, profile, entities } = useDemo();
   
   // Get currencies from demo profile
   const currencies = [profile.base_currency, profile.secondary_currency_1, profile.secondary_currency_2].filter(
@@ -335,6 +335,7 @@ const Demo = () => {
                   cryptoPrices={prices}
                   displayCurrency={displayCurrency}
                   delay={500 + (index * 100)} 
+                  entities={entities as any}
                 />
               ))}
             </div>

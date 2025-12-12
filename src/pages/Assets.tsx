@@ -4,6 +4,7 @@ import { AssetCard } from '@/components/assets/AssetCard';
 import { EditAssetDialog } from '@/components/assets/EditAssetDialog';
 import { DeleteAssetDialog } from '@/components/assets/DeleteAssetDialog';
 import { useAssets, Asset } from '@/hooks/useAssets';
+import { useEntities } from '@/hooks/useEntities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { fallbackRates } from '@/lib/currency';
@@ -29,6 +30,7 @@ const AssetsPage = () => {
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   
   const { data: assets = [], isLoading } = useAssets();
+  const { data: entities = [] } = useEntities();
   const { data: exchangeRates } = useExchangeRates();
   const { data: cryptoPrices, isLoading: cryptoLoading, dataUpdatedAt } = useCryptoPrices();
   
@@ -114,6 +116,7 @@ const AssetsPage = () => {
                   delay={index * 50}
                   onEdit={setEditingAsset}
                   onDelete={setDeletingAsset}
+                  entities={entities}
                 />
               ))}
             </div>
