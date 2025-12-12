@@ -1,8 +1,11 @@
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, CheckCircle2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface NetWorthCardProps {
   totalValue: number;
+  confirmedValue?: number;
+  projectedValue?: number;
   change: number;
   currency?: string;
   isBlurred?: boolean;
@@ -17,7 +20,14 @@ const currencySymbols: Record<string, string> = {
   RUB: '₽',
 };
 
-export function NetWorthCard({ totalValue, change, currency = 'EUR', isBlurred = false }: NetWorthCardProps) {
+export function NetWorthCard({ 
+  totalValue, 
+  confirmedValue = 0, 
+  projectedValue = 0, 
+  change, 
+  currency = 'EUR', 
+  isBlurred = false 
+}: NetWorthCardProps) {
   const isPositive = change >= 0;
   const symbol = currencySymbols[currency] || `${currency} `;
   
@@ -28,6 +38,8 @@ export function NetWorthCard({ totalValue, change, currency = 'EUR', isBlurred =
       maximumFractionDigits: 0,
     }).format(Math.abs(value));
   };
+
+  const hasBreakdown = confirmedValue > 0 || projectedValue > 0;
 
   return (
     <div className="animate-fade-in">
@@ -48,6 +60,39 @@ export function NetWorthCard({ totalValue, change, currency = 'EUR', isBlurred =
           <span>{isPositive ? '+' : ''}{change.toFixed(1)}% MTD</span>
         </div>
       </div>
+      
+      {/* Confirmed vs Projected breakdown */}
+      {hasBreakdown && !isBlurred && (
+        <div className="flex items-center gap-4 mt-3 text-sm">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1.5 text-positive">
+                <CheckCircle2 size={14} />
+                <span className="tabular-nums">{symbol}{formatValue(confirmedValue)}</span>
+                <span className="text-muted-foreground text-xs">confirmed</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Certain and likely values</p>
+            </TooltipContent>
+          </Tooltip>
+          
+          {projectedValue > 0 && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Clock size={14} />
+                  <span className="tabular-nums">{symbol}{formatValue(projectedValue)}</span>
+                  <span className="text-xs">projected</span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Optional and uncertain values</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      )}
     </div>
   );
 }

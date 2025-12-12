@@ -105,8 +105,26 @@ const Dashboard = () => {
 
   const netWorthEUR = totalAssetsEUR + totalCollectionsEUR - totalLiabilitiesEUR;
   
+  // Calculate confirmed vs projected breakdown based on certainty
+  const confirmedAssetsEUR = filteredAssets
+    .filter(a => ['certain', 'likely'].includes(a.certainty || 'certain'))
+    .reduce((sum, asset) => sum + convertToEUR(getAssetValue(asset), asset.currency, rates), 0);
+  
+  const confirmedCollectionsEUR = filteredCollections
+    .reduce((sum, item) => sum + convertToEUR(item.current_value, item.currency, rates), 0);
+  
+  const confirmedLiabilitiesEUR = liabilities
+    .filter(l => ['certain', 'likely'].includes(l.certainty || 'certain'))
+    .reduce((sum, item) => sum + convertToEUR(item.current_balance, item.currency, rates), 0);
+  
+  const confirmedNetWorthEUR = confirmedAssetsEUR + confirmedCollectionsEUR - confirmedLiabilitiesEUR;
+  const projectedNetWorthEUR = netWorthEUR - confirmedNetWorthEUR;
+  
   // Convert to display currency
   const netWorth = convertFromEUR(netWorthEUR, displayCurrency, rates);
+  const confirmedNetWorth = convertFromEUR(confirmedNetWorthEUR, displayCurrency, rates);
+  const projectedNetWorth = convertFromEUR(projectedNetWorthEUR, displayCurrency, rates);
+
 
   // Calculate breakdowns (in display currency)
   const assetsByType = [
@@ -272,6 +290,8 @@ const Dashboard = () => {
             {showWidget('net_worth') && (
               <NetWorthCard 
                 totalValue={netWorth} 
+                confirmedValue={confirmedNetWorth}
+                projectedValue={projectedNetWorth}
                 change={change} 
                 currency={displayCurrency}
                 isBlurred={isBlurred}

@@ -4,6 +4,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ReceivableCard } from '@/components/receivables/ReceivableCard';
 import { ReceivableDialog } from '@/components/receivables/ReceivableDialog';
 import { RecordPaymentDialog } from '@/components/receivables/RecordPaymentDialog';
@@ -15,6 +16,7 @@ import { formatCurrency, convertToEUR, convertFromEUR } from '@/lib/currency';
 import { differenceInDays } from 'date-fns';
 
 type FilterType = 'all' | 'loans' | 'deposits' | 'expenses' | 'overdue';
+type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
 export default function ReceivablesPage() {
   const { data: receivables, isLoading } = useReceivables();
@@ -23,6 +25,7 @@ export default function ReceivablesPage() {
   
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingReceivable, setEditingReceivable] = useState<Receivable | null>(null);
@@ -45,6 +48,12 @@ export default function ReceivablesPage() {
       const daysUntilDue = r.due_date ? differenceInDays(new Date(r.due_date), new Date()) : null;
       if (daysUntilDue === null || daysUntilDue >= 0) return false;
     }
+    
+    // Certainty filter
+    if (certaintyFilter === 'all') return true;
+    const cert = r.certainty || 'certain';
+    if (certaintyFilter === 'certain') return cert === 'certain';
+    if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
     
     return true;
   }) || [];
@@ -138,6 +147,17 @@ export default function ReceivablesPage() {
               <TabsTrigger value="overdue" className="text-negative">Overdue</TabsTrigger>
             </TabsList>
           </Tabs>
+          
+          <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
+            <SelectTrigger className="w-40 h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Certainty</SelectItem>
+              <SelectItem value="certain">Certain Only</SelectItem>
+              <SelectItem value="exclude-optional">Exclude Optional</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Receivables Grid */}
