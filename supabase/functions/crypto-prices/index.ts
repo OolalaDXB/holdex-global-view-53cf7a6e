@@ -24,6 +24,25 @@ const tickerToId: Record<string, string> = {
   'UNI': 'uniswap',
 };
 
+// Fallback prices when API is rate limited
+const fallbackPrices: Record<string, { price: number; change24h: number }> = {
+  BTC: { price: 100000, change24h: 0 },
+  ETH: { price: 3500, change24h: 0 },
+  SOL: { price: 180, change24h: 0 },
+  USDT: { price: 1, change24h: 0 },
+  USDC: { price: 1, change24h: 0 },
+  BNB: { price: 600, change24h: 0 },
+  XRP: { price: 2.2, change24h: 0 },
+  ADA: { price: 0.9, change24h: 0 },
+  DOGE: { price: 0.35, change24h: 0 },
+  MATIC: { price: 0.5, change24h: 0 },
+  DOT: { price: 7, change24h: 0 },
+  LTC: { price: 100, change24h: 0 },
+  AVAX: { price: 35, change24h: 0 },
+  LINK: { price: 15, change24h: 0 },
+  UNI: { price: 12, change24h: 0 },
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -35,19 +54,24 @@ serve(async (req) => {
     
     // Use CoinGecko free API (no auth required)
     const response = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`,
-      {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      }
+      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
     );
+
+    // If rate limited (429), return fallback prices
+    if (response.status === 429) {
+      console.log('CoinGecko rate limited, returning fallback prices');
+      return new Response(JSON.stringify({ prices: fallbackPrices, timestamp: Date.now(), fallback: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('CoinGecko API error:', response.status, errorText);
-      throw new Error(`CoinGecko API error: ${response.status}`);
+      // Return fallback on any error
+      return new Response(JSON.stringify({ prices: fallbackPrices, timestamp: Date.now(), fallback: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
@@ -73,8 +97,8 @@ serve(async (req) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error in crypto-prices function:', errorMessage);
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
+    // Return fallback prices on error instead of 500
+    return new Response(JSON.stringify({ prices: fallbackPrices, timestamp: Date.now(), fallback: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
