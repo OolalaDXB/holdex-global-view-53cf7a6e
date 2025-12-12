@@ -58,6 +58,7 @@ const Dashboard = () => {
     'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
     'leasehold_reminders', 'expiring_documents', 'world_clocks', 'weather_with_clocks'
   ];
+  const newsSources: string[] = (profile as any)?.news_sources || ['bloomberg', 'reuters'];
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
   const rates = exchangeRates?.rates || fallbackRates;
@@ -262,7 +263,7 @@ const Dashboard = () => {
         )}
 
         {/* News Ticker */}
-        {showWidget('news_ticker') && <NewsTicker />}
+        {showWidget('news_ticker') && <NewsTicker enabledSources={newsSources} />}
 
         {/* Header */}
         <header className="mb-12">
