@@ -6,6 +6,7 @@ import { useLoanSchedule } from '@/hooks/useLoanSchedules';
 import { LoanScheduleSection } from '@/components/liabilities/LoanScheduleSection';
 import { MonthlyPaymentSummary } from '@/components/liabilities/MonthlyPaymentSummary';
 import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool';
+import { LoanPayoffCalculator } from '@/components/liabilities/LoanPayoffCalculator';
 import { LiabilityDialog } from '@/components/liabilities/LiabilityDialog';
 import { DeleteLiabilityDialog } from '@/components/liabilities/DeleteLiabilityDialog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
@@ -204,6 +205,7 @@ const LiabilitiesPage = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <LoanPayoffCalculator />
             <LoanComparisonTool />
             <Button onClick={() => setShowAddDialog(true)}>
               <Plus className="h-4 w-4 mr-1" />

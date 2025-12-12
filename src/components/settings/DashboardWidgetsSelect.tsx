@@ -12,6 +12,7 @@ const AVAILABLE_WIDGETS: Widget[] = [
   { id: 'chart', label: 'Historical Chart', description: 'Net worth over time' },
   { id: 'certainty_breakdown', label: 'Certainty Breakdown', description: 'Confirmed vs projected' },
   { id: 'debt_to_income', label: 'Debt-to-Income Ratio', description: 'DTI health indicator' },
+  { id: 'net_worth_projection', label: 'Net Worth Projection', description: 'Future wealth forecast' },
   { id: 'breakdown_type', label: 'Breakdown by Type', description: 'Assets by category' },
   { id: 'breakdown_country', label: 'Breakdown by Country', description: 'Assets by location' },
   { id: 'breakdown_currency', label: 'Breakdown by Currency', description: 'Currency exposure' },

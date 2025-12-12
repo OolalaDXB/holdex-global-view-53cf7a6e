@@ -5,6 +5,7 @@ import { demoLoanSchedules, demoLoanPayments, DemoLoanSchedule, DemoLiability } 
 import { LIABILITY_TYPES, getLiabilityTypeInfo } from '@/hooks/useLiabilities';
 import { DemoMonthlyPaymentSummary } from '@/components/liabilities/DemoMonthlyPaymentSummary';
 import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool';
+import { DemoLoanPayoffCalculator } from '@/components/liabilities/DemoLoanPayoffCalculator';
 import { DemoLiabilityDialog } from '@/components/liabilities/DemoLiabilityDialog';
 import { DemoDeleteLiabilityDialog } from '@/components/liabilities/DemoDeleteLiabilityDialog';
 import { LiabilityIcon } from '@/components/liabilities/LiabilityIcon';
@@ -366,6 +367,7 @@ const DemoLiabilitiesPage = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <DemoLoanPayoffCalculator />
             <LoanComparisonTool />
             <Button onClick={() => setShowAddDialog(true)}>
               <Plus className="h-4 w-4 mr-1" />
