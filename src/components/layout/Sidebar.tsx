@@ -15,7 +15,8 @@ import {
   LogIn,
   Building,
   Handshake,
-  FileText
+  FileText,
+  TrendingDown
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -26,6 +27,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', demoHref: '/demo', icon: LayoutDashboard },
   { name: 'Assets', href: '/assets', demoHref: '/demo/assets', icon: Wallet },
   { name: 'Collections', href: '/collections', demoHref: '/demo/collections', icon: Gem },
+  { name: 'Liabilities', href: '/liabilities', demoHref: '/demo/liabilities', icon: TrendingDown },
   { name: 'Receivables', href: '/receivables', demoHref: '/demo/receivables', icon: Handshake },
   { name: 'Documents', href: '/documents', demoHref: '/demo/documents', icon: FileText },
   { name: 'Entities', href: '/entities', demoHref: '/demo/entities', icon: Building },

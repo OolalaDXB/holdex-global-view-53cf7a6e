@@ -378,6 +378,9 @@ const Dashboard = () => {
             {/* Pending Receivables Widget */}
             {showWidget('pending_receivables') && <PendingReceivablesWidget isBlurred={isBlurred} />}
 
+            {/* Upcoming Loan Payments Widget */}
+            {showWidget('upcoming_loan_payments') && <UpcomingLoanPaymentsWidget isBlurred={isBlurred} />}
+
             {/* Collections Gallery - only show if collections are included */}
             {showCollections && <CollectionsGallery collections={collections} isBlurred={isBlurred} />}
 

@@ -13,6 +13,7 @@ import Assets from "./pages/Assets";
 import Collections from "./pages/Collections";
 import Entities from "./pages/Entities";
 import Receivables from "./pages/Receivables";
+import Liabilities from "./pages/Liabilities";
 import Documents from "./pages/Documents";
 import AddAsset from "./pages/AddAsset";
 import Settings from "./pages/Settings";
@@ -24,6 +25,7 @@ import DemoAddAsset from "./pages/demo/DemoAddAsset";
 import DemoEntities from "./pages/demo/DemoEntities";
 import DemoReceivables from "./pages/demo/DemoReceivables";
 import DemoDocuments from "./pages/demo/DemoDocuments";
+import DemoLiabilities from "./pages/demo/DemoLiabilities";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,7 +41,7 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <Routes>
-                  <Route path="/auth" element={<Auth />} />
+                <Route path="/auth" element={<Auth />} />
                   <Route path="/demo" element={<Demo />} />
                   <Route path="/demo/assets" element={<DemoAssets />} />
                   <Route path="/demo/collections" element={<DemoCollections />} />
@@ -47,11 +49,13 @@ const App = () => (
                   <Route path="/demo/entities" element={<DemoEntities />} />
                   <Route path="/demo/receivables" element={<DemoReceivables />} />
                   <Route path="/demo/documents" element={<DemoDocuments />} />
+                  <Route path="/demo/liabilities" element={<DemoLiabilities />} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
                   <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
                   <Route path="/entities" element={<ProtectedRoute><Entities /></ProtectedRoute>} />
                   <Route path="/receivables" element={<ProtectedRoute><Receivables /></ProtectedRoute>} />
+                  <Route path="/liabilities" element={<ProtectedRoute><Liabilities /></ProtectedRoute>} />
                   <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
                   <Route path="/add" element={<ProtectedRoute><AddAsset /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
