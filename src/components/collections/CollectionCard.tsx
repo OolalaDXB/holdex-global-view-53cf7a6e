@@ -1,12 +1,15 @@
-import { Watch, Car, Palette, Gem, Wine, BarChart3, Sparkles } from 'lucide-react';
+import { Watch, Car, Palette, Gem, Wine, BarChart3, Sparkles, Pencil, Trash2 } from 'lucide-react';
 import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Collection } from '@/hooks/useCollections';
+import { Button } from '@/components/ui/button';
 
 interface CollectionCardProps {
   collection: Collection;
   rates?: Record<string, number>;
   delay?: number;
+  onEdit?: (collection: Collection) => void;
+  onDelete?: (collection: Collection) => void;
 }
 
 const categoryIcons: Record<string, typeof Watch> = {
@@ -29,7 +32,7 @@ const categoryLabels: Record<string, string> = {
   'other': 'Other',
 };
 
-export function CollectionCard({ collection, rates, delay = 0 }: CollectionCardProps) {
+export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete }: CollectionCardProps) {
   const Icon = categoryIcons[collection.type] || Sparkles;
   const activeRates = rates || fallbackRates;
   const eurValue = convertToEUR(collection.current_value, collection.currency, activeRates);
@@ -39,12 +42,44 @@ export function CollectionCard({ collection, rates, delay = 0 }: CollectionCardP
 
   return (
     <div 
-      className="collection-card animate-fade-in"
+      className="collection-card animate-fade-in group"
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Photo placeholder */}
-      <div className="aspect-[4/3] bg-muted flex items-center justify-center">
+      <div className="aspect-[4/3] bg-muted flex items-center justify-center relative">
         <Icon size={48} strokeWidth={1} className="text-muted-foreground/50" />
+        
+        {/* Action buttons overlay */}
+        {(onEdit || onDelete) && (
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onEdit && (
+              <Button
+                variant="secondary"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(collection);
+                }}
+              >
+                <Pencil size={14} />
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                variant="secondary"
+                size="icon"
+                className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(collection);
+                }}
+              >
+                <Trash2 size={14} />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
       
       <div className="p-4 space-y-3">
@@ -53,6 +88,11 @@ export function CollectionCard({ collection, rates, delay = 0 }: CollectionCardP
           <p className="text-sm text-muted-foreground">
             {categoryLabels[collection.type] || collection.type} · {collection.country}
           </p>
+          {collection.brand && collection.model && (
+            <p className="text-xs text-muted-foreground">
+              {collection.brand} {collection.model} {collection.year && `(${collection.year})`}
+            </p>
+          )}
         </div>
 
         <div className="flex items-baseline justify-between">
