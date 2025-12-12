@@ -1,4 +1,4 @@
-import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2 } from 'lucide-react';
+import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame } from 'lucide-react';
 import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
 import { Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
@@ -64,11 +64,41 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
   const showInstitutionLogo = asset.institution && ['bank', 'investment', 'crypto'].includes(asset.type);
   const showAssetImage = asset.image_url;
 
+  // Check for significant balance change (>5%) for bank accounts
+  const hasSignificantChange = asset.type === 'bank' && 
+    asset.reference_balance !== null && 
+    asset.reference_balance !== undefined && 
+    asset.reference_balance !== 0;
+  
+  const balanceChangePercent = hasSignificantChange 
+    ? ((asset.current_value - asset.reference_balance!) / asset.reference_balance!) * 100 
+    : 0;
+  
+  const isSignificantPositive = balanceChangePercent > 5;
+  const isSignificantNegative = balanceChangePercent < -5;
+
   return (
     <div 
-      className="asset-card animate-fade-in group"
+      className={cn(
+        "asset-card animate-fade-in group relative",
+        isSignificantPositive && "ring-1 ring-positive/30",
+        isSignificantNegative && "ring-1 ring-negative/30"
+      )}
       style={{ animationDelay: `${delay}ms` }}
     >
+      {/* Significant change indicator badge */}
+      {(isSignificantPositive || isSignificantNegative) && (
+        <div className={cn(
+          "absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center",
+          isSignificantPositive ? "bg-positive text-positive-foreground" : "bg-negative text-negative-foreground"
+        )}>
+          {isSignificantPositive ? (
+            <Flame size={12} />
+          ) : (
+            <TrendingDown size={12} />
+          )}
+        </div>
+      )}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           {/* Icon/Logo/Image area */}
