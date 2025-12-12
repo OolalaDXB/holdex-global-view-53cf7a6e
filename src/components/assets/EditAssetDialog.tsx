@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CountrySelect } from '@/components/ui/country-select';
+import { CertaintySelect } from '@/components/ui/certainty-select';
 import { EntitySelect } from '@/components/entities/EntitySelect';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
@@ -21,6 +22,7 @@ import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { useGeocode } from '@/hooks/useGeocode';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { CertaintyLevel } from '@/lib/certainty';
 
 interface EditAssetDialogProps {
   asset: Asset | null;
@@ -54,6 +56,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
     reference_balance: '',
     reference_date: null as Date | null,
     entity_id: null as string | null,
+    certainty: 'certain',
     is_shariah_compliant: false,
     shariah_certification: '',
     // UK tenure
@@ -89,6 +92,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         reference_balance: asset.reference_balance?.toString() || '',
         reference_date: asset.reference_date ? new Date(asset.reference_date) : null,
         entity_id: asset.entity_id || null,
+        certainty: asset.certainty || 'certain',
         is_shariah_compliant: asset.is_shariah_compliant || false,
         shariah_certification: asset.shariah_certification || '',
         tenure_type: (asset as any).tenure_type || 'freehold',
@@ -126,6 +130,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         reference_balance: formData.reference_balance ? parseFloat(formData.reference_balance) : null,
         reference_date: formData.reference_date ? format(formData.reference_date, 'yyyy-MM-dd') : null,
         entity_id: formData.entity_id,
+        certainty: formData.certainty,
         is_shariah_compliant: formData.is_shariah_compliant,
         shariah_certification: formData.shariah_certification || null,
         tenure_type: asset.type === 'real-estate' ? formData.tenure_type : null,
@@ -293,12 +298,20 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                     />
                   </div>
 
-                  <div className="space-y-2 col-span-2">
+                  <div className="space-y-2">
                     <Label>Owner</Label>
                     <EntitySelect
                       value={formData.entity_id}
                       onChange={(value) => setFormData({ ...formData, entity_id: value })}
                       placeholder="Select owner"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Certainty</Label>
+                    <CertaintySelect
+                      value={formData.certainty}
+                      onValueChange={(value) => setFormData({ ...formData, certainty: value })}
                     />
                   </div>
 

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountrySelect } from '@/components/ui/country-select';
+import { CertaintySelect } from '@/components/ui/certainty-select';
 import { EntitySelect, useDefaultEntity } from '@/components/entities/EntitySelect';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
@@ -23,6 +24,7 @@ import { useEntities } from '@/hooks/useEntities';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { useGeocode } from '@/hooks/useGeocode';
 import { cn } from '@/lib/utils';
+import { CertaintyLevel } from '@/lib/certainty';
 
 type Step = 'category' | 'type' | 'form';
 type Category = 'wealth' | 'collections';
@@ -93,6 +95,7 @@ const AddAssetPage = () => {
     referenceBalance: '',
     referenceDate: null as Date | null,
     entityId: undefined as string | null | undefined, // Will be set to default on mount
+    certainty: 'certain',
     // Off-plan fields
     propertyStatus: 'owned',
     projectName: '',
@@ -209,6 +212,7 @@ const AddAssetPage = () => {
           notes: formData.notes || null,
           image_url: imageUrl,
           entity_id: formData.entityId === undefined ? defaultEntityId : formData.entityId,
+          certainty: formData.certainty,
           // Off-plan fields
           property_status: selectedType === 'real-estate' ? formData.propertyStatus : null,
           project_name: formData.projectName || null,
@@ -448,7 +452,16 @@ const AddAssetPage = () => {
                   </Select>
                 </div>
 
-                {/* Property Status for Real Estate */}
+                {/* Certainty field */}
+                {selectedType !== 'liability' && (
+                  <div className="space-y-2">
+                    <Label>Certainty</Label>
+                    <CertaintySelect
+                      value={formData.certainty}
+                      onValueChange={(value: CertaintyLevel) => setFormData({ ...formData, certainty: value })}
+                    />
+                  </div>
+                )}
                 {selectedType === 'real-estate' && (
                   <div className="space-y-2">
                     <Label>Property Status</Label>

@@ -18,6 +18,7 @@ import { Receivable } from '@/hooks/useReceivables';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CertaintyBadge } from '@/components/ui/certainty-badge';
 import { differenceInDays, format } from 'date-fns';
 
 interface ReceivableCardProps {
@@ -118,7 +119,10 @@ export function ReceivableCard({
             />
           </div>
           <div>
-            <h4 className="font-medium text-foreground">{receivable.name}</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-medium text-foreground">{receivable.name}</h4>
+              <CertaintyBadge certainty={receivable.certainty} />
+            </div>
             <p className="text-sm text-muted-foreground">
               {receivable.debtor_name} · {typeLabels[receivable.type] || receivable.type}
             </p>
