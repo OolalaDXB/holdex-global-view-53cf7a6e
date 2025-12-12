@@ -98,7 +98,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-serif">Edit Asset (Demo)</DialogTitle>
         </DialogHeader>
