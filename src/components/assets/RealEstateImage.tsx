@@ -45,6 +45,7 @@ export function RealEstateImage({
   showMapLink = false 
 }: RealEstateImageProps) {
   const [imageError, setImageError] = useState(false);
+  const [mapError, setMapError] = useState(false);
   
   const hasCoordinates = latitude !== null && latitude !== undefined && 
                          longitude !== null && longitude !== undefined;
@@ -53,14 +54,17 @@ export function RealEstateImage({
     ? `https://www.google.com/maps?q=${latitude},${longitude}`
     : null;
 
+  // Check if the className indicates a small size (card thumbnail)
+  const isSmallSize = className?.includes('w-10') || className?.includes('w-12');
+
   // Priority 1: User uploaded photo
   if (imageUrl && !imageError) {
     return (
-      <div className={cn("relative", className)}>
+      <div className={cn("relative overflow-hidden rounded-lg", className)}>
         <img
           src={imageUrl}
           alt={name}
-          className="w-full h-full object-cover rounded-lg"
+          className="w-full h-full object-cover"
           onError={() => setImageError(true)}
         />
         {showMapLink && googleMapsUrl && (
@@ -79,19 +83,37 @@ export function RealEstateImage({
     );
   }
 
-  // Priority 2: Static map with pin if coordinates exist
-  if (hasCoordinates) {
-    // Using OpenStreetMap static tiles (free, no API key needed)
+  // Priority 2: For small sizes with coordinates, show country image with map pin indicator
+  // For large sizes with coordinates, try static map
+  if (hasCoordinates && !mapError) {
+    if (isSmallSize) {
+      // For small thumbnails, show country image with a map pin overlay
+      const cityImage = CITY_IMAGES[country] || DEFAULT_PROPERTY_IMAGE;
+      return (
+        <div className={cn("relative overflow-hidden rounded-lg", className)}>
+          <img
+            src={cityImage}
+            alt={`Property in ${country}`}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-0 right-0 w-4 h-4 bg-primary rounded-tl flex items-center justify-center">
+            <MapPin size={10} className="text-primary-foreground" />
+          </div>
+        </div>
+      );
+    }
+    
+    // For larger sizes, use static map
     const zoom = 15;
     const staticMapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${latitude},${longitude}&zoom=${zoom}&size=400x300&maptype=mapnik&markers=${latitude},${longitude},lightblue`;
     
     return (
-      <div className={cn("relative", className)}>
+      <div className={cn("relative overflow-hidden rounded-lg", className)}>
         <img
           src={staticMapUrl}
           alt={`Map of ${name}`}
-          className="w-full h-full object-cover rounded-lg"
-          onError={() => setImageError(true)}
+          className="w-full h-full object-cover"
+          onError={() => setMapError(true)}
         />
         {showMapLink && googleMapsUrl && (
           <a
@@ -113,17 +135,19 @@ export function RealEstateImage({
   const cityImage = CITY_IMAGES[country] || DEFAULT_PROPERTY_IMAGE;
   
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative overflow-hidden rounded-lg", className)}>
       <img
         src={cityImage}
         alt={`Property in ${country}`}
-        className="w-full h-full object-cover rounded-lg opacity-60"
+        className="w-full h-full object-cover opacity-60"
       />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full bg-background/80 flex items-center justify-center">
-          <Building2 size={24} className="text-primary" />
+      {!isSmallSize && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-background/80 flex items-center justify-center">
+            <Building2 size={24} className="text-primary" />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

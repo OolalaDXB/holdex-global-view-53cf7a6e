@@ -1,4 +1,4 @@
-import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame, HardHat, Calendar, Moon, Lock } from 'lucide-react';
+import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame, HardHat, Calendar, Moon, Lock, MapPin, ExternalLink } from 'lucide-react';
 import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
 import { Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
@@ -381,6 +381,22 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
             <span className="text-sm text-muted-foreground">
               Rental: {formatCurrency(asset.rental_income, asset.currency)}/yr
             </span>
+          </div>
+        )}
+
+        {/* Google Maps link for real estate with coordinates */}
+        {asset.type === 'real-estate' && (asset as any).latitude && (asset as any).longitude && (
+          <div className="pt-2 border-t border-border">
+            <a
+              href={`https://www.google.com/maps?q=${(asset as any).latitude},${(asset as any).longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
+            >
+              <MapPin size={12} />
+              View on Google Maps
+              <ExternalLink size={10} />
+            </a>
           </div>
         )}
 
