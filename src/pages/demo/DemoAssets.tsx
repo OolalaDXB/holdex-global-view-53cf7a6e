@@ -98,12 +98,12 @@ const DemoAssetsPage = () => {
           {filteredAssets.map((asset, index) => (
             <AssetCard 
               key={asset.id} 
-              asset={asset} 
+              asset={asset as any} 
               rates={rates}
               cryptoPrices={prices}
               delay={index * 50}
-              onEdit={setEditingAsset}
-              onDelete={setDeletingAsset}
+              onEdit={setEditingAsset as any}
+              onDelete={setDeletingAsset as any}
             />
           ))}
         </div>

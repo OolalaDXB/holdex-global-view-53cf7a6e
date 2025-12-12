@@ -29,6 +29,7 @@ export type Database = {
           id: string
           image_url: string | null
           institution: string | null
+          is_shariah_compliant: boolean | null
           name: string
           notes: string | null
           ownership_percentage: number | null
@@ -41,6 +42,7 @@ export type Database = {
           reference_balance: number | null
           reference_date: string | null
           rental_income: number | null
+          shariah_certification: string | null
           ticker: string | null
           total_price: number | null
           type: string
@@ -62,6 +64,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           institution?: string | null
+          is_shariah_compliant?: boolean | null
           name: string
           notes?: string | null
           ownership_percentage?: number | null
@@ -74,6 +77,7 @@ export type Database = {
           reference_balance?: number | null
           reference_date?: string | null
           rental_income?: number | null
+          shariah_certification?: string | null
           ticker?: string | null
           total_price?: number | null
           type: string
@@ -95,6 +99,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           institution?: string | null
+          is_shariah_compliant?: boolean | null
           name?: string
           notes?: string | null
           ownership_percentage?: number | null
@@ -107,6 +112,7 @@ export type Database = {
           reference_balance?: number | null
           reference_date?: string | null
           rental_income?: number | null
+          shariah_certification?: string | null
           ticker?: string | null
           total_price?: number | null
           type?: string
@@ -344,61 +350,103 @@ export type Database = {
       }
       entities: {
         Row: {
+          beneficiaries: Json | null
           color: string | null
+          coparceners: Json | null
           country: string | null
           created_at: string
+          date_of_birth: string | null
           dissolution_date: string | null
           formation_date: string | null
           icon: string | null
           id: string
           is_active: boolean
           jurisdiction: string | null
+          karta_name: string | null
+          legal_form: string | null
           legal_name: string | null
+          marriage_country: string | null
+          marriage_date: string | null
+          matrimonial_regime: string | null
           name: string
+          nationality: string | null
           notes: string | null
           owned_by_entity_id: string | null
           ownership_percentage: number | null
           registration_number: string | null
+          share_capital: number | null
+          share_capital_currency: string | null
+          tax_residence: string | null
+          trust_type: string | null
+          trustee_name: string | null
           type: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          beneficiaries?: Json | null
           color?: string | null
+          coparceners?: Json | null
           country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           dissolution_date?: string | null
           formation_date?: string | null
           icon?: string | null
           id?: string
           is_active?: boolean
           jurisdiction?: string | null
+          karta_name?: string | null
+          legal_form?: string | null
           legal_name?: string | null
+          marriage_country?: string | null
+          marriage_date?: string | null
+          matrimonial_regime?: string | null
           name: string
+          nationality?: string | null
           notes?: string | null
           owned_by_entity_id?: string | null
           ownership_percentage?: number | null
           registration_number?: string | null
+          share_capital?: number | null
+          share_capital_currency?: string | null
+          tax_residence?: string | null
+          trust_type?: string | null
+          trustee_name?: string | null
           type?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          beneficiaries?: Json | null
           color?: string | null
+          coparceners?: Json | null
           country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           dissolution_date?: string | null
           formation_date?: string | null
           icon?: string | null
           id?: string
           is_active?: boolean
           jurisdiction?: string | null
+          karta_name?: string | null
+          legal_form?: string | null
           legal_name?: string | null
+          marriage_country?: string | null
+          marriage_date?: string | null
+          matrimonial_regime?: string | null
           name?: string
+          nationality?: string | null
           notes?: string | null
           owned_by_entity_id?: string | null
           ownership_percentage?: number | null
           registration_number?: string | null
+          share_capital?: number | null
+          share_capital_currency?: string | null
+          tax_residence?: string | null
+          trust_type?: string | null
+          trustee_name?: string | null
           type?: string
           updated_at?: string
           user_id?: string
@@ -415,60 +463,84 @@ export type Database = {
       }
       liabilities: {
         Row: {
+          bank_ownership_percentage: number | null
+          cost_price: number | null
           country: string
           created_at: string | null
           currency: string
           current_balance: number
           end_date: string | null
           entity_id: string | null
+          financing_type: string | null
           id: string
           institution: string | null
           interest_rate: number | null
+          is_shariah_compliant: boolean | null
           linked_asset_id: string | null
           monthly_payment: number | null
+          monthly_rental: number | null
           name: string
           notes: string | null
           original_amount: number | null
+          profit_margin: number | null
+          residual_value: number | null
+          shariah_advisor: string | null
           start_date: string | null
           type: string
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          bank_ownership_percentage?: number | null
+          cost_price?: number | null
           country: string
           created_at?: string | null
           currency: string
           current_balance: number
           end_date?: string | null
           entity_id?: string | null
+          financing_type?: string | null
           id?: string
           institution?: string | null
           interest_rate?: number | null
+          is_shariah_compliant?: boolean | null
           linked_asset_id?: string | null
           monthly_payment?: number | null
+          monthly_rental?: number | null
           name: string
           notes?: string | null
           original_amount?: number | null
+          profit_margin?: number | null
+          residual_value?: number | null
+          shariah_advisor?: string | null
           start_date?: string | null
           type: string
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          bank_ownership_percentage?: number | null
+          cost_price?: number | null
           country?: string
           created_at?: string | null
           currency?: string
           current_balance?: number
           end_date?: string | null
           entity_id?: string | null
+          financing_type?: string | null
           id?: string
           institution?: string | null
           interest_rate?: number | null
+          is_shariah_compliant?: boolean | null
           linked_asset_id?: string | null
           monthly_payment?: number | null
+          monthly_rental?: number | null
           name?: string
           notes?: string | null
           original_amount?: number | null
+          profit_margin?: number | null
+          residual_value?: number | null
+          shariah_advisor?: string | null
           start_date?: string | null
           type?: string
           updated_at?: string | null

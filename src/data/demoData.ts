@@ -30,6 +30,9 @@ export interface DemoAsset {
   developer: string | null;
   unit_number: string | null;
   project_name: string | null;
+  // Islamic finance (optional - defaults to false/null)
+  is_shariah_compliant?: boolean;
+  shariah_certification?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -78,6 +81,15 @@ export interface DemoLiability {
   institution: string | null;
   notes: string | null;
   entity_id: string | null;
+  // Islamic finance (optional - defaults)
+  financing_type?: string;
+  is_shariah_compliant?: boolean;
+  shariah_advisor?: string | null;
+  cost_price?: number | null;
+  profit_margin?: number | null;
+  monthly_rental?: number | null;
+  residual_value?: number | null;
+  bank_ownership_percentage?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -1157,6 +1169,14 @@ export const demoLiabilities: DemoLiability[] = [
     institution: 'Emirates NBD',
     notes: '15-year fixed rate mortgage',
     entity_id: DEMO_ENTITY_COMPANY,
+    financing_type: 'conventional',
+    is_shariah_compliant: false,
+    shariah_advisor: null,
+    cost_price: null,
+    profit_margin: null,
+    monthly_rental: null,
+    residual_value: null,
+    bank_ownership_percentage: null,
     created_at: '2021-03-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -1177,7 +1197,44 @@ export const demoLiabilities: DemoLiability[] = [
     institution: 'Porsche Financial Services',
     notes: '4-year financing, balloon payment option',
     entity_id: DEMO_ENTITY_PERSONAL,
+    financing_type: 'conventional',
+    is_shariah_compliant: false,
+    shariah_advisor: null,
+    cost_price: null,
+    profit_margin: null,
+    monthly_rental: null,
+    residual_value: null,
+    bank_ownership_percentage: null,
     created_at: '2022-04-01T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+  // Islamic Finance Demo - Diminishing Musharaka
+  {
+    id: 'liability-3',
+    user_id: DEMO_USER_ID,
+    name: 'Palm Jumeirah Villa - DIB Financing',
+    type: 'mortgage',
+    country: 'AE',
+    currency: 'AED',
+    current_balance: 3200000,
+    original_amount: 5000000,
+    interest_rate: null,
+    monthly_payment: 28000,
+    start_date: '2022-01-15',
+    end_date: '2037-01-15',
+    linked_asset_id: null,
+    institution: 'Dubai Islamic Bank',
+    notes: 'Diminishing Musharaka - bank owns 64% currently',
+    entity_id: DEMO_ENTITY_PERSONAL,
+    financing_type: 'diminishing_musharaka',
+    is_shariah_compliant: true,
+    shariah_advisor: 'Dubai Islamic Bank Shariah Board',
+    cost_price: null,
+    profit_margin: null,
+    monthly_rental: 18000,
+    residual_value: null,
+    bank_ownership_percentage: 64,
+    created_at: '2022-01-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
 ];
