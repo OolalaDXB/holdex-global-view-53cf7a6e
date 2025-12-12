@@ -4,12 +4,13 @@ import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
   children: ReactNode;
+  isDemo?: boolean;
 }
 
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children, isDemo = false }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar />
+      <Sidebar isDemo={isDemo} />
       <main className="pl-64 transition-all duration-300">
         <div className="min-h-screen">
           {children}
