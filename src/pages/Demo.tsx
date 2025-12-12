@@ -1,22 +1,60 @@
+import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { NetWorthCard } from '@/components/dashboard/NetWorthCard';
 import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
+import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
+import { ViewToggle, ViewConfig } from '@/components/dashboard/ViewToggle';
 import { AssetCard } from '@/components/assets/AssetCard';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDemo } from '@/contexts/DemoContext';
-import { convertToEUR, fallbackRates } from '@/lib/currency';
+import { convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
 import { fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
-import { RefreshCw, Info } from 'lucide-react';
+import { RefreshCw, Camera, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { getCountryFlag } from '@/hooks/useCountries';
+
+const DEMO_CURRENCIES = ['EUR', 'USD', 'AED'] as const;
+type DemoCurrency = typeof DEMO_CURRENCIES[number];
+
+const FINANCIAL_TYPES = ['real-estate', 'bank', 'investment', 'crypto', 'business'];
 
 const Demo = () => {
+  const { toast } = useToast();
   const { assets, collections, liabilities, netWorthHistory } = useDemo();
+  
+  // Demo-specific state for currency and view
+  const [displayCurrency, setDisplayCurrency] = useState<DemoCurrency>('EUR');
+  const [viewConfig, setViewConfig] = useState<ViewConfig>({
+    mode: 'all',
+    customTypes: ['real-estate', 'bank', 'investment', 'crypto', 'business', 'collections'],
+  });
 
   // Use fallback rates for demo (realistic static rates)
   const rates = fallbackRates;
   const prices = fallbackCryptoPrices;
+
+  // Get included types based on view config
+  const getIncludedTypes = (): string[] => {
+    switch (viewConfig.mode) {
+      case 'all':
+        return ['real-estate', 'bank', 'investment', 'crypto', 'business', 'collections'];
+      case 'financial':
+        return FINANCIAL_TYPES;
+      case 'custom':
+        return viewConfig.customTypes;
+      default:
+        return ['real-estate', 'bank', 'investment', 'crypto', 'business', 'collections'];
+    }
+  };
+
+  const includedTypes = getIncludedTypes();
+  const showCollections = includedTypes.includes('collections');
 
   // Helper to get asset value (with crypto prices)
   const getAssetValue = (asset: typeof assets[0]) => {
@@ -29,106 +67,126 @@ const Demo = () => {
     return asset.current_value;
   };
 
-  // Calculate totals using rates
-  const totalAssets = assets.reduce((sum, asset) => {
+  // Filter assets based on view config
+  const filteredAssets = assets.filter(asset => includedTypes.includes(asset.type));
+  const filteredCollections = showCollections ? collections : [];
+
+  // Calculate totals using rates (in EUR)
+  const totalAssetsEUR = filteredAssets.reduce((sum, asset) => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
     return sum + eurValue;
   }, 0);
 
-  const totalCollections = collections.reduce((sum, item) => {
+  const totalCollectionsEUR = filteredCollections.reduce((sum, item) => {
     const eurValue = convertToEUR(item.current_value, item.currency, rates);
     return sum + eurValue;
   }, 0);
 
-  const totalLiabilities = liabilities.reduce((sum, item) => {
+  const totalLiabilitiesEUR = liabilities.reduce((sum, item) => {
     const eurValue = convertToEUR(item.current_balance, item.currency, rates);
     return sum + eurValue;
   }, 0);
 
-  const netWorth = totalAssets + totalCollections - totalLiabilities;
+  const netWorthEUR = totalAssetsEUR + totalCollectionsEUR - totalLiabilitiesEUR;
+  
+  // Convert to display currency
+  const netWorth = convertFromEUR(netWorthEUR, displayCurrency, rates);
 
   // Calculate breakdowns
-  const assetsByType = [
-    { label: 'Real Estate', value: 0, percentage: 0 },
-    { label: 'Investments', value: 0, percentage: 0 },
-    { label: 'Business', value: 0, percentage: 0 },
-    { label: 'Collections', value: totalCollections, percentage: 0 },
-    { label: 'Cash', value: 0, percentage: 0 },
-  ];
+  const typeBreakdownEUR: Record<string, number> = { 
+    'Real Estate': 0, 
+    'Investments': 0, 
+    'Business': 0, 
+    'Collections': showCollections ? totalCollectionsEUR : 0, 
+    'Cash': 0 
+  };
 
-  assets.forEach(asset => {
+  filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    if (asset.type === 'real-estate') assetsByType[0].value += eurValue;
-    else if (asset.type === 'investment' || asset.type === 'crypto') assetsByType[1].value += eurValue;
-    else if (asset.type === 'business') assetsByType[2].value += eurValue;
-    else if (asset.type === 'bank') assetsByType[4].value += eurValue;
+    if (asset.type === 'real-estate') typeBreakdownEUR['Real Estate'] += eurValue;
+    else if (asset.type === 'investment' || asset.type === 'crypto') typeBreakdownEUR['Investments'] += eurValue;
+    else if (asset.type === 'business') typeBreakdownEUR['Business'] += eurValue;
+    else if (asset.type === 'bank') typeBreakdownEUR['Cash'] += eurValue;
   });
 
-  const totalGross = totalAssets + totalCollections;
+  const totalGrossEUR = totalAssetsEUR + totalCollectionsEUR;
+
+  const assetsByType = [
+    { label: 'Real Estate', value: convertFromEUR(typeBreakdownEUR['Real Estate'], displayCurrency, rates), percentage: 0, included: includedTypes.includes('real-estate') },
+    { label: 'Investments', value: convertFromEUR(typeBreakdownEUR['Investments'], displayCurrency, rates), percentage: 0, included: includedTypes.includes('investment') || includedTypes.includes('crypto') },
+    { label: 'Business', value: convertFromEUR(typeBreakdownEUR['Business'], displayCurrency, rates), percentage: 0, included: includedTypes.includes('business') },
+    { label: 'Collections', value: convertFromEUR(typeBreakdownEUR['Collections'], displayCurrency, rates), percentage: 0, included: showCollections },
+    { label: 'Cash', value: convertFromEUR(typeBreakdownEUR['Cash'], displayCurrency, rates), percentage: 0, included: includedTypes.includes('bank') },
+  ];
+
   assetsByType.forEach(item => {
-    item.percentage = totalGross > 0 ? (item.value / totalGross) * 100 : 0;
+    const eurValue = typeBreakdownEUR[item.label] || 0;
+    item.percentage = totalGrossEUR > 0 ? (eurValue / totalGrossEUR) * 100 : 0;
   });
 
   // By country
-  const countryMap: Record<string, number> = {};
-  assets.forEach(asset => {
+  const countryMapEUR: Record<string, number> = {};
+  filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    countryMap[asset.country] = (countryMap[asset.country] || 0) + eurValue;
+    countryMapEUR[asset.country] = (countryMapEUR[asset.country] || 0) + eurValue;
   });
-  collections.forEach(item => {
+  filteredCollections.forEach(item => {
     const eurValue = convertToEUR(item.current_value, item.currency, rates);
-    countryMap[item.country] = (countryMap[item.country] || 0) + eurValue;
+    countryMapEUR[item.country] = (countryMapEUR[item.country] || 0) + eurValue;
   });
 
-  const assetsByCountry = Object.entries(countryMap)
-    .map(([label, value]) => ({
-      label,
-      value,
-      percentage: totalGross > 0 ? (value / totalGross) * 100 : 0,
+  const assetsByCountry = Object.entries(countryMapEUR)
+    .map(([label, eurValue]) => ({
+      label: `${getCountryFlag(label)} ${label}`,
+      value: convertFromEUR(eurValue, displayCurrency, rates),
+      percentage: totalGrossEUR > 0 ? (eurValue / totalGrossEUR) * 100 : 0,
     }))
     .sort((a, b) => b.value - a.value)
-    .slice(0, 6);
+    .slice(0, 5);
 
   // By currency
-  const currencyMap: Record<string, number> = {};
-  assets.forEach(asset => {
+  const currencyMapEUR: Record<string, number> = {};
+  filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    currencyMap[asset.currency] = (currencyMap[asset.currency] || 0) + eurValue;
-  });
-  collections.forEach(item => {
-    const eurValue = convertToEUR(item.current_value, item.currency, rates);
-    currencyMap[item.currency] = (currencyMap[item.currency] || 0) + eurValue;
+    currencyMapEUR[asset.currency] = (currencyMapEUR[asset.currency] || 0) + eurValue;
   });
 
-  const currencyBreakdown = Object.entries(currencyMap)
-    .map(([currency, value]) => ({
+  const currencyBreakdown = Object.entries(currencyMapEUR)
+    .map(([currency, eurValue]) => ({
       currency,
-      percentage: totalGross > 0 ? (value / totalGross) * 100 : 0,
+      percentage: totalGrossEUR > 0 ? (eurValue / totalGrossEUR) * 100 : 0,
     }))
     .sort((a, b) => b.percentage - a.percentage);
 
   // Recent assets (last 5)
-  const recentAssets = [...assets]
+  const recentAssets = [...filteredAssets]
     .sort((a, b) => new Date(b.updated_at || '').getTime() - new Date(a.updated_at || '').getTime())
     .slice(0, 5);
 
   // Chart data
   const chartData = netWorthHistory.map(item => ({
-    month: new Date(item.snapshot_date).toLocaleDateString('en-US', { month: 'short' }),
-    value: item.net_worth_eur,
+    month: new Date(item.snapshot_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    value: convertFromEUR(item.net_worth_eur, displayCurrency, rates),
   }));
 
   // Calculate MTD change
   const previousValue = netWorthHistory.length > 1 
     ? netWorthHistory[netWorthHistory.length - 2]?.net_worth_eur 
-    : netWorth;
+    : netWorthEUR;
   const change = previousValue > 0 
-    ? ((netWorth - previousValue) / previousValue) * 100 
+    ? ((netWorthEUR - previousValue) / previousValue) * 100 
     : 0;
+
+  const handleSaveSnapshot = () => {
+    toast({
+      title: "Demo Mode",
+      description: "Snapshots are saved in the full version. Create an account to enable this feature.",
+    });
+  };
 
   return (
     <AppLayout isDemo>
@@ -152,7 +210,47 @@ const Demo = () => {
 
         {/* Header */}
         <header className="mb-12">
-          <NetWorthCard totalValue={netWorth} change={change} />
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+            <NetWorthCard totalValue={netWorth} change={change} currency={displayCurrency} />
+            <div className="flex items-center gap-2">
+              <ViewToggle config={viewConfig} onChange={setViewConfig} />
+              
+              {/* Demo Currency Switcher */}
+              <div className="flex items-center rounded-md bg-secondary/50 p-1">
+                {DEMO_CURRENCIES.map((currency) => (
+                  <button
+                    key={currency}
+                    onClick={() => setDisplayCurrency(currency)}
+                    className={cn(
+                      "px-2 py-1 text-xs font-medium rounded transition-colors",
+                      displayCurrency === currency
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {currency === 'EUR' ? '€' : currency === 'USD' ? '$' : 'AED'}
+                  </button>
+                ))}
+              </div>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleSaveSnapshot}
+                    className="gap-2"
+                  >
+                    <Camera size={14} />
+                    Snapshot
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Save your current portfolio value for accurate historical tracking</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
           <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <RefreshCw size={12} />
@@ -167,14 +265,24 @@ const Demo = () => {
 
         {/* Chart */}
         <section className="mb-12">
-          <NetWorthChart data={chartData} />
+          {chartData.length > 0 ? (
+            <NetWorthChart data={chartData} />
+          ) : (
+            <div className="p-8 rounded-lg border border-border bg-secondary/20 text-center">
+              <Info size={24} className="mx-auto mb-3 text-muted-foreground" />
+              <p className="text-muted-foreground mb-2">No historical data yet</p>
+              <p className="text-sm text-muted-foreground">
+                Save your first snapshot to start tracking your wealth over time.
+              </p>
+            </div>
+          )}
         </section>
 
         {/* Breakdowns */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           <BreakdownBar 
             title="By Asset Type" 
-            items={assetsByType.filter(i => i.percentage > 0)} 
+            items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
             delay={200}
           />
           <BreakdownBar 
@@ -191,21 +299,27 @@ const Demo = () => {
           </section>
         )}
 
+        {/* Collections Gallery - only show if collections are included */}
+        {showCollections && <CollectionsGallery collections={collections} />}
+
         {/* Recent Updates */}
-        <section>
-          <h3 className="font-serif text-lg font-medium text-foreground mb-6">Recent Updates</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {recentAssets.map((asset, index) => (
-              <AssetCard 
-                key={asset.id} 
-                asset={asset} 
-                rates={rates}
-                cryptoPrices={prices}
-                delay={500 + (index * 100)} 
-              />
-            ))}
-          </div>
-        </section>
+        {recentAssets.length > 0 && (
+          <section>
+            <h3 className="font-serif text-lg font-medium text-foreground mb-6">Recent Updates</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {recentAssets.map((asset, index) => (
+                <AssetCard 
+                  key={asset.id} 
+                  asset={asset} 
+                  rates={rates}
+                  cryptoPrices={prices}
+                  displayCurrency={displayCurrency}
+                  delay={500 + (index * 100)} 
+                />
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </AppLayout>
   );
