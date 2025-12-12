@@ -128,6 +128,10 @@ export interface DemoProfile {
   secondary_currency_2: string;
   dark_mode: boolean;
   compliance_mode: string;
+  favorite_cities: { name: string; timezone: string }[];
+  dashboard_widgets: string[];
+  blur_amounts: boolean;
+  fiscal_year_start: string;
   created_at: string;
   updated_at: string;
 }
@@ -142,6 +146,18 @@ export const demoProfile: DemoProfile = {
   secondary_currency_2: 'AED',
   dark_mode: true,
   compliance_mode: 'all',
+  favorite_cities: [
+    { name: 'Dubai', timezone: 'Asia/Dubai' },
+    { name: 'Paris', timezone: 'Europe/Paris' },
+    { name: 'Cascais', timezone: 'Europe/Lisbon' },
+    { name: 'Gaborone', timezone: 'Africa/Gaborone' },
+  ],
+  dashboard_widgets: [
+    'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
+    'leasehold_reminders', 'expiring_documents', 'world_clocks', 'pending_receivables'
+  ],
+  blur_amounts: false,
+  fiscal_year_start: '01-01',
   created_at: '2019-01-01T10:00:00Z',
   updated_at: '2024-12-01T10:00:00Z',
 };
