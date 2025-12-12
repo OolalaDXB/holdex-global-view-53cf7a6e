@@ -83,17 +83,17 @@ const BalanceSheetPage = () => {
       totalLiabilities: snapshot.total_liabilities_eur,
       netWorth: snapshot.net_worth_eur,
       currentAssets: {
-        total: (typeBreakdown['bank-account'] || 0) + (typeBreakdown['digital-assets'] || 0),
-        cashAndBank: typeBreakdown['bank-account'] || 0,
-        digitalAssets: typeBreakdown['digital-assets'] || 0,
+        total: (typeBreakdown['bank'] || 0) + (typeBreakdown['crypto'] || 0),
+        cashAndBank: typeBreakdown['bank'] || 0,
+        digitalAssets: typeBreakdown['crypto'] || 0,
         shortTermReceivables: 0,
       },
       nonCurrentAssets: {
-        total: (typeBreakdown['real-estate'] || 0) + (typeBreakdown['investments'] || 0) + (typeBreakdown['business-equity'] || 0) + snapshot.total_collections_eur,
+        total: (typeBreakdown['real-estate'] || 0) + (typeBreakdown['investment'] || 0) + (typeBreakdown['business'] || 0) + snapshot.total_collections_eur,
         realEstate: typeBreakdown['real-estate'] || 0,
         vehicles: 0,
         collections: snapshot.total_collections_eur,
-        investments: (typeBreakdown['investments'] || 0) + (typeBreakdown['business-equity'] || 0),
+        investments: (typeBreakdown['investment'] || 0) + (typeBreakdown['business'] || 0),
         longTermReceivables: 0,
       },
       currentLiabilities: {
