@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, MapPin } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -245,6 +245,29 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
                     placeholder="e.g., 123 Marina Walk, Dubai"
                   />
                 </div>
+                {/* Embedded Mini-Map for Real Estate with coordinates */}
+                {(asset as any).latitude && (asset as any).longitude && (
+                  <div className="space-y-2 col-span-2">
+                    <Label>Location Map</Label>
+                    <div className="relative w-full h-40 rounded-lg overflow-hidden border border-border">
+                      <iframe
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${(asset as any).longitude - 0.01},${(asset as any).latitude - 0.007},${(asset as any).longitude + 0.01},${(asset as any).latitude + 0.007}&layer=mapnik&marker=${(asset as any).latitude},${(asset as any).longitude}`}
+                        className="w-full h-full border-0"
+                        title={`Map of ${formData.name}`}
+                        loading="lazy"
+                      />
+                      <a
+                        href={`https://www.google.com/maps?q=${(asset as any).latitude},${(asset as any).longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 bg-background/90 rounded text-xs text-foreground hover:bg-background transition-colors"
+                      >
+                        <MapPin size={12} />
+                        Open in Google Maps
+                      </a>
+                    </div>
+                  </div>
+                )}
               </>
             )}
 

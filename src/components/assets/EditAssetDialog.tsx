@@ -212,6 +212,30 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                   </div>
                 )}
 
+                {/* Embedded Mini-Map for Real Estate with coordinates */}
+                {asset.type === 'real-estate' && formData.latitude && formData.longitude && (
+                  <div className="space-y-2">
+                    <Label>Location Map</Label>
+                    <div className="relative w-full h-40 rounded-lg overflow-hidden border border-border">
+                      <iframe
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${formData.longitude - 0.01},${formData.latitude - 0.007},${formData.longitude + 0.01},${formData.latitude + 0.007}&layer=mapnik&marker=${formData.latitude},${formData.longitude}`}
+                        className="w-full h-full border-0"
+                        title={`Map of ${formData.name}`}
+                        loading="lazy"
+                      />
+                      <a
+                        href={`https://www.google.com/maps?q=${formData.latitude},${formData.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="absolute bottom-2 right-2 flex items-center gap-1 px-2 py-1 bg-background/90 rounded text-xs text-foreground hover:bg-background transition-colors"
+                      >
+                        <MapPin size={12} />
+                        Open in Google Maps
+                      </a>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="edit-name">Name</Label>
