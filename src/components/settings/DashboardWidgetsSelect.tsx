@@ -10,6 +10,7 @@ interface Widget {
 const AVAILABLE_WIDGETS: Widget[] = [
   { id: 'net_worth', label: 'Net Worth Card', description: 'Total net worth display' },
   { id: 'chart', label: 'Historical Chart', description: 'Net worth over time' },
+  { id: 'certainty_breakdown', label: 'Certainty Breakdown', description: 'Confirmed vs projected' },
   { id: 'breakdown_type', label: 'Breakdown by Type', description: 'Assets by category' },
   { id: 'breakdown_country', label: 'Breakdown by Country', description: 'Assets by location' },
   { id: 'breakdown_currency', label: 'Breakdown by Currency', description: 'Currency exposure' },

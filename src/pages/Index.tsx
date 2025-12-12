@@ -14,6 +14,7 @@ import { BlurToggle } from '@/components/dashboard/BlurToggle';
 import { PendingReceivablesWidget } from '@/components/dashboard/PendingReceivablesWidget';
 import { UpcomingLoanPaymentsWidget } from '@/components/dashboard/UpcomingLoanPaymentsWidget';
 import { EntityBreakdown } from '@/components/dashboard/EntityBreakdown';
+import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
@@ -353,6 +354,17 @@ const Dashboard = () => {
                   </div>
                 )}
               </section>
+            )}
+
+            {/* Certainty Breakdown */}
+            {showWidget('certainty_breakdown') && (
+              <CertaintyBreakdownWidget
+                confirmedValue={confirmedNetWorth}
+                projectedValue={projectedNetWorth}
+                currency={displayCurrency}
+                isBlurred={isBlurred}
+                delay={150}
+              />
             )}
 
             {/* Breakdowns */}

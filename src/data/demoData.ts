@@ -213,7 +213,7 @@ export const demoProfile: DemoProfile = {
     { name: 'Gaborone', timezone: 'Africa/Gaborone' },
   ],
   dashboard_widgets: [
-    'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
+    'net_worth', 'chart', 'certainty_breakdown', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
     'leasehold_reminders', 'expiring_documents', 'world_clocks', 'weather_with_clocks', 'pending_receivables', 'upcoming_loan_payments'
   ],
   blur_amounts: false,
@@ -294,7 +294,7 @@ export const demoEntities: DemoEntity[] = [
 
 // Real Estate (4 properties + 1 off-plan)
 export const demoAssets: DemoAsset[] = [
-  // Off-plan property example
+  // Off-plan property example - uncertain as delivery not guaranteed
   {
     id: 'asset-real-estate-offplan',
     user_id: DEMO_USER_ID,
@@ -331,6 +331,7 @@ export const demoAssets: DemoAsset[] = [
     property_type: 'apartment',
     rooms: 2,
     size_sqm: 120,
+    certainty: 'optional', // Off-plan - may not complete as planned
     created_at: '2024-03-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -370,6 +371,7 @@ export const demoAssets: DemoAsset[] = [
     property_type: 'apartment',
     rooms: 2,
     size_sqm: 145,
+    certainty: 'certain', // Owned property with verified value
     created_at: '2021-03-15T10:00:00Z',
     updated_at: '2024-11-01T10:00:00Z',
   },
@@ -409,6 +411,7 @@ export const demoAssets: DemoAsset[] = [
     property_type: 'villa',
     rooms: 4,
     size_sqm: 280,
+    certainty: 'certain', // Owned, verified
     created_at: '2022-06-20T10:00:00Z',
     updated_at: '2024-10-15T10:00:00Z',
   },
@@ -639,6 +642,7 @@ export const demoAssets: DemoAsset[] = [
     developer: null,
     unit_number: null,
     project_name: null,
+    certainty: 'certain', // Bank balance verified
     created_at: '2021-01-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -1041,6 +1045,7 @@ export const demoAssets: DemoAsset[] = [
     developer: null,
     unit_number: null,
     project_name: null,
+    certainty: 'likely', // Own business - valuation is estimate
     created_at: '2020-06-01T10:00:00Z',
     updated_at: '2024-10-01T10:00:00Z',
   },
@@ -1074,6 +1079,7 @@ export const demoAssets: DemoAsset[] = [
     developer: null,
     unit_number: null,
     project_name: null,
+    certainty: 'uncertain', // Minority stake in private company - hard to value
     created_at: '2019-09-15T10:00:00Z',
     updated_at: '2024-09-01T10:00:00Z',
   },
