@@ -4,6 +4,7 @@ import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
+import { ViewToggle, useViewConfig } from '@/components/dashboard/ViewToggle';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
@@ -31,10 +32,15 @@ const Dashboard = () => {
   const { data: cryptoPrices, dataUpdatedAt: cryptoUpdatedAt } = useCryptoPrices();
   const saveSnapshot = useSaveSnapshot();
   const { displayCurrency, convertToDisplay, formatInDisplayCurrency } = useCurrency();
+  const { config: viewConfig, setConfig: setViewConfig, getIncludedTypes, includesCollections } = useViewConfig();
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
   const rates = exchangeRates?.rates || fallbackRates;
   const prices = cryptoPrices || fallbackCryptoPrices;
+  
+  // Get included types based on view config
+  const includedTypes = getIncludedTypes();
+  const showCollections = includesCollections();
 
   // Helper to get asset value (with live crypto prices)
   const getAssetValue = (asset: typeof assets[0]) => {
@@ -47,14 +53,18 @@ const Dashboard = () => {
     return asset.current_value;
   };
 
+  // Filter assets based on view config
+  const filteredAssets = assets.filter(asset => includedTypes.includes(asset.type));
+  const filteredCollections = showCollections ? collections : [];
+
   // Calculate totals using live rates and crypto prices (in EUR for storage)
-  const totalAssetsEUR = assets.reduce((sum, asset) => {
+  const totalAssetsEUR = filteredAssets.reduce((sum, asset) => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
     return sum + eurValue;
   }, 0);
 
-  const totalCollectionsEUR = collections.reduce((sum, item) => {
+  const totalCollectionsEUR = filteredCollections.reduce((sum, item) => {
     const eurValue = convertToEUR(item.current_value, item.currency, rates);
     return sum + eurValue;
   }, 0);
@@ -71,17 +81,17 @@ const Dashboard = () => {
 
   // Calculate breakdowns (in display currency)
   const assetsByType = [
-    { label: 'Real Estate', value: 0, percentage: 0 },
-    { label: 'Investments', value: 0, percentage: 0 },
-    { label: 'Business', value: 0, percentage: 0 },
-    { label: 'Collections', value: convertFromEUR(totalCollectionsEUR, displayCurrency, rates), percentage: 0 },
-    { label: 'Cash', value: 0, percentage: 0 },
+    { label: 'Real Estate', value: 0, percentage: 0, included: includedTypes.includes('real-estate') },
+    { label: 'Investments', value: 0, percentage: 0, included: includedTypes.includes('investment') || includedTypes.includes('crypto') },
+    { label: 'Business', value: 0, percentage: 0, included: includedTypes.includes('business') },
+    { label: 'Collections', value: convertFromEUR(totalCollectionsEUR, displayCurrency, rates), percentage: 0, included: showCollections },
+    { label: 'Cash', value: 0, percentage: 0, included: includedTypes.includes('bank') },
   ];
 
   // Breakdown by type (in EUR for percentage calc)
   const typeBreakdownEUR: Record<string, number> = { 'Real Estate': 0, 'Investments': 0, 'Business': 0, 'Collections': totalCollectionsEUR, 'Cash': 0 };
   
-  assets.forEach(asset => {
+  filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
     if (asset.type === 'real-estate') typeBreakdownEUR['Real Estate'] += eurValue;
@@ -102,14 +112,14 @@ const Dashboard = () => {
     item.percentage = totalGrossEUR > 0 ? (eurValue / totalGrossEUR) * 100 : 0;
   });
 
-  // By country
+  // By country (filtered)
   const countryMapEUR: Record<string, number> = {};
-  assets.forEach(asset => {
+  filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
     countryMapEUR[asset.country] = (countryMapEUR[asset.country] || 0) + eurValue;
   });
-  collections.forEach(item => {
+  filteredCollections.forEach(item => {
     const eurValue = convertToEUR(item.current_value, item.currency, rates);
     countryMapEUR[item.country] = (countryMapEUR[item.country] || 0) + eurValue;
   });
@@ -123,9 +133,9 @@ const Dashboard = () => {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  // By currency
+  // By currency (filtered)
   const currencyMapEUR: Record<string, number> = {};
-  assets.forEach(asset => {
+  filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
     currencyMapEUR[asset.currency] = (currencyMapEUR[asset.currency] || 0) + eurValue;
@@ -138,8 +148,8 @@ const Dashboard = () => {
     }))
     .sort((a, b) => b.percentage - a.percentage);
 
-  // Recent assets (last 5)
-  const recentAssets = assets.slice(0, 5);
+  // Recent assets (last 5 from filtered)
+  const recentAssets = filteredAssets.slice(0, 5);
 
   // Chart data - use ONLY snapshot data
   const chartData = netWorthHistoryData.length > 0 
@@ -215,7 +225,8 @@ const Dashboard = () => {
               change={change} 
               currency={displayCurrency}
             />
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <ViewToggle config={viewConfig} onChange={setViewConfig} />
               <CurrencySwitcher />
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -273,7 +284,7 @@ const Dashboard = () => {
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
               <BreakdownBar 
                 title="By Asset Type" 
-                items={assetsByType.filter(i => i.percentage > 0)} 
+                items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
                 delay={200}
               />
               <BreakdownBar 
@@ -290,8 +301,8 @@ const Dashboard = () => {
               </section>
             )}
 
-            {/* Collections Gallery */}
-            <CollectionsGallery collections={collections} />
+            {/* Collections Gallery - only show if collections are included */}
+            {showCollections && <CollectionsGallery collections={collections} />}
 
             {/* Recent Updates */}
             {recentAssets.length > 0 && (
