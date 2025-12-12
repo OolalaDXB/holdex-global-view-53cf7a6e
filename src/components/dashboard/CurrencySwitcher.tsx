@@ -4,7 +4,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 const currencySymbols: Record<string, string> = {
   EUR: '€',
   USD: '$',
-  AED: 'Dh',
+  AED: 'Ɖ',
   GBP: '£',
   CHF: 'Fr.',
   RUB: '₽',
