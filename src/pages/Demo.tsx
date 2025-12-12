@@ -138,14 +138,14 @@ const Demo = () => {
           <Info size={20} className="text-primary mt-0.5 flex-shrink-0" />
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-medium text-foreground">Mode Démo</span>
+              <span className="font-medium text-foreground">Demo Mode</span>
               <Badge variant="outline" className="text-xs">Lucas Soleil</Badge>
             </div>
             <p className="text-sm text-muted-foreground">
-              Explorez toutes les fonctionnalités avec des données fictives. 
+              Explore all features with sample data. 
               <Link to="/auth" className="text-primary hover:underline ml-1">
-                Créez un compte
-              </Link> pour gérer votre propre patrimoine.
+                Create an account
+              </Link> to manage your own wealth.
             </p>
           </div>
         </div>
