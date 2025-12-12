@@ -358,12 +358,12 @@ export function LiabilityDialog({ open, onOpenChange, liability }: LiabilityDial
             <div className="space-y-2">
               <Label>Linked Asset (optional)</Label>
               <Select 
-                value={formData.linked_asset_id || ''} 
-                onValueChange={(v) => setFormData({ ...formData, linked_asset_id: v || null })}
+                value={formData.linked_asset_id || 'none'} 
+                onValueChange={(v) => setFormData({ ...formData, linked_asset_id: v === 'none' ? null : v })}
               >
                 <SelectTrigger><SelectValue placeholder="Select asset" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {assets?.map((a) => (
                     <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                   ))}

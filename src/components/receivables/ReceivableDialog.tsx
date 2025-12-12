@@ -375,12 +375,12 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
                 <div className="space-y-2">
                   <Label>Linked Property (optional)</Label>
                   <Select 
-                    value={formData.linked_asset_id || ''} 
-                    onValueChange={(v) => setFormData({ ...formData, linked_asset_id: v || null })}
+                    value={formData.linked_asset_id || 'none'} 
+                    onValueChange={(v) => setFormData({ ...formData, linked_asset_id: v === 'none' ? null : v })}
                   >
                     <SelectTrigger><SelectValue placeholder="Select property" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="none">None</SelectItem>
                       {assets?.filter(a => a.type === 'real-estate').map((a) => (
                         <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                       ))}

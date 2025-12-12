@@ -276,14 +276,14 @@ const AddLiabilityPage = () => {
                   <div className="space-y-2">
                     <Label htmlFor="linked_asset">Linked Asset</Label>
                     <Select
-                      value={formData.linked_asset_id}
-                      onValueChange={(value) => setFormData({ ...formData, linked_asset_id: value })}
+                      value={formData.linked_asset_id || 'none'}
+                      onValueChange={(value) => setFormData({ ...formData, linked_asset_id: value === 'none' ? '' : value })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select asset..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {realEstateAssets.map((asset) => (
                           <SelectItem key={asset.id} value={asset.id}>
                             {asset.name}
@@ -298,14 +298,14 @@ const AddLiabilityPage = () => {
                   <div className="space-y-2">
                     <Label htmlFor="entity">Owner</Label>
                     <Select
-                      value={formData.entity_id}
-                      onValueChange={(value) => setFormData({ ...formData, entity_id: value })}
+                      value={formData.entity_id || 'none'}
+                      onValueChange={(value) => setFormData({ ...formData, entity_id: value === 'none' ? '' : value })}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select owner..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {entities.map((entity) => (
                           <SelectItem key={entity.id} value={entity.id}>
                             {entity.name}
