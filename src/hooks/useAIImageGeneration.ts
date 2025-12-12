@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface GenerateImageParams {
-  assetType: 'watch' | 'vehicle' | 'art' | 'wine' | 'real-estate' | 'jewelry' | 'other';
+  assetType: 'watch' | 'vehicle' | 'art' | 'wine' | 'real-estate' | 'jewelry' | 'business' | 'crypto' | 'other';
   name: string;
   brand?: string;
   model?: string;

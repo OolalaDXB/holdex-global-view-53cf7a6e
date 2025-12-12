@@ -123,17 +123,28 @@ export function AIImageDialog({
   );
 }
 
-function mapAssetType(type: string): 'watch' | 'vehicle' | 'art' | 'wine' | 'jewelry' | 'real-estate' | 'other' {
-  const typeMap: Record<string, 'watch' | 'vehicle' | 'art' | 'wine' | 'jewelry' | 'real-estate' | 'other'> = {
+function mapAssetType(type: string): 'watch' | 'vehicle' | 'art' | 'wine' | 'jewelry' | 'real-estate' | 'business' | 'crypto' | 'other' {
+  const typeMap: Record<string, 'watch' | 'vehicle' | 'art' | 'wine' | 'jewelry' | 'real-estate' | 'business' | 'crypto' | 'other'> = {
+    'watch': 'watch',
     'Watch': 'watch',
     'Watches': 'watch',
+    'vehicle': 'vehicle',
     'Vehicle': 'vehicle',
     'Vehicles': 'vehicle',
+    'art': 'art',
     'Art': 'art',
+    'wine': 'wine',
     'Wine': 'wine',
+    'jewelry': 'jewelry',
     'Jewelry': 'jewelry',
+    'real-estate': 'real-estate',
     'Real Estate': 'real-estate',
     'Property': 'real-estate',
+    'business': 'business',
+    'Business': 'business',
+    'Business Equity': 'business',
+    'crypto': 'crypto',
+    'Crypto': 'crypto',
   };
   return typeMap[type] || 'other';
 }
