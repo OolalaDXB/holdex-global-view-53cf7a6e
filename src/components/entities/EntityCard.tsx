@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Edit2, Trash2, Building2, MapPin } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
+import { EntityIcon, getEntityIconName } from './EntityIcon';
 
 interface EntityCardProps {
   entity: Entity;
@@ -34,12 +35,10 @@ export const EntityCard = ({
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div 
-              className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
-              style={{ backgroundColor: `${entity.color}20` }}
-            >
-              {entity.icon || entityType?.icon || '📁'}
-            </div>
+            <EntityIcon 
+              iconName={entityType?.icon || getEntityIconName(entity.type)} 
+              entityType={entity.type}
+            />
             <div>
               <h3 className="font-medium text-foreground">{entity.name}</h3>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -49,13 +48,13 @@ export const EntityCard = ({
                 {/* HUF compliance badge */}
                 {showHindu && isHUF && (
                   <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20">
-                    🪷 HUF
+                    HUF
                   </Badge>
                 )}
                 {/* Waqf compliance badge */}
                 {showIslamic && isWaqf && (
                   <Badge variant="secondary" className="text-xs bg-positive/10 text-positive border-positive/20">
-                    ☪️ Waqf
+                    Waqf
                   </Badge>
                 )}
                 {entity.country && (

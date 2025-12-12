@@ -1,20 +1,10 @@
-import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Info, Building, User, Users, Briefcase, Building2, ShieldCheck, Home, Heart } from 'lucide-react';
+import { Plus, Info, Building } from 'lucide-react';
 import { useDemo } from '@/contexts/DemoContext';
-
-const ENTITY_TYPES = [
-  { value: 'personal', label: 'Personal', icon: '👤' },
-  { value: 'spouse', label: 'Spouse', icon: '💑' },
-  { value: 'couple', label: 'Couple', icon: '👫' },
-  { value: 'company', label: 'Company', icon: '🏢' },
-  { value: 'holding', label: 'Holding', icon: '🏛️' },
-  { value: 'spv', label: 'SPV', icon: '📋' },
-  { value: 'trust', label: 'Trust', icon: '🛡️' },
-  { value: 'family', label: 'Family', icon: '👨‍👩‍👧‍👦' },
-] as const;
+import { ENTITY_TYPES } from '@/hooks/useEntities';
+import { EntityIcon, getEntityIconName } from '@/components/entities/EntityIcon';
 
 const DemoEntitiesPage = () => {
   const { entities, assets, collections, liabilities } = useDemo();
@@ -89,12 +79,10 @@ const DemoEntitiesPage = () => {
                 />
                 
                 <div className="flex items-start gap-3 pl-3">
-                  <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
-                    style={{ backgroundColor: `${entity.color}20` }}
-                  >
-                    {entity.icon || typeInfo?.icon || '👤'}
-                  </div>
+                  <EntityIcon 
+                    iconName={typeInfo?.icon || getEntityIconName(entity.type)} 
+                    entityType={entity.type}
+                  />
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

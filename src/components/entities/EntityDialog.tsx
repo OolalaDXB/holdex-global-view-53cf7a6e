@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { CountrySelect } from '@/components/ui/country-select';
 import { Entity, EntityInsert, ENTITY_TYPES, MATRIMONIAL_REGIMES, LEGAL_FORMS, TRUST_TYPES, useEntities, getFilteredEntityTypes, getFilteredTrustTypes } from '@/hooks/useEntities';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User, UserCircle, Users, Building2, Landmark, FolderClosed, Shield, Home } from 'lucide-react';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
+import { EntityIcon, getEntityIconName } from './EntityIcon';
 
 interface EntityDialogProps {
   open: boolean;
@@ -30,7 +31,7 @@ const ENTITY_COLORS = [
   '#7B6B9B', // Purple
 ];
 
-const ENTITY_ICONS = ['👤', '👫', '🏢', '🏛️', '📦', '🔒', '👨‍👩‍👧‍👦', '💼', '🏠', '🌍', '💰', '🪷'];
+// Icons are now handled by EntityIcon component
 
 const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'INR'];
 
@@ -63,7 +64,7 @@ export const EntityDialog = ({
     owned_by_entity_id: undefined,
     ownership_percentage: 100,
     color: '#C4785A',
-    icon: '🏢',
+    icon: 'Building2',
     notes: '',
     // Individual fields
     date_of_birth: undefined,
@@ -144,7 +145,7 @@ export const EntityDialog = ({
         owned_by_entity_id: undefined,
         ownership_percentage: 100,
         color: '#C4785A',
-        icon: '🏢',
+        icon: 'Building2',
         notes: '',
         date_of_birth: undefined,
         nationality: undefined,
@@ -470,7 +471,10 @@ export const EntityDialog = ({
                 <SelectContent>
                   {filteredEntityTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
-                      {type.icon} {type.label}
+                      <span className="flex items-center gap-2">
+                        <EntityIcon iconName={type.icon} entityType={type.value} size="sm" />
+                        {type.label}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -536,7 +540,7 @@ export const EntityDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label>Color & Icon</Label>
+            <Label>Color</Label>
             <div className="flex items-center gap-4">
               <div className="flex gap-1">
                 {ENTITY_COLORS.map((color) => (
@@ -549,20 +553,6 @@ export const EntityDialog = ({
                     style={{ backgroundColor: color }}
                     onClick={() => setFormData({ ...formData, color })}
                   />
-                ))}
-              </div>
-              <div className="flex gap-1 border-l pl-4">
-                {ENTITY_ICONS.map((icon) => (
-                  <button
-                    key={icon}
-                    type="button"
-                    className={`w-7 h-7 rounded flex items-center justify-center text-sm transition-colors ${
-                      formData.icon === icon ? 'bg-primary/20' : 'hover:bg-muted'
-                    }`}
-                    onClick={() => setFormData({ ...formData, icon })}
-                  >
-                    {icon}
-                  </button>
                 ))}
               </div>
             </div>
