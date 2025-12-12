@@ -1,0 +1,98 @@
+import { Entity, ENTITY_TYPES } from '@/hooks/useEntities';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Edit2, Trash2, Building2, MapPin } from 'lucide-react';
+import { formatCurrency } from '@/lib/currency';
+
+interface EntityCardProps {
+  entity: Entity;
+  assetCount: number;
+  totalValue: number;
+  currency: string;
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+export const EntityCard = ({
+  entity,
+  assetCount,
+  totalValue,
+  currency,
+  onEdit,
+  onDelete,
+}: EntityCardProps) => {
+  const entityType = ENTITY_TYPES.find(t => t.value === entity.type);
+  const isPersonal = entity.type === 'personal';
+
+  return (
+    <Card className="group hover:border-primary/30 transition-colors">
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div 
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
+              style={{ backgroundColor: `${entity.color}20` }}
+            >
+              {entity.icon || entityType?.icon || '📁'}
+            </div>
+            <div>
+              <h3 className="font-medium text-foreground">{entity.name}</h3>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant="outline" className="text-xs font-normal">
+                  {entityType?.label || entity.type}
+                </Badge>
+                {entity.country && (
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    {entity.country}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={onEdit}
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+            {!isPersonal && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
+                onClick={onDelete}
+                disabled={assetCount > 0}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Building2 className="h-4 w-4" />
+            <span>{assetCount} asset{assetCount !== 1 ? 's' : ''}</span>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-medium text-foreground">
+              {formatCurrency(totalValue, currency)}
+            </p>
+          </div>
+        </div>
+
+        {entity.legal_name && (
+          <p className="mt-2 text-xs text-muted-foreground truncate">
+            {entity.legal_name}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+};

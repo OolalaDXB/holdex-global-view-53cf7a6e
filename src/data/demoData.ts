@@ -1,11 +1,171 @@
-import { Asset } from '@/hooks/useAssets';
-import { Collection } from '@/hooks/useCollections';
-import { Liability } from '@/hooks/useLiabilities';
+// Demo data types (local, to avoid strict Supabase type requirements)
+export interface DemoAsset {
+  id: string;
+  user_id: string;
+  name: string;
+  type: string;
+  country: string;
+  currency: string;
+  current_value: number;
+  rental_income: number | null;
+  purchase_value: number | null;
+  purchase_date: string | null;
+  ownership_percentage: number | null;
+  institution: string | null;
+  ticker: string | null;
+  quantity: number | null;
+  platform: string | null;
+  reference_balance: number | null;
+  reference_date: string | null;
+  notes: string | null;
+  image_url: string | null;
+  entity_id: string | null;
+  acquisition_type: string | null;
+  acquisition_from: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DemoCollection {
+  id: string;
+  user_id: string;
+  name: string;
+  type: string;
+  brand: string | null;
+  model: string | null;
+  year: number | null;
+  country: string;
+  currency: string;
+  current_value: number;
+  purchase_value: number | null;
+  purchase_date: string | null;
+  description: string | null;
+  notes: string | null;
+  fund_name: string | null;
+  commitment_amount: number | null;
+  called_amount: number | null;
+  distribution_status: string | null;
+  image_url: string | null;
+  entity_id: string | null;
+  acquisition_type: string | null;
+  acquisition_from: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DemoLiability {
+  id: string;
+  user_id: string;
+  name: string;
+  type: string;
+  country: string;
+  currency: string;
+  current_balance: number;
+  original_amount: number | null;
+  interest_rate: number | null;
+  monthly_payment: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  linked_asset_id: string | null;
+  institution: string | null;
+  notes: string | null;
+  entity_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DemoEntity {
+  id: string;
+  user_id: string;
+  name: string;
+  type: string;
+  legal_name: string | null;
+  registration_number: string | null;
+  country: string | null;
+  jurisdiction: string | null;
+  is_active: boolean;
+  formation_date: string | null;
+  dissolution_date: string | null;
+  owned_by_entity_id: string | null;
+  ownership_percentage: number;
+  color: string;
+  icon: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
 const DEMO_USER_ID = 'demo-user-lucas-soleil';
+const DEMO_ENTITY_PERSONAL = 'demo-entity-personal';
+const DEMO_ENTITY_COMPANY = 'demo-entity-company';
+const DEMO_ENTITY_HOLDING = 'demo-entity-holding';
+
+// Demo Entities
+export const demoEntities: DemoEntity[] = [
+  {
+    id: DEMO_ENTITY_PERSONAL,
+    user_id: DEMO_USER_ID,
+    name: 'Personal',
+    type: 'personal',
+    legal_name: null,
+    registration_number: null,
+    country: 'FR',
+    jurisdiction: null,
+    is_active: true,
+    formation_date: null,
+    dissolution_date: null,
+    owned_by_entity_id: null,
+    ownership_percentage: 100,
+    color: '#C4785A',
+    icon: '👤',
+    notes: null,
+    created_at: '2019-01-01T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+  {
+    id: DEMO_ENTITY_COMPANY,
+    user_id: DEMO_USER_ID,
+    name: 'Oolala FZ LLC',
+    type: 'company',
+    legal_name: 'Oolala Free Zone Limited Liability Company',
+    registration_number: 'FZ-12345',
+    country: 'AE',
+    jurisdiction: 'DMCC',
+    is_active: true,
+    formation_date: '2020-06-01',
+    dissolution_date: null,
+    owned_by_entity_id: DEMO_ENTITY_PERSONAL,
+    ownership_percentage: 100,
+    color: '#6B7B9B',
+    icon: '🏢',
+    notes: 'Dubai freezone consulting company',
+    created_at: '2020-06-01T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+  {
+    id: DEMO_ENTITY_HOLDING,
+    user_id: DEMO_USER_ID,
+    name: 'Soleil Holdings',
+    type: 'holding',
+    legal_name: 'Soleil Holdings Ltd',
+    registration_number: 'BVI-78901',
+    country: 'VG',
+    jurisdiction: 'BVI',
+    is_active: true,
+    formation_date: '2021-01-15',
+    dissolution_date: null,
+    owned_by_entity_id: DEMO_ENTITY_PERSONAL,
+    ownership_percentage: 100,
+    color: '#7D8B75',
+    icon: '🏛️',
+    notes: 'Holding company for investment assets',
+    created_at: '2021-01-15T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+];
 
 // Real Estate (4 properties)
-export const demoAssets: Asset[] = [
+export const demoAssets: DemoAsset[] = [
   {
     id: 'asset-real-estate-1',
     user_id: DEMO_USER_ID,
@@ -26,6 +186,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'Two-bedroom apartment with marina view',
     image_url: null,
+    entity_id: DEMO_ENTITY_COMPANY,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2021-03-15T10:00:00Z',
     updated_at: '2024-11-01T10:00:00Z',
   },
@@ -49,6 +212,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'Primary residence, Golden Visa property',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2022-06-20T10:00:00Z',
     updated_at: '2024-10-15T10:00:00Z',
   },
@@ -72,6 +238,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'Studio in Le Marais, short-term rental',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'inheritance',
+    acquisition_from: 'Family estate',
     created_at: '2020-09-10T10:00:00Z',
     updated_at: '2024-09-20T10:00:00Z',
   },
@@ -95,6 +264,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'New development in Vake district',
     image_url: null,
+    entity_id: DEMO_ENTITY_HOLDING,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2023-02-01T10:00:00Z',
     updated_at: '2024-08-10T10:00:00Z',
   },
@@ -120,6 +292,9 @@ export const demoAssets: Asset[] = [
     reference_date: '2024-01-01',
     notes: 'Primary business account',
     image_url: null,
+    entity_id: DEMO_ENTITY_COMPANY,
+    acquisition_type: null,
+    acquisition_from: null,
     created_at: '2021-01-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -143,6 +318,9 @@ export const demoAssets: Asset[] = [
     reference_date: '2024-01-01',
     notes: 'Multi-currency transfers and spending',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: null,
+    acquisition_from: null,
     created_at: '2020-05-01T10:00:00Z',
     updated_at: '2024-12-05T10:00:00Z',
   },
@@ -166,6 +344,9 @@ export const demoAssets: Asset[] = [
     reference_date: '2024-01-01',
     notes: 'Euro savings account',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: null,
+    acquisition_from: null,
     created_at: '2019-03-01T10:00:00Z',
     updated_at: '2024-11-20T10:00:00Z',
   },
@@ -189,6 +370,9 @@ export const demoAssets: Asset[] = [
     reference_date: '2024-01-01',
     notes: 'Rental income deposits',
     image_url: null,
+    entity_id: DEMO_ENTITY_HOLDING,
+    acquisition_type: null,
+    acquisition_from: null,
     created_at: '2023-02-15T10:00:00Z',
     updated_at: '2024-11-25T10:00:00Z',
   },
@@ -212,6 +396,9 @@ export const demoAssets: Asset[] = [
     reference_date: '2024-01-01',
     notes: 'Portugal expenses account',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: null,
+    acquisition_from: null,
     created_at: '2022-07-01T10:00:00Z',
     updated_at: '2024-12-03T10:00:00Z',
   },
@@ -237,6 +424,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'US tech stocks and ETFs',
     image_url: null,
+    entity_id: DEMO_ENTITY_HOLDING,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2020-01-15T10:00:00Z',
     updated_at: '2024-12-08T10:00:00Z',
   },
@@ -260,6 +450,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'Global diversified ETF portfolio',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2021-06-01T10:00:00Z',
     updated_at: '2024-12-06T10:00:00Z',
   },
@@ -283,6 +476,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'European value stocks',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2022-03-15T10:00:00Z',
     updated_at: '2024-11-30T10:00:00Z',
   },
@@ -306,6 +502,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: '6-month T-bills, 5.2% yield',
     image_url: null,
+    entity_id: DEMO_ENTITY_COMPANY,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2024-01-10T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -331,6 +530,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'Hardware wallet, cold storage',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2021-01-15T10:00:00Z',
     updated_at: '2024-12-10T10:00:00Z',
   },
@@ -354,6 +556,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'Hardware wallet, cold storage',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2021-03-20T10:00:00Z',
     updated_at: '2024-12-10T10:00:00Z',
   },
@@ -377,6 +582,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'Software wallet',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2022-06-01T10:00:00Z',
     updated_at: '2024-12-10T10:00:00Z',
   },
@@ -402,6 +610,9 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'Consulting and advisory freezone company',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'creation',
+    acquisition_from: null,
     created_at: '2020-06-01T10:00:00Z',
     updated_at: '2024-10-01T10:00:00Z',
   },
@@ -425,13 +636,16 @@ export const demoAssets: Asset[] = [
     reference_date: null,
     notes: 'Safari lodge investment, minority stake',
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2019-09-15T10:00:00Z',
     updated_at: '2024-09-01T10:00:00Z',
   },
 ];
 
 // Collections
-export const demoCollections: Collection[] = [
+export const demoCollections: DemoCollection[] = [
   // Watches (3)
   {
     id: 'collection-watch-1',
@@ -453,6 +667,9 @@ export const demoCollections: Collection[] = [
     called_amount: null,
     distribution_status: null,
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2019-05-10T10:00:00Z',
     updated_at: '2024-11-15T10:00:00Z',
   },
@@ -476,6 +693,9 @@ export const demoCollections: Collection[] = [
     called_amount: null,
     distribution_status: null,
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2021-08-20T10:00:00Z',
     updated_at: '2024-10-20T10:00:00Z',
   },
@@ -499,6 +719,9 @@ export const demoCollections: Collection[] = [
     called_amount: null,
     distribution_status: null,
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2020-07-15T10:00:00Z',
     updated_at: '2024-09-10T10:00:00Z',
   },
@@ -524,6 +747,9 @@ export const demoCollections: Collection[] = [
     called_amount: null,
     distribution_status: null,
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2022-04-01T10:00:00Z',
     updated_at: '2024-11-01T10:00:00Z',
   },
@@ -547,6 +773,9 @@ export const demoCollections: Collection[] = [
     called_amount: null,
     distribution_status: null,
     image_url: null,
+    entity_id: DEMO_ENTITY_COMPANY,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2023-01-15T10:00:00Z',
     updated_at: '2024-10-15T10:00:00Z',
   },
@@ -572,6 +801,9 @@ export const demoCollections: Collection[] = [
     called_amount: null,
     distribution_status: null,
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2022-09-01T10:00:00Z',
     updated_at: '2024-09-01T10:00:00Z',
   },
@@ -589,12 +821,15 @@ export const demoCollections: Collection[] = [
     purchase_value: 28000,
     purchase_date: '2019-11-15',
     description: 'Signed, numbered edition of 150',
-    notes: 'Acquired through Sotheby\'s, authenticated',
+    notes: "Acquired through Sotheby's, authenticated",
     fund_name: null,
     commitment_amount: null,
     called_amount: null,
     distribution_status: null,
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2019-11-15T10:00:00Z',
     updated_at: '2024-08-01T10:00:00Z',
   },
@@ -620,6 +855,9 @@ export const demoCollections: Collection[] = [
     called_amount: null,
     distribution_status: null,
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2018-06-01T10:00:00Z',
     updated_at: '2024-07-01T10:00:00Z',
   },
@@ -645,6 +883,9 @@ export const demoCollections: Collection[] = [
     called_amount: null,
     distribution_status: null,
     image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2022-02-01T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -670,6 +911,9 @@ export const demoCollections: Collection[] = [
     called_amount: 50000,
     distribution_status: 'Awaiting distributions',
     image_url: null,
+    entity_id: DEMO_ENTITY_HOLDING,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2022-01-15T10:00:00Z',
     updated_at: '2024-11-01T10:00:00Z',
   },
@@ -693,13 +937,16 @@ export const demoCollections: Collection[] = [
     called_amount: 25000,
     distribution_status: 'Deploying',
     image_url: null,
+    entity_id: DEMO_ENTITY_HOLDING,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
     created_at: '2023-06-01T10:00:00Z',
     updated_at: '2024-10-01T10:00:00Z',
   },
 ];
 
 // Liabilities (2)
-export const demoLiabilities: Liability[] = [
+export const demoLiabilities: DemoLiability[] = [
   {
     id: 'liability-1',
     user_id: DEMO_USER_ID,
@@ -716,6 +963,7 @@ export const demoLiabilities: Liability[] = [
     linked_asset_id: 'asset-real-estate-1',
     institution: 'Emirates NBD',
     notes: '15-year fixed rate mortgage',
+    entity_id: DEMO_ENTITY_COMPANY,
     created_at: '2021-03-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -735,6 +983,7 @@ export const demoLiabilities: Liability[] = [
     linked_asset_id: 'collection-vehicle-1',
     institution: 'Porsche Financial Services',
     notes: '4-year financing, balloon payment option',
+    entity_id: DEMO_ENTITY_PERSONAL,
     created_at: '2022-04-01T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
