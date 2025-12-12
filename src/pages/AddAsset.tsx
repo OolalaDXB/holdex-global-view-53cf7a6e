@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountrySelect } from '@/components/ui/country-select';
 import { ImageUpload } from '@/components/ui/image-upload';
+import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateAsset } from '@/hooks/useAssets';
 import { useCreateCollection } from '@/hooks/useCollections';
@@ -63,6 +64,10 @@ const AddAssetPage = () => {
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [tempAssetId] = useState<string>(() => crypto.randomUUID());
+  const [showAIDialog, setShowAIDialog] = useState(false);
+
+  // Types that support image upload
+  const supportsImage = selectedType && ['real-estate', 'business', 'crypto'].includes(selectedType) || category === 'collections';
 
   const handleCategorySelect = (cat: Category) => {
     setCategory(cat);
@@ -233,14 +238,15 @@ const AddAssetPage = () => {
             </button>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Image Upload for physical assets / collections */}
-              {category === 'collections' && selectedType !== 'liability' && (
+              {/* Image Upload for physical assets / collections / real-estate / business / crypto */}
+              {supportsImage && selectedType !== 'liability' && (
                 <div className="space-y-2">
                   <Label>Image (optional)</Label>
                   <ImageUpload
                     value={imageUrl}
                     onChange={setImageUrl}
                     assetId={tempAssetId}
+                    onGenerateAI={() => setShowAIDialog(true)}
                   />
                 </div>
               )}
@@ -381,6 +387,16 @@ const AddAssetPage = () => {
           </div>
         )}
       </div>
+
+      {/* AI Image Generation Dialog */}
+      <AIImageDialog
+        open={showAIDialog}
+        onOpenChange={setShowAIDialog}
+        assetType={selectedType || 'other'}
+        name={formData.name}
+        country={formData.country}
+        onImageGenerated={setImageUrl}
+      />
     </AppLayout>
   );
 };
