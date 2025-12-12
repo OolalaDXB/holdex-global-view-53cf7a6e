@@ -11,6 +11,7 @@ import { LeaseholdRemindersWidget } from '@/components/dashboard/LeaseholdRemind
 import { WorldClocksWidget } from '@/components/dashboard/WorldClocksWidget';
 import { BlurToggle } from '@/components/dashboard/BlurToggle';
 import { PendingReceivablesWidget } from '@/components/dashboard/PendingReceivablesWidget';
+import { EntityBreakdown } from '@/components/dashboard/EntityBreakdown';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
@@ -345,8 +346,15 @@ const Dashboard = () => {
 
             {/* Currency */}
             {showWidget('breakdown_currency') && currencyBreakdown.length > 0 && (
-              <section className="mb-12 pb-12 border-b border-border">
+              <section className="mb-12">
                 <CurrencyBreakdown items={currencyBreakdown} delay={400} isBlurred={isBlurred} />
+              </section>
+            )}
+
+            {/* Entity Breakdown */}
+            {showWidget('breakdown_entity') && (
+              <section className="mb-12 pb-12 border-b border-border">
+                <EntityBreakdown delay={500} isBlurred={isBlurred} />
               </section>
             )}
 
