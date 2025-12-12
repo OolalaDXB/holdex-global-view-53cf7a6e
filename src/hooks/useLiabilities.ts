@@ -6,6 +6,24 @@ import { useAuth } from '@/contexts/AuthContext';
 export type Liability = Tables<'liabilities'>;
 export type LiabilityInsert = TablesInsert<'liabilities'>;
 
+// Centralized liability types with icon names
+export const LIABILITY_TYPES = [
+  { value: 'mortgage', label: 'Mortgage', icon: 'Home' },
+  { value: 'car_loan', label: 'Vehicle Loan', icon: 'Car' },
+  { value: 'personal_loan', label: 'Personal Loan', icon: 'Wallet' },
+  { value: 'student_loan', label: 'Student Loan', icon: 'GraduationCap' },
+  { value: 'business_loan', label: 'Business Loan', icon: 'Briefcase' },
+  { value: 'credit_card', label: 'Credit Card', icon: 'CreditCard' },
+  { value: 'line_of_credit', label: 'Line of Credit', icon: 'ArrowLeftRight' },
+  { value: 'margin_loan', label: 'Margin Loan', icon: 'LineChart' },
+  { value: 'tax_debt', label: 'Tax Debt', icon: 'Receipt' },
+  { value: 'family_loan', label: 'Family Loan', icon: 'Heart' },
+  { value: 'other', label: 'Other', icon: 'CircleDashed' },
+] as const;
+
+export const getLiabilityTypeInfo = (type: string) => 
+  LIABILITY_TYPES.find(t => t.value === type) || LIABILITY_TYPES[LIABILITY_TYPES.length - 1];
+
 export const FINANCING_TYPES = [
   { value: 'conventional', label: 'Conventional', description: 'Standard interest-based financing', compliance: null },
   { value: 'ijara', label: 'Ijara', description: 'Islamic lease-to-own', compliance: 'islamic' },

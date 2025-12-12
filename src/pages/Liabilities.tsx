@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { useLiabilities, Liability } from '@/hooks/useLiabilities';
+import { useLiabilities, Liability, LIABILITY_TYPES, getLiabilityTypeInfo } from '@/hooks/useLiabilities';
 import { useLoanSchedule } from '@/hooks/useLoanSchedules';
 import { LoanScheduleSection } from '@/components/liabilities/LoanScheduleSection';
 import { MonthlyPaymentSummary } from '@/components/liabilities/MonthlyPaymentSummary';
@@ -9,6 +9,7 @@ import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool'
 import { LiabilityDialog } from '@/components/liabilities/LiabilityDialog';
 import { DeleteLiabilityDialog } from '@/components/liabilities/DeleteLiabilityDialog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
+import { LiabilityIcon } from '@/components/liabilities/LiabilityIcon';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { CertaintyBadge } from '@/components/ui/certainty-badge';
-import { ChevronDown, ChevronUp, Landmark, TrendingDown, Pencil, Trash2, Plus, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp, Pencil, Trash2, Plus, Search, TrendingDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -33,9 +34,7 @@ function LiabilityCard({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const { data: schedule } = useLoanSchedule(liability.id);
-  
-  const icon = liability.type === 'mortgage' ? Landmark : TrendingDown;
-  const Icon = icon;
+  const typeInfo = getLiabilityTypeInfo(liability.type);
   
   return (
     <Card className="bg-card border-border">
@@ -44,9 +43,7 @@ function LiabilityCard({
           <CardHeader className="cursor-pointer hover:bg-secondary/50 transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-secondary">
-                  <Icon className="h-5 w-5 text-muted-foreground" />
-                </div>
+                <LiabilityIcon type={liability.type} />
                 <div>
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-base font-medium">{liability.name}</CardTitle>

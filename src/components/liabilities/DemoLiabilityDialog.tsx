@@ -31,15 +31,8 @@ interface DemoLiabilityDialogProps {
 
 const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
 
-const liabilityTypes = [
-  { value: 'mortgage', label: 'Mortgage' },
-  { value: 'car_loan', label: 'Car Loan' },
-  { value: 'personal_loan', label: 'Personal Loan' },
-  { value: 'credit_card', label: 'Credit Card' },
-  { value: 'student_loan', label: 'Student Loan' },
-  { value: 'business_loan', label: 'Business Loan' },
-  { value: 'other', label: 'Other' },
-];
+// Use centralized LIABILITY_TYPES from useLiabilities hook
+import { LIABILITY_TYPES } from '@/hooks/useLiabilities';
 
 export function DemoLiabilityDialog({ open, onOpenChange, liability }: DemoLiabilityDialogProps) {
   const { toast } = useToast();
@@ -175,7 +168,7 @@ export function DemoLiabilityDialog({ open, onOpenChange, liability }: DemoLiabi
               <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {liabilityTypes.map((t) => (
+                  {LIABILITY_TYPES.map((t) => (
                     <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
                   ))}
                 </SelectContent>
