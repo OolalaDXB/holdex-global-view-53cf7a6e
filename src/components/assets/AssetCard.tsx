@@ -62,6 +62,17 @@ const propertyStatusLabels: Record<string, string> = {
   'owned': 'Owned',
 };
 
+const propertyTypeLabels: Record<string, string> = {
+  'apartment': 'Apartment',
+  'villa': 'Villa',
+  'studio': 'Studio',
+  'office': 'Office',
+  'warehouse': 'Warehouse',
+  'land': 'Land',
+  'townhouse': 'Townhouse',
+  'penthouse': 'Penthouse',
+};
+
 export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete, isBlurred = false, entities = [] }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
@@ -252,6 +263,9 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
             <h4 className="font-medium text-foreground">{asset.name}</h4>
             <p className="text-sm text-muted-foreground">
               {!isOffPlan && countryFlag} {!isOffPlan && asset.country} {!isOffPlan && '·'} {typeLabels[asset.type] || asset.type}
+              {asset.type === 'real-estate' && (asset as any).property_type && (
+                <span className="text-muted-foreground"> · {propertyTypeLabels[(asset as any).property_type] || (asset as any).property_type}</span>
+              )}
               {asset.institution && (
                 <span className="text-muted-foreground"> · {asset.institution}</span>
               )}
@@ -262,6 +276,14 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
                 <span className="text-muted-foreground"> · {asset.developer}</span>
               )}
             </p>
+            {/* Property details: rooms and size */}
+            {asset.type === 'real-estate' && ((asset as any).rooms || (asset as any).size_sqm) && (
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {(asset as any).rooms && `${(asset as any).rooms} ${(asset as any).rooms === 1 ? 'room' : 'rooms'}`}
+                {(asset as any).rooms && (asset as any).size_sqm && ' · '}
+                {(asset as any).size_sqm && `${(asset as any).size_sqm} m²`}
+              </p>
+            )}
           </div>
         </div>
         

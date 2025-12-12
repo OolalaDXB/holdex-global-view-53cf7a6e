@@ -109,6 +109,10 @@ const AddAssetPage = () => {
     address: '',
     latitude: null as number | null,
     longitude: null as number | null,
+    // Property details for real estate
+    propertyType: '',
+    rooms: '',
+    sizeSqm: '',
   });
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -213,6 +217,10 @@ const AddAssetPage = () => {
           address: selectedType === 'real-estate' ? (formData.address || null) : null,
           latitude: selectedType === 'real-estate' ? formData.latitude : null,
           longitude: selectedType === 'real-estate' ? formData.longitude : null,
+          // Property details for real estate
+          property_type: selectedType === 'real-estate' ? (formData.propertyType || null) : null,
+          rooms: selectedType === 'real-estate' && formData.rooms ? parseInt(formData.rooms) : null,
+          size_sqm: selectedType === 'real-estate' && formData.sizeSqm ? parseFloat(formData.sizeSqm) : null,
         });
       }
 
@@ -447,6 +455,59 @@ const AddAssetPage = () => {
                         <SelectItem value="rented_out">Rented Out</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                )}
+
+                {/* Property Type for Real Estate */}
+                {selectedType === 'real-estate' && (
+                  <div className="space-y-2">
+                    <Label>Property Type</Label>
+                    <Select 
+                      value={formData.propertyType} 
+                      onValueChange={(value) => setFormData({ ...formData, propertyType: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="apartment">Apartment</SelectItem>
+                        <SelectItem value="villa">Villa</SelectItem>
+                        <SelectItem value="studio">Studio</SelectItem>
+                        <SelectItem value="penthouse">Penthouse</SelectItem>
+                        <SelectItem value="townhouse">Townhouse</SelectItem>
+                        <SelectItem value="office">Office</SelectItem>
+                        <SelectItem value="warehouse">Warehouse</SelectItem>
+                        <SelectItem value="land">Land</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Rooms & Size for Real Estate */}
+                {selectedType === 'real-estate' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="rooms">Rooms</Label>
+                      <Input
+                        id="rooms"
+                        type="number"
+                        min="0"
+                        value={formData.rooms}
+                        onChange={(e) => setFormData({ ...formData, rooms: e.target.value })}
+                        placeholder="e.g., 3"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="sizeSqm">Size (m²)</Label>
+                      <Input
+                        id="sizeSqm"
+                        type="number"
+                        min="0"
+                        value={formData.sizeSqm}
+                        onChange={(e) => setFormData({ ...formData, sizeSqm: e.target.value })}
+                        placeholder="e.g., 120"
+                      />
+                    </div>
                   </div>
                 )}
 
