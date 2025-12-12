@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { CertaintyBadge } from '@/components/ui/certainty-badge';
 import { ChevronDown, ChevronUp, Landmark, TrendingDown, Pencil, Trash2, Plus } from 'lucide-react';
 
 function LiabilityCard({ 
@@ -43,7 +44,10 @@ function LiabilityCard({
                   <Icon className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-medium">{liability.name}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-base font-medium">{liability.name}</CardTitle>
+                    <CertaintyBadge certainty={liability.certainty} />
+                  </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
                     <span>{getCountryFlag(liability.country)} {liability.institution || liability.type}</span>
                     {liability.is_shariah_compliant && (

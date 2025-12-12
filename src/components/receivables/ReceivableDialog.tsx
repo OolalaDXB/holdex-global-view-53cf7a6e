@@ -15,10 +15,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { EntitySelect } from '@/components/entities/EntitySelect';
+import { CertaintySelect } from '@/components/ui/certainty-select';
 import { useCreateReceivable, useUpdateReceivable, Receivable } from '@/hooks/useReceivables';
 import { useAssets } from '@/hooks/useAssets';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { CertaintyLevel } from '@/lib/certainty';
 
 interface ReceivableDialogProps {
   open: boolean;
@@ -75,6 +77,7 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
     interest_rate: '',
     status: 'pending',
     recovery_probability: 'likely',
+    certainty: 'contractual' as string,
     linked_asset_id: null as string | null,
     deposit_type: 'rental',
     refund_conditions: '',
@@ -100,10 +103,11 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
         interest_rate: receivable.interest_rate?.toString() || '',
         status: receivable.status,
         recovery_probability: receivable.recovery_probability || 'likely',
-        linked_asset_id: receivable.linked_asset_id,
+        certainty: receivable.certainty || 'contractual',
+        linked_asset_id: receivable.linked_asset_id || null,
         deposit_type: receivable.deposit_type || 'rental',
         refund_conditions: receivable.refund_conditions || '',
-        entity_id: receivable.entity_id,
+        entity_id: receivable.entity_id || null,
         notes: receivable.notes || '',
       });
     } else {
@@ -123,6 +127,7 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
         interest_rate: '',
         status: 'pending',
         recovery_probability: 'likely',
+        certainty: 'contractual',
         linked_asset_id: null,
         deposit_type: 'rental',
         refund_conditions: '',
@@ -151,6 +156,7 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
       interest_rate: formData.interest_rate ? parseFloat(formData.interest_rate) : null,
       status: formData.status,
       recovery_probability: formData.recovery_probability,
+      certainty: formData.certainty,
       linked_asset_id: formData.type === 'deposit' ? formData.linked_asset_id : null,
       deposit_type: formData.type === 'deposit' ? formData.deposit_type : null,
       refund_conditions: formData.type === 'deposit' ? formData.refund_conditions || null : null,

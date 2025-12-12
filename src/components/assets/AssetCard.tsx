@@ -8,7 +8,7 @@ import { RealEstateImage } from '@/components/assets/RealEstateImage';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
-
+import { CertaintyBadge } from '@/components/ui/certainty-badge';
 const LIQUIDITY_STATUS_LABELS: Record<string, string> = {
   restricted: 'Restricted',
   frozen: 'Frozen',
@@ -270,7 +270,10 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
             </div>
           )}
           <div>
-            <h4 className="font-medium text-foreground">{asset.name}</h4>
+            <div className="flex items-center gap-2">
+              <h4 className="font-medium text-foreground">{asset.name}</h4>
+              <CertaintyBadge certainty={asset.certainty} />
+            </div>
             <p className="text-sm text-muted-foreground">
               {!isOffPlan && countryFlag} {!isOffPlan && asset.country} {!isOffPlan && '·'} {typeLabels[asset.type] || asset.type}
               {asset.type === 'real-estate' && (asset as any).property_type && (
