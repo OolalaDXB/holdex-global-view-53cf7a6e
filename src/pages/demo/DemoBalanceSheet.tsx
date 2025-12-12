@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
-import { format } from 'date-fns';
-import { CalendarIcon, FileDown, Info, Printer, Loader2 } from 'lucide-react';
+import { format, subMonths } from 'date-fns';
+import { CalendarIcon, FileDown, Info, Printer, Loader2, GitCompare } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useDemo } from '@/contexts/DemoContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { BalanceSheetStatement, BalanceSheetStatementRef } from '@/components/balance-sheet/BalanceSheetStatement';
+import { BalanceSheetComparison } from '@/components/balance-sheet/BalanceSheetComparison';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -23,6 +24,8 @@ const DemoBalanceSheetPage = () => {
   const [entityFilter, setEntityFilter] = useState<string>('all');
   const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
   const [isExporting, setIsExporting] = useState(false);
+  const [isCompareMode, setIsCompareMode] = useState(false);
+  const [compareDate, setCompareDate] = useState<Date>(subMonths(new Date(), 1));
   const statementRef = useRef<BalanceSheetStatementRef>(null);
 
   const { displayCurrency } = useCurrency();
@@ -152,6 +155,37 @@ const DemoBalanceSheetPage = () => {
     },
   };
 
+  // Demo historical data (simulated -10% values for comparison)
+  const demoHistoricalData = {
+    totalAssets: totalAssets * 0.9,
+    totalLiabilities: totalLiabilities * 1.02,
+    netWorth: netWorth * 0.88,
+    currentAssets: {
+      total: currentAssetsData.total * 0.9,
+      cashAndBank: currentAssetsData.cashAndBank * 0.85,
+      digitalAssets: currentAssetsData.digitalAssets * 0.95,
+      shortTermReceivables: 0,
+    },
+    nonCurrentAssets: {
+      total: nonCurrentAssetsData.total * 0.9,
+      realEstate: nonCurrentAssetsData.realEstate * 0.92,
+      vehicles: nonCurrentAssetsData.vehicles * 0.88,
+      collections: nonCurrentAssetsData.collections * 0.9,
+      investments: nonCurrentAssetsData.investments * 0.85,
+      longTermReceivables: 0,
+    },
+    currentLiabilities: {
+      total: currentLiabilitiesData.total * 1.1,
+      creditCards: currentLiabilitiesData.creditCards * 1.15,
+      shortTermLoans: currentLiabilitiesData.shortTermLoans * 1.05,
+    },
+    nonCurrentLiabilities: {
+      total: nonCurrentLiabilitiesData.total * 1.01,
+      mortgages: nonCurrentLiabilitiesData.mortgages * 1.01,
+      longTermLoans: nonCurrentLiabilitiesData.longTermLoans * 1.0,
+    },
+  };
+
   const selectedEntity = entities.find(e => e.id === entityFilter);
 
   const handleExportPDF = async () => {
@@ -266,8 +300,41 @@ const DemoBalanceSheetPage = () => {
 
             <div className="flex-1" />
 
-            {/* Export Buttons */}
+            {/* Compare Mode & Export Buttons */}
             <div className="flex gap-2">
+              {/* Compare Mode Toggle */}
+              <Button 
+                variant={isCompareMode ? "default" : "outline"}
+                size="sm" 
+                className={cn(
+                  isCompareMode ? "" : "bg-secondary border-border"
+                )}
+                onClick={() => setIsCompareMode(!isCompareMode)}
+              >
+                <GitCompare className="mr-2 h-4 w-4" />
+                Compare
+              </Button>
+
+              {isCompareMode && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="w-[140px] justify-start bg-secondary border-border">
+                      <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                      {format(compareDate, 'MMM yyyy')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-popover border-border" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={compareDate}
+                      onSelect={(date) => date && setCompareDate(date)}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              )}
+
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -282,7 +349,7 @@ const DemoBalanceSheetPage = () => {
                 size="sm" 
                 className="bg-secondary border-border"
                 onClick={handleExportPDF}
-                disabled={isExporting}
+                disabled={isExporting || isCompareMode}
               >
                 {isExporting ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -295,15 +362,26 @@ const DemoBalanceSheetPage = () => {
           </div>
         </div>
 
-        {/* Balance Sheet Statement */}
-        <BalanceSheetStatement
-          ref={statementRef}
-          data={balanceSheetData}
-          asOfDate={asOfDate}
-          displayCurrency={displayCurrency}
-          isBlurred={isBlurred}
-          entityName={selectedEntity?.name || 'Consolidated'}
-        />
+        {/* Balance Sheet Statement or Comparison */}
+        {isCompareMode ? (
+          <BalanceSheetComparison
+            currentDate={asOfDate}
+            previousDate={compareDate}
+            currentData={balanceSheetData}
+            previousData={demoHistoricalData}
+            displayCurrency={displayCurrency}
+            isBlurred={isBlurred}
+          />
+        ) : (
+          <BalanceSheetStatement
+            ref={statementRef}
+            data={balanceSheetData}
+            asOfDate={asOfDate}
+            displayCurrency={displayCurrency}
+            isBlurred={isBlurred}
+            entityName={selectedEntity?.name || 'Consolidated'}
+          />
+        )}
       </div>
     </AppLayout>
   );

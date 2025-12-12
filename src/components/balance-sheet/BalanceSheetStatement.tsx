@@ -92,15 +92,96 @@ export const BalanceSheetStatement = forwardRef<BalanceSheetStatementRef, Balanc
       try {
         const html2pdf = (await import('html2pdf.js')).default;
         
-        const element = contentRef.current;
+        // Create a wrapper with watermark for PDF export
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        wrapper.style.backgroundColor = '#ffffff';
+        wrapper.style.padding = '20px';
+        
+        // Add watermark/branding header
+        const header = document.createElement('div');
+        header.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e5e5e5;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #C4785A 0%, #9B5E45 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                <span style="color: white; font-weight: 700; font-size: 18px; font-family: 'Playfair Display', serif;">H</span>
+              </div>
+              <div>
+                <div style="font-size: 18px; font-weight: 600; color: #1A1A1A; font-family: 'Playfair Display', serif; letter-spacing: 0.05em;">HOLDEX</div>
+                <div style="font-size: 10px; color: #666666; letter-spacing: 0.1em; text-transform: uppercase;">Wealth Management</div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 10px; color: #666666;">Document ID</div>
+              <div style="font-size: 11px; color: #333333; font-family: monospace;">${Date.now().toString(36).toUpperCase()}</div>
+            </div>
+          </div>
+        `;
+        wrapper.appendChild(header);
+        
+        // Clone the content
+        const content = contentRef.current.cloneNode(true) as HTMLElement;
+        content.style.backgroundColor = '#ffffff';
+        content.style.color = '#1A1A1A';
+        
+        // Fix all text colors for PDF
+        const allElements = content.querySelectorAll('*');
+        allElements.forEach((el) => {
+          const htmlEl = el as HTMLElement;
+          htmlEl.style.color = htmlEl.style.color || '#1A1A1A';
+          if (htmlEl.classList.contains('text-muted-foreground')) {
+            htmlEl.style.color = '#666666';
+          }
+          if (htmlEl.classList.contains('text-primary')) {
+            htmlEl.style.color = '#C4785A';
+          }
+        });
+        
+        wrapper.appendChild(content);
+        
+        // Add watermark background
+        const watermark = document.createElement('div');
+        watermark.style.cssText = `
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%) rotate(-30deg);
+          font-size: 120px;
+          font-weight: 700;
+          color: rgba(196, 120, 90, 0.03);
+          font-family: 'Playfair Display', serif;
+          letter-spacing: 0.1em;
+          pointer-events: none;
+          white-space: nowrap;
+        `;
+        watermark.textContent = 'HOLDEX';
+        wrapper.appendChild(watermark);
+        
+        // Add footer with confidentiality notice
+        const footer = document.createElement('div');
+        footer.innerHTML = `
+          <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #e5e5e5; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 9px; color: #999999;">
+              CONFIDENTIAL • For authorized recipients only
+            </div>
+            <div style="font-size: 9px; color: #999999;">
+              Page 1 of 1
+            </div>
+          </div>
+        `;
+        wrapper.appendChild(footer);
+        
+        document.body.appendChild(wrapper);
+        
         const opt = {
-          margin: [15, 15, 15, 15],
-          filename: `balance-sheet-${format(asOfDate, 'yyyy-MM-dd')}.pdf`,
+          margin: [10, 10, 10, 10],
+          filename: `holdex-balance-sheet-${format(asOfDate, 'yyyy-MM-dd')}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { 
             scale: 2,
             useCORS: true,
             backgroundColor: '#ffffff',
+            logging: false,
           },
           jsPDF: { 
             unit: 'mm', 
@@ -109,7 +190,9 @@ export const BalanceSheetStatement = forwardRef<BalanceSheetStatementRef, Balanc
           },
         };
         
-        await html2pdf().set(opt).from(element).save();
+        await html2pdf().set(opt).from(wrapper).save();
+        
+        document.body.removeChild(wrapper);
       } catch (error) {
         console.error('PDF export failed:', error);
       } finally {
