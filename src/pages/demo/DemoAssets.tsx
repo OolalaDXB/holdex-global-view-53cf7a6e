@@ -18,6 +18,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 type SortOption = 'name' | 'value-desc' | 'value-asc' | 'date-desc' | 'date-asc';
 type ViewMode = 'grid' | 'list';
+type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
 const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'all', label: 'All Assets' },
@@ -26,6 +27,12 @@ const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'investment', label: 'Investments' },
   { value: 'crypto', label: 'Digital Assets' },
   { value: 'business', label: 'Business' },
+];
+
+const certaintyFilterOptions: { value: CertaintyFilter; label: string }[] = [
+  { value: 'all', label: 'All Certainty' },
+  { value: 'certain', label: 'Certain Only' },
+  { value: 'exclude-optional', label: 'Exclude Optional' },
 ];
 
 const sortOptions: { value: SortOption; label: string }[] = [
@@ -50,6 +57,7 @@ const DemoAssetsPage = () => {
   // Sorting and view
   const [sortBy, setSortBy] = useState<SortOption>('value-desc');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
   
   const { assets, entities, profile, updateProfile } = useDemo();
   const rates = fallbackRates;
@@ -90,6 +98,13 @@ const DemoAssetsPage = () => {
         const assetSizeSqm = a.size_sqm || 0;
         const compareSize = areaUnit === 'sqft' ? minSizeNum / 10.7639 : minSizeNum;
         return assetSizeSqm >= compareSize;
+      })
+      .filter(a => {
+        if (certaintyFilter === 'all') return true;
+        const cert = a.certainty || 'certain';
+        if (certaintyFilter === 'certain') return cert === 'certain';
+        if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
+        return true;
       });
 
     // Sorting
@@ -112,7 +127,7 @@ const DemoAssetsPage = () => {
     }
 
     return result;
-  }, [assets, filter, searchQuery, propertyTypeFilter, minRooms, minSize, areaUnit, sortBy]);
+  }, [assets, filter, searchQuery, propertyTypeFilter, minRooms, minSize, areaUnit, sortBy, certaintyFilter]);
 
   return (
     <AppLayout isDemo>
@@ -169,6 +184,18 @@ const DemoAssetsPage = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Certainty filter */}
+            <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
+              <SelectTrigger className="w-40 h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {certaintyFilterOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             {/* View toggle */}
             <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>

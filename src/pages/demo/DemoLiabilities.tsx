@@ -12,7 +12,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Landmark, TrendingDown, Pencil, Trash2, Plus, CreditCard, Car } from 'lucide-react';
+import { CertaintyBadge } from '@/components/ui/certainty-badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { ChevronDown, ChevronUp, Landmark, TrendingDown, Pencil, Trash2, Plus, CreditCard, Car, Search } from 'lucide-react';
+
+type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
 function DemoLiabilityCard({ 
   liability,
@@ -76,7 +81,10 @@ function DemoLiabilityCard({
                   <Icon className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <CardTitle className="text-base font-medium">{liability.name}</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-base font-medium">{liability.name}</CardTitle>
+                    <CertaintyBadge certainty={liability.certainty} />
+                  </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5">
                     <span>{getCountryFlag(liability.country)} {liability.institution || liability.type}</span>
                     {liability.is_shariah_compliant && (
@@ -329,6 +337,22 @@ const DemoLiabilitiesPage = () => {
   const [editingLiability, setEditingLiability] = useState<DemoLiability | null>(null);
   const [deletingLiability, setDeletingLiability] = useState<DemoLiability | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
+
+  const filteredLiabilities = liabilities.filter(l => {
+    // Search filter
+    if (searchQuery && !l.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
+        !l.institution?.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    // Certainty filter
+    if (certaintyFilter === 'all') return true;
+    const cert = l.certainty || 'certain';
+    if (certaintyFilter === 'certain') return cert === 'certain';
+    if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
+    return true;
+  });
   
   return (
     <AppLayout isDemo>
@@ -351,20 +375,52 @@ const DemoLiabilitiesPage = () => {
             </Button>
           </div>
         </header>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <div className="relative flex-1 max-w-sm">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search liabilities..."
+              className="pl-9"
+            />
+          </div>
+          <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
+            <SelectTrigger className="w-40 h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Certainty</SelectItem>
+              <SelectItem value="certain">Certain Only</SelectItem>
+              <SelectItem value="exclude-optional">Exclude Optional</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         
         {/* Monthly Payment Summary Widget */}
         <DemoMonthlyPaymentSummary />
         
-        <div className="space-y-4">
-          {liabilities.map((liability) => (
-            <DemoLiabilityCard 
-              key={liability.id} 
-              liability={liability}
-              onEdit={setEditingLiability}
-              onDelete={setDeletingLiability}
-            />
-          ))}
-        </div>
+        {filteredLiabilities.length === 0 ? (
+          <div className="text-center py-16">
+            <TrendingDown className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground mb-4">
+              {liabilities.length === 0 ? 'No liabilities yet.' : 'No liabilities match your filters.'}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredLiabilities.map((liability) => (
+              <DemoLiabilityCard 
+                key={liability.id} 
+                liability={liability}
+                onEdit={setEditingLiability}
+                onDelete={setDeletingLiability}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Add/Edit Dialog */}
