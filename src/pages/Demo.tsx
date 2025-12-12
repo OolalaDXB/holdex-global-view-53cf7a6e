@@ -4,6 +4,7 @@ import { NetWorthCard } from '@/components/dashboard/NetWorthCard';
 import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
+import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
 import { ViewToggle, ViewConfig } from '@/components/dashboard/ViewToggle';
 import { AssetCard } from '@/components/assets/AssetCard';
@@ -330,6 +331,16 @@ const Demo = () => {
             </div>
           )}
         </section>
+
+        {/* Certainty Breakdown */}
+        {projectedNetWorth > 0 && (
+          <CertaintyBreakdownWidget
+            confirmedValue={confirmedNetWorth}
+            projectedValue={projectedNetWorth}
+            currency={displayCurrency}
+            delay={150}
+          />
+        )}
 
         {/* Breakdowns */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
