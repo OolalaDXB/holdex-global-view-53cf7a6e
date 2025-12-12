@@ -716,6 +716,7 @@ export type Database = {
           fiscal_year_start: string | null
           full_name: string | null
           id: string
+          news_sources: Json | null
           secondary_currency_1: string | null
           secondary_currency_2: string | null
           updated_at: string | null
@@ -732,6 +733,7 @@ export type Database = {
           fiscal_year_start?: string | null
           full_name?: string | null
           id: string
+          news_sources?: Json | null
           secondary_currency_1?: string | null
           secondary_currency_2?: string | null
           updated_at?: string | null
@@ -748,6 +750,7 @@ export type Database = {
           fiscal_year_start?: string | null
           full_name?: string | null
           id?: string
+          news_sources?: Json | null
           secondary_currency_1?: string | null
           secondary_currency_2?: string | null
           updated_at?: string | null
