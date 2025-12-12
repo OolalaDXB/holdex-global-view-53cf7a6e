@@ -31,7 +31,7 @@ const wealthTypes = [
   { id: 'real-estate', label: 'Real Estate', icon: Building2, description: 'Properties and land' },
   { id: 'bank', label: 'Bank Account', icon: Landmark, description: 'Cash and deposits' },
   { id: 'investment', label: 'Investment', icon: TrendingUp, description: 'Stocks, ETFs, bonds' },
-  { id: 'crypto', label: 'Digital Assets', icon: Bitcoin, description: 'Crypto, tokens, NFTs' },
+  { id: 'crypto', label: 'Digital Assets', icon: Bitcoin, description: 'Tokens, NFTs, stablecoins' },
   { id: 'business', label: 'Business Equity', icon: Briefcase, description: 'Company ownership' },
   { id: 'liability', label: 'Liability', icon: TrendingDown, description: 'Debts and loans' },
 ];

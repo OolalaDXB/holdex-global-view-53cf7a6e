@@ -37,6 +37,10 @@ export interface DemoAsset {
   tenure_type?: string | null;
   lease_end_date?: string | null;
   liquidity_status?: string | null;
+  // Location fields for real estate
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -284,11 +288,50 @@ export const demoAssets: DemoAsset[] = [
     developer: 'Emaar',
     unit_number: 'CV2-1804',
     project_name: 'Dubai Creek Harbour',
+    address: 'Dubai Creek Harbour, Dubai, UAE',
+    latitude: 25.2048,
+    longitude: 55.2708,
     created_at: '2024-03-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
   {
     id: 'asset-real-estate-1',
+    user_id: DEMO_USER_ID,
+    name: 'Dubai Marina Apartment',
+    type: 'real-estate',
+    country: 'AE',
+    currency: 'AED',
+    current_value: 3200000,
+    rental_income: 180000,
+    purchase_value: 2800000,
+    purchase_date: '2021-03-15',
+    ownership_percentage: 100,
+    institution: null,
+    ticker: null,
+    quantity: null,
+    platform: null,
+    reference_balance: null,
+    reference_date: null,
+    notes: 'Two-bedroom apartment with marina view',
+    image_url: null,
+    entity_id: DEMO_ENTITY_COMPANY,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
+    property_status: 'rented_out',
+    total_price: null,
+    amount_paid: null,
+    expected_delivery: null,
+    developer: null,
+    unit_number: null,
+    project_name: null,
+    address: 'Marina Walk, Dubai Marina, Dubai, UAE',
+    latitude: 25.0805,
+    longitude: 55.1403,
+    created_at: '2021-03-15T10:00:00Z',
+    updated_at: '2024-11-01T10:00:00Z',
+  },
+  {
+    id: 'asset-real-estate-2',
     user_id: DEMO_USER_ID,
     name: 'Dubai Marina Apartment',
     type: 'real-estate',
@@ -350,6 +393,9 @@ export const demoAssets: DemoAsset[] = [
     developer: null,
     unit_number: null,
     project_name: null,
+    address: 'Rua da Boca do Inferno, Cascais, Portugal',
+    latitude: 38.6913,
+    longitude: -9.4215,
     created_at: '2022-06-20T10:00:00Z',
     updated_at: '2024-10-15T10:00:00Z',
   },
@@ -383,6 +429,9 @@ export const demoAssets: DemoAsset[] = [
     developer: null,
     unit_number: null,
     project_name: null,
+    address: 'Rue des Francs-Bourgeois, Le Marais, Paris, France',
+    latitude: 48.8566,
+    longitude: 2.3522,
     created_at: '2020-09-10T10:00:00Z',
     updated_at: '2024-09-20T10:00:00Z',
   },
@@ -416,6 +465,9 @@ export const demoAssets: DemoAsset[] = [
     developer: null,
     unit_number: null,
     project_name: null,
+    address: 'Chavchavadze Avenue, Vake, Tbilisi, Georgia',
+    latitude: 41.7151,
+    longitude: 44.7500,
     created_at: '2023-02-01T10:00:00Z',
     updated_at: '2024-08-10T10:00:00Z',
   },
@@ -453,6 +505,9 @@ export const demoAssets: DemoAsset[] = [
     tenure_type: 'leasehold',
     lease_end_date: '2089-03-25', // ~65 years remaining - warning
     liquidity_status: 'liquid',
+    address: 'Cheyne Walk, Chelsea, London, UK',
+    latitude: 51.4826,
+    longitude: -0.1707,
     created_at: '2019-05-15T10:00:00Z',
     updated_at: '2024-11-15T10:00:00Z',
   },
@@ -795,7 +850,7 @@ export const demoAssets: DemoAsset[] = [
     updated_at: '2024-12-01T10:00:00Z',
   },
 
-  // Crypto (3 holdings)
+  // Digital Assets (3 holdings)
   {
     id: 'asset-crypto-1',
     user_id: DEMO_USER_ID,
