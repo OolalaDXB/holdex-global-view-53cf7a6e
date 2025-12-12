@@ -1,4 +1,4 @@
-import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame, HardHat, Calendar, Moon } from 'lucide-react';
+import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame, HardHat, Calendar, Moon, Lock } from 'lucide-react';
 import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
 import { Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
@@ -7,6 +7,12 @@ import { InstitutionLogo } from '@/components/ui/institution-logo';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
+
+const LIQUIDITY_STATUS_LABELS: Record<string, string> = {
+  restricted: 'Restricted',
+  frozen: 'Frozen',
+  blocked: 'Blocked',
+};
 
 interface CryptoPrice {
   price: number;
@@ -144,9 +150,20 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           ☪️ Shariah
         </Badge>
       )}
+
+      {/* Liquidity Status badge - show if not liquid */}
+      {(asset as any).liquidity_status && (asset as any).liquidity_status !== 'liquid' && (
+        <Badge 
+          variant="secondary" 
+          className="absolute -top-2 -right-2 bg-warning/10 text-warning border-warning/20 text-xs"
+        >
+          <Lock size={10} className="mr-1" />
+          {LIQUIDITY_STATUS_LABELS[(asset as any).liquidity_status] || (asset as any).liquidity_status}
+        </Badge>
+      )}
       
       {/* Significant change indicator badge */}
-      {(isSignificantPositive || isSignificantNegative) && !isOffPlan && (
+      {(isSignificantPositive || isSignificantNegative) && !isOffPlan && !(asset as any).liquidity_status?.match(/restricted|frozen|blocked/) && (
         <div className={cn(
           "absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center",
           isSignificantPositive ? "bg-positive text-positive-foreground" : "bg-negative text-negative-foreground"
