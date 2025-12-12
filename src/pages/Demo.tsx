@@ -6,6 +6,7 @@ import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { DemoDebtToIncomeWidget } from '@/components/dashboard/DemoDebtToIncomeWidget';
+import { DemoNetWorthProjectionWidget } from '@/components/dashboard/DemoNetWorthProjectionWidget';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
 import { ViewToggle, ViewConfig } from '@/components/dashboard/ViewToggle';
 import { AssetCard } from '@/components/assets/AssetCard';
@@ -345,6 +346,9 @@ const Demo = () => {
 
         {/* Debt-to-Income Ratio */}
         <DemoDebtToIncomeWidget delay={175} />
+
+        {/* Net Worth Projection */}
+        <DemoNetWorthProjectionWidget delay={180} />
 
         {/* Breakdowns */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">

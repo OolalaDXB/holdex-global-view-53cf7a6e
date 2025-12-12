@@ -16,6 +16,7 @@ import { UpcomingLoanPaymentsWidget } from '@/components/dashboard/UpcomingLoanP
 import { EntityBreakdown } from '@/components/dashboard/EntityBreakdown';
 import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { DebtToIncomeWidget } from '@/components/dashboard/DebtToIncomeWidget';
+import { NetWorthProjectionWidget } from '@/components/dashboard/NetWorthProjectionWidget';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
@@ -371,6 +372,17 @@ const Dashboard = () => {
             {/* Debt-to-Income Ratio Widget */}
             {showWidget('debt_to_income') && (
               <DebtToIncomeWidget isBlurred={isBlurred} delay={175} />
+            )}
+
+            {/* Net Worth Projection Widget */}
+            {showWidget('net_worth_projection') && (
+              <NetWorthProjectionWidget 
+                currentNetWorth={netWorth}
+                currency={displayCurrency}
+                monthlyIncome={(profile as any)?.monthly_income || 0}
+                isBlurred={isBlurred}
+                delay={180}
+              />
             )}
 
             {/* Breakdowns */}
