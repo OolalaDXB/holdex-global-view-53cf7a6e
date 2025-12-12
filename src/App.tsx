@@ -9,6 +9,7 @@ import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { BlurProvider } from "@/contexts/BlurContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import BalanceSheet from "./pages/BalanceSheet";
 import Assets from "./pages/Assets";
 import Collections from "./pages/Collections";
 import Entities from "./pages/Entities";
@@ -28,6 +29,7 @@ import DemoReceivables from "./pages/demo/DemoReceivables";
 import DemoDocuments from "./pages/demo/DemoDocuments";
 import DemoLiabilities from "./pages/demo/DemoLiabilities";
 import DemoAddLiability from "./pages/demo/DemoAddLiability";
+import DemoBalanceSheet from "./pages/demo/DemoBalanceSheet";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,7 +55,9 @@ const App = () => (
                   <Route path="/demo/documents" element={<DemoDocuments />} />
                   <Route path="/demo/liabilities" element={<DemoLiabilities />} />
                   <Route path="/demo/add-liability" element={<DemoAddLiability />} />
+                  <Route path="/demo/balance-sheet" element={<DemoBalanceSheet />} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                  <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheet /></ProtectedRoute>} />
                   <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
                   <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
                   <Route path="/entities" element={<ProtectedRoute><Entities /></ProtectedRoute>} />

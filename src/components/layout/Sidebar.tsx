@@ -25,6 +25,7 @@ interface SidebarProps {
 
 const mainNavigation = [
   { name: 'Dashboard', href: '/', demoHref: '/demo', icon: LayoutDashboard, shortcut: '⌘⇧D' },
+  { name: 'Balance Sheet', href: '/balance-sheet', demoHref: '/demo/balance-sheet', icon: FileText },
   { name: 'Assets', href: '/assets', demoHref: '/demo/assets', icon: Wallet },
   { name: 'Collections', href: '/collections', demoHref: '/demo/collections', icon: Gem },
   { name: 'Liabilities', href: '/liabilities', demoHref: '/demo/liabilities', icon: TrendingDown },
