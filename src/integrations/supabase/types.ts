@@ -697,6 +697,7 @@ export type Database = {
       profiles: {
         Row: {
           base_currency: string | null
+          compliance_mode: string | null
           created_at: string | null
           dark_mode: boolean | null
           email: string
@@ -708,6 +709,7 @@ export type Database = {
         }
         Insert: {
           base_currency?: string | null
+          compliance_mode?: string | null
           created_at?: string | null
           dark_mode?: boolean | null
           email: string
@@ -719,6 +721,7 @@ export type Database = {
         }
         Update: {
           base_currency?: string | null
+          compliance_mode?: string | null
           created_at?: string | null
           dark_mode?: boolean | null
           email?: string
