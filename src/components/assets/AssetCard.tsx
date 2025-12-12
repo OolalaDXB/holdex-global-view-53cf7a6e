@@ -4,6 +4,7 @@ import { Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { InstitutionLogo } from '@/components/ui/institution-logo';
+import { RealEstateImage } from '@/components/assets/RealEstateImage';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
@@ -220,8 +221,17 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
       
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          {/* Icon/Logo/Image area */}
-          {showAssetImage ? (
+          {/* Icon/Logo/Image area - special handling for real-estate */}
+          {asset.type === 'real-estate' ? (
+            <RealEstateImage
+              imageUrl={asset.image_url}
+              latitude={(asset as any).latitude}
+              longitude={(asset as any).longitude}
+              country={asset.country}
+              name={asset.name}
+              className="w-10 h-10"
+            />
+          ) : showAssetImage ? (
             <img 
               src={asset.image_url!} 
               alt={asset.name}

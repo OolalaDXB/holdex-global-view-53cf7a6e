@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, FileText, Moon } from 'lucide-react';
+import { CalendarIcon, FileText, Moon, MapPin, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ import { Switch } from '@/components/ui/switch';
 import { useUpdateAsset, Asset } from '@/hooks/useAssets';
 import { useEntities } from '@/hooks/useEntities';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
+import { useGeocode } from '@/hooks/useGeocode';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -34,6 +35,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
   const updateAsset = useUpdateAsset();
   const { data: entities } = useEntities();
   const { showIslamic } = useComplianceMode();
+  const { geocodeAddress, isGeocoding } = useGeocode();
   const [showAIDialog, setShowAIDialog] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -59,6 +61,10 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
     lease_end_date: null as Date | null,
     // Liquidity
     liquidity_status: 'liquid',
+    // Location fields
+    address: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
 
   useEffect(() => {
@@ -84,6 +90,9 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         tenure_type: (asset as any).tenure_type || 'freehold',
         lease_end_date: (asset as any).lease_end_date ? new Date((asset as any).lease_end_date) : null,
         liquidity_status: (asset as any).liquidity_status || 'liquid',
+        address: (asset as any).address || '',
+        latitude: (asset as any).latitude || null,
+        longitude: (asset as any).longitude || null,
       });
     }
   }, [asset]);
@@ -115,6 +124,9 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         tenure_type: asset.type === 'real-estate' ? formData.tenure_type : null,
         lease_end_date: formData.lease_end_date ? format(formData.lease_end_date, 'yyyy-MM-dd') : null,
         liquidity_status: formData.liquidity_status,
+        address: asset.type === 'real-estate' ? (formData.address || null) : null,
+        latitude: asset.type === 'real-estate' ? formData.latitude : null,
+        longitude: asset.type === 'real-estate' ? formData.longitude : null,
       });
 
       toast({
@@ -160,8 +172,45 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                     onChange={(url) => setFormData({ ...formData, image_url: url })}
                     assetId={asset.id}
                     onGenerateAI={() => setShowAIDialog(true)}
+                    hideAIButton={asset.type === 'real-estate'}
                   />
                 </div>
+
+                {/* Address field for Real Estate */}
+                {asset.type === 'real-estate' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-address">Address (optional)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="edit-address"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        placeholder="e.g., 123 Marina Walk, Dubai Marina"
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={async () => {
+                          const result = await geocodeAddress(formData.address);
+                          if (result) {
+                            setFormData({ ...formData, latitude: result.lat, longitude: result.lon });
+                            toast({ title: "Location found", description: "Coordinates set for map display." });
+                          } else {
+                            toast({ variant: "destructive", title: "Location not found", description: "Could not geocode this address." });
+                          }
+                        }}
+                        disabled={isGeocoding || !formData.address.trim()}
+                      >
+                        {isGeocoding ? <Loader2 size={16} className="animate-spin" /> : <MapPin size={16} />}
+                      </Button>
+                    </div>
+                    {formData.latitude && formData.longitude && (
+                      <p className="text-xs text-muted-foreground">📍 Coordinates: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}</p>
+                    )}
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">

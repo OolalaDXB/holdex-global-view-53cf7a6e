@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           acquisition_from: string | null
           acquisition_type: string | null
+          address: string | null
           amount_paid: number | null
           country: string
           created_at: string | null
@@ -30,8 +31,10 @@ export type Database = {
           image_url: string | null
           institution: string | null
           is_shariah_compliant: boolean | null
+          latitude: number | null
           lease_end_date: string | null
           liquidity_status: string | null
+          longitude: number | null
           name: string
           notes: string | null
           ownership_percentage: number | null
@@ -56,6 +59,7 @@ export type Database = {
         Insert: {
           acquisition_from?: string | null
           acquisition_type?: string | null
+          address?: string | null
           amount_paid?: number | null
           country: string
           created_at?: string | null
@@ -68,8 +72,10 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           is_shariah_compliant?: boolean | null
+          latitude?: number | null
           lease_end_date?: string | null
           liquidity_status?: string | null
+          longitude?: number | null
           name: string
           notes?: string | null
           ownership_percentage?: number | null
@@ -94,6 +100,7 @@ export type Database = {
         Update: {
           acquisition_from?: string | null
           acquisition_type?: string | null
+          address?: string | null
           amount_paid?: number | null
           country?: string
           created_at?: string | null
@@ -106,8 +113,10 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           is_shariah_compliant?: boolean | null
+          latitude?: number | null
           lease_end_date?: string | null
           liquidity_status?: string | null
+          longitude?: number | null
           name?: string
           notes?: string | null
           ownership_percentage?: number | null

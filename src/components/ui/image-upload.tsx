@@ -9,11 +9,12 @@ interface ImageUploadProps {
   onChange: (url: string | null) => void;
   assetId: string;
   onGenerateAI?: () => void;
+  hideAIButton?: boolean;
   className?: string;
   disabled?: boolean;
 }
 
-export function ImageUpload({ value, onChange, assetId, onGenerateAI, className, disabled }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, assetId, onGenerateAI, hideAIButton = false, className, disabled }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadImage, deleteImage, isUploading } = useImageUpload();
   const [isDragging, setIsDragging] = useState(false);
@@ -105,7 +106,7 @@ export function ImageUpload({ value, onChange, assetId, onGenerateAI, className,
           {isUploading ? 'Uploading...' : 'Upload Photo'}
         </Button>
         
-        {onGenerateAI && (
+        {onGenerateAI && !hideAIButton && (
           <Button
             type="button"
             variant="outline"

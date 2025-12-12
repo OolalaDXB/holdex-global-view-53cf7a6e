@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { CalendarIcon, Moon } from 'lucide-react';
+import { CalendarIcon, Moon, MapPin, Loader2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, TrendingDown, Watch, Car, Palette, Gem, Wine, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import { useCreateCollection } from '@/hooks/useCollections';
 import { useCreateLiability, getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
 import { useEntities } from '@/hooks/useEntities';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
+import { useGeocode } from '@/hooks/useGeocode';
 import { cn } from '@/lib/utils';
 
 type Step = 'category' | 'type' | 'form';
@@ -55,6 +56,7 @@ const AddAssetPage = () => {
   const { data: entities } = useEntities();
   const defaultEntityId = useDefaultEntity();
   const { showIslamic, showJewish } = useComplianceMode();
+  const { geocodeAddress, isGeocoding } = useGeocode();
   
   // Get filtered financing types based on compliance mode
   const filteredFinancingTypes = getFilteredFinancingTypes(showIslamic, showJewish);
@@ -103,6 +105,10 @@ const AddAssetPage = () => {
     leaseEndDate: null as Date | null,
     // Liquidity status
     liquidityStatus: 'liquid',
+    // Location fields for real estate
+    address: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -203,6 +209,10 @@ const AddAssetPage = () => {
           lease_end_date: formData.leaseEndDate ? format(formData.leaseEndDate, 'yyyy-MM-dd') : null,
           // Liquidity status
           liquidity_status: formData.liquidityStatus,
+          // Location fields for real estate
+          address: selectedType === 'real-estate' ? (formData.address || null) : null,
+          latitude: selectedType === 'real-estate' ? formData.latitude : null,
+          longitude: selectedType === 'real-estate' ? formData.longitude : null,
         });
       }
 
@@ -316,15 +326,16 @@ const AddAssetPage = () => {
             </button>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Image Upload for physical assets / collections / real-estate / business / crypto */}
+              {/* Image Upload for physical assets / collections / business / crypto (NOT real-estate AI) */}
               {supportsImage && selectedType !== 'liability' && (
                 <div className="space-y-2">
-                  <Label>Image (optional)</Label>
+                  <Label>{selectedType === 'real-estate' ? 'Photo (optional)' : 'Image (optional)'}</Label>
                   <ImageUpload
                     value={imageUrl}
                     onChange={setImageUrl}
                     assetId={tempAssetId}
                     onGenerateAI={() => setShowAIDialog(true)}
+                    hideAIButton={selectedType === 'real-estate'}
                   />
                 </div>
               )}
@@ -349,6 +360,56 @@ const AddAssetPage = () => {
                     placeholder="Select country"
                   />
                 </div>
+
+                {/* Address field for Real Estate */}
+                {selectedType === 'real-estate' && (
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="address">Address (optional)</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="address"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        placeholder="e.g., 123 Marina Walk, Dubai Marina"
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={async () => {
+                          const result = await geocodeAddress(formData.address);
+                          if (result) {
+                            setFormData({ 
+                              ...formData, 
+                              latitude: result.lat, 
+                              longitude: result.lon 
+                            });
+                            toast({
+                              title: "Location found",
+                              description: "Coordinates have been set for map display.",
+                            });
+                          } else {
+                            toast({
+                              variant: "destructive",
+                              title: "Location not found",
+                              description: "Could not geocode this address. Try a more specific address.",
+                            });
+                          }
+                        }}
+                        disabled={isGeocoding || !formData.address.trim()}
+                        title="Geocode address"
+                      >
+                        {isGeocoding ? <Loader2 size={16} className="animate-spin" /> : <MapPin size={16} />}
+                      </Button>
+                    </div>
+                    {formData.latitude && formData.longitude && (
+                      <p className="text-xs text-muted-foreground">
+                        📍 Coordinates set: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="currency">Currency</Label>
