@@ -26,6 +26,7 @@ export type Database = {
           name: string
           notes: string | null
           ownership_percentage: number | null
+          platform: string | null
           purchase_date: string | null
           purchase_value: number | null
           quantity: number | null
@@ -46,6 +47,7 @@ export type Database = {
           name: string
           notes?: string | null
           ownership_percentage?: number | null
+          platform?: string | null
           purchase_date?: string | null
           purchase_value?: number | null
           quantity?: number | null
@@ -66,6 +68,7 @@ export type Database = {
           name?: string
           notes?: string | null
           ownership_percentage?: number | null
+          platform?: string | null
           purchase_date?: string | null
           purchase_value?: number | null
           quantity?: number | null
