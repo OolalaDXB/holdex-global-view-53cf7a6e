@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { CertaintyBadge } from '@/components/ui/certainty-badge';
 import { cn } from '@/lib/utils';
 
 const BalanceSheetPage = () => {
@@ -107,9 +108,12 @@ const BalanceSheetPage = () => {
         {isExpanded && items && (
           <div className="pl-10 py-2 space-y-1 bg-secondary/20 -mx-4 px-4 mb-2 text-xs">
             {items.map((item: any, i: number) => (
-              <div key={i} className="flex justify-between font-mono text-muted-foreground">
-                <span>{item.name}</span>
-                <span className="tabular-nums">
+              <div key={i} className="flex items-center justify-between font-mono text-muted-foreground gap-2">
+                <span className="flex items-center gap-2 truncate">
+                  {item.name}
+                  <CertaintyBadge certainty={item.certainty} className="text-[10px] py-0 px-1" />
+                </span>
+                <span className="tabular-nums flex-shrink-0">
                   {isBlurred ? '•••••' : formatCurrency(item.current_value || item.current_balance, item.currency)}
                 </span>
               </div>

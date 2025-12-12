@@ -45,6 +45,8 @@ export interface DemoAsset {
   property_type?: string | null;
   rooms?: number | null;
   size_sqm?: number | null;
+  // Certainty
+  certainty?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -102,6 +104,35 @@ export interface DemoLiability {
   monthly_rental?: number | null;
   residual_value?: number | null;
   bank_ownership_percentage?: number | null;
+  // Certainty
+  certainty?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DemoReceivable {
+  id: string;
+  user_id: string;
+  name: string;
+  type: string;
+  debtor_name: string;
+  debtor_type?: string | null;
+  debtor_contact?: string | null;
+  currency: string;
+  original_amount: number;
+  current_balance: number;
+  issue_date?: string | null;
+  due_date: string | null;
+  status: string;
+  recovery_probability?: string | null;
+  repayment_schedule?: string | null;
+  interest_rate?: number | null;
+  notes?: string | null;
+  entity_id?: string | null;
+  linked_asset_id?: string | null;
+  deposit_type?: string | null;
+  refund_conditions?: string | null;
+  certainty?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -1376,6 +1407,7 @@ export const demoLiabilities: DemoLiability[] = [
     monthly_rental: null,
     residual_value: null,
     bank_ownership_percentage: null,
+    certainty: 'certain',
     created_at: '2021-03-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -1404,6 +1436,7 @@ export const demoLiabilities: DemoLiability[] = [
     monthly_rental: null,
     residual_value: null,
     bank_ownership_percentage: null,
+    certainty: 'certain',
     created_at: '2022-04-01T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -1433,6 +1466,66 @@ export const demoLiabilities: DemoLiability[] = [
     monthly_rental: 18000,
     residual_value: null,
     bank_ownership_percentage: 64,
+    certainty: 'likely',
+    created_at: '2022-01-15T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+  {
+    id: 'liability-2',
+    user_id: DEMO_USER_ID,
+    name: 'Porsche Financing',
+    type: 'car_loan',
+    country: 'DE',
+    currency: 'EUR',
+    current_balance: 45000,
+    original_amount: 80000,
+    interest_rate: 3.2,
+    monthly_payment: 1800,
+    start_date: '2022-04-01',
+    end_date: '2026-04-01',
+    linked_asset_id: 'collection-vehicle-1',
+    institution: 'Porsche Financial Services',
+    notes: '4-year financing, balloon payment option',
+    entity_id: DEMO_ENTITY_PERSONAL,
+    financing_type: 'conventional',
+    is_shariah_compliant: false,
+    shariah_advisor: null,
+    cost_price: null,
+    profit_margin: null,
+    monthly_rental: null,
+    residual_value: null,
+    bank_ownership_percentage: null,
+    certainty: 'certain',
+    created_at: '2022-04-01T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+  // Islamic Finance Demo - Diminishing Musharaka
+  {
+    id: 'liability-3',
+    user_id: DEMO_USER_ID,
+    name: 'Palm Jumeirah Villa - DIB Financing',
+    type: 'mortgage',
+    country: 'AE',
+    currency: 'AED',
+    current_balance: 3200000,
+    original_amount: 5000000,
+    interest_rate: null,
+    monthly_payment: 28000,
+    start_date: '2022-01-15',
+    end_date: '2037-01-15',
+    linked_asset_id: null,
+    institution: 'Dubai Islamic Bank',
+    notes: 'Diminishing Musharaka - bank owns 64% currently',
+    entity_id: DEMO_ENTITY_PERSONAL,
+    financing_type: 'diminishing_musharaka',
+    is_shariah_compliant: true,
+    shariah_advisor: 'Dubai Islamic Bank Shariah Board',
+    cost_price: null,
+    profit_margin: null,
+    monthly_rental: 18000,
+    residual_value: null,
+    bank_ownership_percentage: 64,
+    certainty: 'likely',
     created_at: '2022-01-15T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -1462,7 +1555,69 @@ export const demoLiabilities: DemoLiability[] = [
     monthly_rental: null,
     residual_value: null,
     bank_ownership_percentage: null,
+    certainty: 'optional',
     created_at: '2023-01-01T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+];
+
+// Demo Receivables
+export const demoReceivables: DemoReceivable[] = [
+  {
+    id: 'receivable-1',
+    user_id: DEMO_USER_ID,
+    name: 'Prêt à Pierre',
+    type: 'personal_loan',
+    debtor_name: 'Pierre Martin',
+    debtor_type: 'individual',
+    currency: 'EUR',
+    original_amount: 5000,
+    current_balance: 5000,
+    issue_date: '2024-06-15',
+    due_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'pending',
+    recovery_probability: 'likely',
+    certainty: 'likely',
+    created_at: '2024-06-15T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+  {
+    id: 'receivable-2',
+    user_id: DEMO_USER_ID,
+    name: 'Caution Appartement Paris',
+    type: 'deposit',
+    debtor_name: 'Agence Immobilière Paris',
+    debtor_type: 'company',
+    deposit_type: 'rental',
+    refund_conditions: 'End of lease, subject to inspection',
+    currency: 'EUR',
+    original_amount: 2400,
+    current_balance: 2400,
+    issue_date: '2020-09-10',
+    due_date: null,
+    status: 'pending',
+    recovery_probability: 'certain',
+    certainty: 'certain',
+    linked_asset_id: 'asset-real-estate-3',
+    created_at: '2020-09-10T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+  {
+    id: 'receivable-3',
+    user_id: DEMO_USER_ID,
+    name: 'Note de frais Q4',
+    type: 'expense_reimbursement',
+    debtor_name: 'Employer SA',
+    debtor_type: 'employer',
+    currency: 'EUR',
+    original_amount: 850,
+    current_balance: 850,
+    issue_date: '2024-10-01',
+    due_date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    status: 'pending',
+    recovery_probability: 'uncertain',
+    certainty: 'optional',
+    created_at: '2024-10-01T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
 ];

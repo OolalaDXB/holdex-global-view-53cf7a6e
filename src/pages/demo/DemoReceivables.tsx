@@ -4,14 +4,18 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDemo } from '@/contexts/DemoContext';
+import { demoReceivables } from '@/data/demoData';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import { differenceInDays, format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { CertaintyBadge } from '@/components/ui/certainty-badge';
 import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'loans' | 'deposits' | 'expenses' | 'overdue';
+type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
 const typeLabels: Record<string, string> = {
   'personal_loan': 'Personal Loan',
@@ -22,47 +26,12 @@ const typeLabels: Record<string, string> = {
   'other': 'Other',
 };
 
-// Demo receivables data
-const demoReceivables = [
-  {
-    id: '1',
-    name: 'Prêt à Pierre',
-    type: 'personal_loan',
-    debtor_name: 'Pierre Martin',
-    currency: 'EUR',
-    original_amount: 5000,
-    current_balance: 5000,
-    due_date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 60 days from now
-    status: 'pending',
-  },
-  {
-    id: '2',
-    name: 'Caution Appartement Paris',
-    type: 'deposit',
-    debtor_name: 'Agence Immobilière Paris',
-    currency: 'EUR',
-    original_amount: 2400,
-    current_balance: 2400,
-    due_date: null,
-    status: 'pending',
-  },
-  {
-    id: '3',
-    name: 'Note de frais Q4',
-    type: 'expense_reimbursement',
-    debtor_name: 'Employer SA',
-    currency: 'EUR',
-    original_amount: 850,
-    current_balance: 850,
-    due_date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 15 days ago (overdue)
-    status: 'pending',
-  },
-];
-
+// Use demo receivables from demoData.ts
 export default function DemoReceivablesPage() {
   const { displayCurrency } = useCurrency();
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
 
   const filteredReceivables = demoReceivables.filter((r) => {
     if (searchQuery && !r.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
@@ -77,6 +46,11 @@ export default function DemoReceivablesPage() {
       const daysUntilDue = r.due_date ? differenceInDays(new Date(r.due_date), new Date()) : null;
       if (daysUntilDue === null || daysUntilDue >= 0) return false;
     }
+    // Certainty filter
+    if (certaintyFilter === 'all') return true;
+    const cert = r.certainty || 'certain';
+    if (certaintyFilter === 'certain') return cert === 'certain';
+    if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
     return true;
   });
 
@@ -149,6 +123,17 @@ export default function DemoReceivablesPage() {
               <TabsTrigger value="overdue" className="text-negative">Overdue</TabsTrigger>
             </TabsList>
           </Tabs>
+          
+          <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
+            <SelectTrigger className="w-40 h-9 text-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Certainty</SelectItem>
+              <SelectItem value="certain">Certain Only</SelectItem>
+              <SelectItem value="exclude-optional">Exclude Optional</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Receivables Grid */}
@@ -178,8 +163,11 @@ export default function DemoReceivablesPage() {
                   <div className="w-10 h-10 rounded-md bg-primary/10 flex items-center justify-center">
                     <Handshake size={20} className="text-primary" />
                   </div>
-                  <div>
-                    <h4 className="font-medium text-foreground">{receivable.name}</h4>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-foreground">{receivable.name}</h4>
+                      <CertaintyBadge certainty={receivable.certainty} />
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       {receivable.debtor_name} · {typeLabels[receivable.type]}
                     </p>
