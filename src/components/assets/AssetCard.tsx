@@ -19,6 +19,12 @@ interface CryptoPrice {
   change24h: number;
 }
 
+interface Entity {
+  id: string;
+  name: string;
+  type: string;
+}
+
 interface AssetCardProps {
   asset: Asset;
   rates?: Record<string, number>;
@@ -28,6 +34,7 @@ interface AssetCardProps {
   onEdit?: (asset: Asset) => void;
   onDelete?: (asset: Asset) => void;
   isBlurred?: boolean;
+  entities?: Entity[];
 }
 
 const typeIcons: Record<string, typeof Building2> = {
@@ -54,7 +61,7 @@ const propertyStatusLabels: Record<string, string> = {
   'owned': 'Owned',
 };
 
-export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete, isBlurred = false }: AssetCardProps) {
+export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete, isBlurred = false, entities = [] }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
   const { showIslamic } = useComplianceMode();
@@ -116,6 +123,40 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
     const quarter = Math.ceil((date.getMonth() + 1) / 3);
     return `Q${quarter} ${date.getFullYear()}`;
   };
+
+  // Get entity info for ownership display
+  const getOwnershipDisplay = () => {
+    if (!asset.entity_id) return null;
+    
+    const entity = entities.find(e => e.id === asset.entity_id);
+    if (!entity) return null;
+    
+    // Don't show anything for 100% personal ownership - it's the default
+    if (entity.type === 'personal' && (!asset.ownership_percentage || asset.ownership_percentage === 100)) {
+      return null;
+    }
+    
+    // For companies, trusts, etc., show the entity name
+    if (['company', 'holding', 'spv', 'trust'].includes(entity.type)) {
+      return entity.name;
+    }
+    
+    // For spouse/couple, show shared ownership
+    if (['spouse', 'couple'].includes(entity.type)) {
+      const myShare = asset.ownership_percentage || 50;
+      const theirShare = 100 - myShare;
+      return `${myShare}/${theirShare} with ${entity.name}`;
+    }
+    
+    // For other entities with less than 100%, show percentage
+    if (asset.ownership_percentage && asset.ownership_percentage < 100) {
+      return `${asset.ownership_percentage}% via ${entity.name}`;
+    }
+    
+    return null;
+  };
+
+  const ownershipDisplay = getOwnershipDisplay();
 
   return (
     <div 
@@ -333,10 +374,11 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           </div>
         )}
 
-        {asset.ownership_percentage && asset.ownership_percentage < 100 && (
+        {/* Ownership display - only show if not 100% personal */}
+        {ownershipDisplay && (
           <div className="pt-2 border-t border-border">
             <span className="text-sm text-muted-foreground">
-              Your share: {asset.ownership_percentage}%
+              {ownershipDisplay}
             </span>
           </div>
         )}

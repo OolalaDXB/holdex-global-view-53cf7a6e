@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountrySelect } from '@/components/ui/country-select';
-import { EntitySelect } from '@/components/entities/EntitySelect';
+import { EntitySelect, useDefaultEntity } from '@/components/entities/EntitySelect';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { Calendar } from '@/components/ui/calendar';
@@ -53,6 +53,7 @@ const AddAssetPage = () => {
   const createCollection = useCreateCollection();
   const createLiability = useCreateLiability();
   const { data: entities } = useEntities();
+  const defaultEntityId = useDefaultEntity();
   const { showIslamic, showJewish } = useComplianceMode();
   
   // Get filtered financing types based on compliance mode
@@ -77,7 +78,7 @@ const AddAssetPage = () => {
     institution: '',
     referenceBalance: '',
     referenceDate: null as Date | null,
-    entityId: null as string | null,
+    entityId: undefined as string | null | undefined, // Will be set to default on mount
     // Off-plan fields
     propertyStatus: 'owned',
     projectName: '',
@@ -140,7 +141,7 @@ const AddAssetPage = () => {
           original_amount: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
           institution: formData.institution || null,
           notes: formData.notes || null,
-          entity_id: formData.entityId,
+          entity_id: formData.entityId === undefined ? defaultEntityId : formData.entityId,
           financing_type: formData.financingType,
           is_shariah_compliant: isIslamic,
           shariah_advisor: formData.shariahAdvisor || null,
@@ -161,7 +162,7 @@ const AddAssetPage = () => {
           purchase_value: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
           notes: formData.notes || null,
           image_url: imageUrl,
-          entity_id: formData.entityId,
+          entity_id: formData.entityId === undefined ? defaultEntityId : formData.entityId,
         });
       } else {
         const isOffPlan = selectedType === 'real-estate' && ['off_plan', 'under_construction'].includes(formData.propertyStatus);
@@ -185,7 +186,7 @@ const AddAssetPage = () => {
           reference_date: formData.referenceDate ? format(formData.referenceDate, 'yyyy-MM-dd') : null,
           notes: formData.notes || null,
           image_url: imageUrl,
-          entity_id: formData.entityId,
+          entity_id: formData.entityId === undefined ? defaultEntityId : formData.entityId,
           // Off-plan fields
           property_status: selectedType === 'real-estate' ? formData.propertyStatus : null,
           project_name: formData.projectName || null,
@@ -467,9 +468,9 @@ const AddAssetPage = () => {
                 )}
 
                 <div className="space-y-2">
-                  <Label>Owner (optional)</Label>
+                  <Label>Owner</Label>
                   <EntitySelect
-                    value={formData.entityId}
+                    value={formData.entityId === undefined ? defaultEntityId : formData.entityId}
                     onChange={(value) => setFormData({ ...formData, entityId: value })}
                     placeholder="Select owner"
                   />

@@ -15,6 +15,7 @@ import { EntityBreakdown } from '@/components/dashboard/EntityBreakdown';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
+import { useEntities } from '@/hooks/useEntities';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useNetWorthHistory } from '@/hooks/useNetWorthHistory';
@@ -39,6 +40,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const { data: profile } = useProfile();
   const { data: assets = [], isLoading: assetsLoading } = useAssets();
+  const { data: entities = [] } = useEntities();
   const { data: collections = [], isLoading: collectionsLoading } = useCollections();
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: netWorthHistoryData = [] } = useNetWorthHistory();
@@ -384,6 +386,7 @@ const Dashboard = () => {
                       displayCurrency={displayCurrency}
                       delay={500 + (index * 100)}
                       isBlurred={isBlurred}
+                      entities={entities}
                     />
                   ))}
                 </div>

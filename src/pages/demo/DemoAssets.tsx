@@ -29,7 +29,7 @@ const DemoAssetsPage = () => {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   
-  const { assets } = useDemo();
+  const { assets, entities } = useDemo();
   const rates = fallbackRates;
   const prices = fallbackCryptoPrices;
 
@@ -104,6 +104,7 @@ const DemoAssetsPage = () => {
               delay={index * 50}
               onEdit={setEditingAsset as any}
               onDelete={setDeletingAsset as any}
+              entities={entities as any}
             />
           ))}
         </div>
