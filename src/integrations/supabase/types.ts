@@ -18,11 +18,14 @@ export type Database = {
         Row: {
           acquisition_from: string | null
           acquisition_type: string | null
+          amount_paid: number | null
           country: string
           created_at: string | null
           currency: string
           current_value: number
+          developer: string | null
           entity_id: string | null
+          expected_delivery: string | null
           id: string
           image_url: string | null
           institution: string | null
@@ -30,6 +33,8 @@ export type Database = {
           notes: string | null
           ownership_percentage: number | null
           platform: string | null
+          project_name: string | null
+          property_status: string | null
           purchase_date: string | null
           purchase_value: number | null
           quantity: number | null
@@ -37,18 +42,23 @@ export type Database = {
           reference_date: string | null
           rental_income: number | null
           ticker: string | null
+          total_price: number | null
           type: string
+          unit_number: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
           acquisition_from?: string | null
           acquisition_type?: string | null
+          amount_paid?: number | null
           country: string
           created_at?: string | null
           currency: string
           current_value: number
+          developer?: string | null
           entity_id?: string | null
+          expected_delivery?: string | null
           id?: string
           image_url?: string | null
           institution?: string | null
@@ -56,6 +66,8 @@ export type Database = {
           notes?: string | null
           ownership_percentage?: number | null
           platform?: string | null
+          project_name?: string | null
+          property_status?: string | null
           purchase_date?: string | null
           purchase_value?: number | null
           quantity?: number | null
@@ -63,18 +75,23 @@ export type Database = {
           reference_date?: string | null
           rental_income?: number | null
           ticker?: string | null
+          total_price?: number | null
           type: string
+          unit_number?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
           acquisition_from?: string | null
           acquisition_type?: string | null
+          amount_paid?: number | null
           country?: string
           created_at?: string | null
           currency?: string
           current_value?: number
+          developer?: string | null
           entity_id?: string | null
+          expected_delivery?: string | null
           id?: string
           image_url?: string | null
           institution?: string | null
@@ -82,6 +99,8 @@ export type Database = {
           notes?: string | null
           ownership_percentage?: number | null
           platform?: string | null
+          project_name?: string | null
+          property_status?: string | null
           purchase_date?: string | null
           purchase_value?: number | null
           quantity?: number | null
@@ -89,7 +108,9 @@ export type Database = {
           reference_date?: string | null
           rental_income?: number | null
           ticker?: string | null
+          total_price?: number | null
           type?: string
+          unit_number?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -414,6 +435,74 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_schedules: {
+        Row: {
+          amount: number
+          asset_id: string
+          created_at: string | null
+          currency: string
+          description: string | null
+          due_date: string
+          id: string
+          notes: string | null
+          paid_amount: number | null
+          paid_date: string | null
+          payment_number: number
+          payment_reference: string | null
+          percentage: number | null
+          receipt_url: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          asset_id: string
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number | null
+          paid_date?: string | null
+          payment_number: number
+          payment_reference?: string | null
+          percentage?: number | null
+          receipt_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          asset_id?: string
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          notes?: string | null
+          paid_amount?: number | null
+          paid_date?: string | null
+          payment_number?: number
+          payment_reference?: string | null
+          percentage?: number | null
+          receipt_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_schedules_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
             referencedColumns: ["id"]
           },
         ]

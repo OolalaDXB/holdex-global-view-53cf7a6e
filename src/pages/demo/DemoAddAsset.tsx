@@ -143,6 +143,13 @@ const DemoAddAssetPage = () => {
           entity_id: null,
           acquisition_type: 'purchase',
           acquisition_from: null,
+          property_status: null,
+          total_price: null,
+          amount_paid: null,
+          expected_delivery: null,
+          developer: null,
+          unit_number: null,
+          project_name: null,
         });
       }
 
