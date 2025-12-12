@@ -32,6 +32,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
     ownership_percentage: '100',
     ticker: '',
     quantity: '',
+    platform: '',
     institution: '',
     rental_income: '',
     image_url: null as string | null,
@@ -48,6 +49,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         ownership_percentage: asset.ownership_percentage?.toString() || '100',
         ticker: asset.ticker || '',
         quantity: asset.quantity?.toString() || '',
+        platform: asset.platform || '',
         institution: asset.institution || '',
         rental_income: asset.rental_income?.toString() || '',
         image_url: asset.image_url || null,
@@ -70,6 +72,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         ownership_percentage: parseFloat(formData.ownership_percentage) || 100,
         ticker: formData.ticker || null,
         quantity: formData.quantity ? parseFloat(formData.quantity) : null,
+        platform: formData.platform || null,
         institution: formData.institution || null,
         rental_income: formData.rental_income ? parseFloat(formData.rental_income) : null,
         image_url: formData.image_url,
@@ -158,7 +161,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                 />
               </div>
 
-              {asset.type === 'crypto' && (
+            {asset.type === 'crypto' && (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="edit-ticker">Token</Label>
@@ -177,6 +180,22 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                       value={formData.quantity}
                       onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-platform">Platform</Label>
+                    <Select 
+                      value={formData.platform} 
+                      onValueChange={(value) => setFormData({ ...formData, platform: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select platform" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {['Ledger', 'Binance', 'Coinbase', 'Kraken', 'Crypto.com', 'MetaMask', 'Trust Wallet', 'Other'].map((platform) => (
+                          <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}

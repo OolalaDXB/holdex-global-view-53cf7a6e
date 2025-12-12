@@ -4,6 +4,7 @@ import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
+import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
@@ -288,6 +289,9 @@ const Dashboard = () => {
                 <CurrencyBreakdown items={currencyBreakdown} delay={400} />
               </section>
             )}
+
+            {/* Collections Gallery */}
+            <CollectionsGallery collections={collections} />
 
             {/* Recent Updates */}
             {recentAssets.length > 0 && (

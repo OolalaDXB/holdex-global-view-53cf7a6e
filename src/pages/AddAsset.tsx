@@ -58,6 +58,7 @@ const AddAssetPage = () => {
     ownershipPercent: '100',
     cryptoToken: '',
     cryptoQuantity: '',
+    cryptoPlatform: '',
     notes: '',
     institution: '',
   });
@@ -123,6 +124,7 @@ const AddAssetPage = () => {
           ticker: formData.cryptoToken || null,
           quantity: formData.cryptoQuantity ? parseFloat(formData.cryptoQuantity) : null,
           institution: formData.institution || null,
+          platform: formData.cryptoPlatform || null,
           notes: formData.notes || null,
           image_url: imageUrl,
         });
@@ -331,6 +333,22 @@ const AddAssetPage = () => {
                         onChange={(e) => setFormData({ ...formData, cryptoQuantity: e.target.value })}
                         placeholder="0"
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cryptoPlatform">Platform</Label>
+                      <Select 
+                        value={formData.cryptoPlatform} 
+                        onValueChange={(value) => setFormData({ ...formData, cryptoPlatform: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select platform" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['Ledger', 'Binance', 'Coinbase', 'Kraken', 'Crypto.com', 'MetaMask', 'Trust Wallet', 'Other'].map((platform) => (
+                            <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </>
                 )}
