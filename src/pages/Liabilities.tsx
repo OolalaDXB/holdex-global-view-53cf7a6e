@@ -2,15 +2,14 @@ import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useLiabilities, Liability } from '@/hooks/useLiabilities';
 import { useLoanSchedule } from '@/hooks/useLoanSchedules';
-import { useEntities } from '@/hooks/useEntities';
 import { LoanScheduleSection } from '@/components/liabilities/LoanScheduleSection';
+import { MonthlyPaymentSummary } from '@/components/liabilities/MonthlyPaymentSummary';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Building2, Landmark, TrendingDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, Landmark, TrendingDown } from 'lucide-react';
 
 function LiabilityCard({ liability }: { liability: Liability }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -116,9 +115,6 @@ function LiabilityCard({ liability }: { liability: Liability }) {
 
 const LiabilitiesPage = () => {
   const { data: liabilities = [], isLoading } = useLiabilities();
-  const { data: entities = [] } = useEntities();
-  
-  const totalLiabilities = liabilities.reduce((sum, l) => sum + l.current_balance, 0);
   
   return (
     <AppLayout>
@@ -128,15 +124,10 @@ const LiabilitiesPage = () => {
           <p className="text-muted-foreground">
             Manage your loans, mortgages, and payment schedules.
           </p>
-          {liabilities.length > 0 && (
-            <div className="mt-4 p-4 bg-secondary/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">Total Outstanding</p>
-              <p className="text-2xl font-semibold text-dusty-rose">
-                -{formatCurrency(totalLiabilities, 'EUR')}
-              </p>
-            </div>
-          )}
         </header>
+        
+        {/* Monthly Payment Summary Widget */}
+        <MonthlyPaymentSummary />
         
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
