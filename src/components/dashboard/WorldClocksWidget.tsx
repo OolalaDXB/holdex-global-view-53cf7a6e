@@ -85,11 +85,16 @@ export const WorldClocksWidget: React.FC<WorldClocksWidgetProps> = ({ cities, sh
             <div key={city.name} className="flex items-center gap-2">
               <span className="text-muted-foreground">{city.name}</span>
               {showWeather && weather && (
-                <WeatherIcon 
-                  condition={weather.condition} 
-                  isNight={weather.isNight}
-                  className="w-4 h-4"
-                />
+                <div className="flex items-center gap-1">
+                  <WeatherIcon 
+                    condition={weather.condition} 
+                    isNight={weather.isNight}
+                    className="w-4 h-4"
+                  />
+                  {weather.temp !== undefined && (
+                    <span className="text-[10px] text-muted-foreground">{weather.temp}°</span>
+                  )}
+                </div>
               )}
               <span className="font-mono text-foreground">{times[city.name] || '--:--'}</span>
               {index < cities.length - 1 && (

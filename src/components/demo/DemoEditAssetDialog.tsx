@@ -11,6 +11,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CountrySelect } from '@/components/ui/country-select';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
+import { DemoEntitySelect } from '@/components/demo/DemoEntitySelect';
 import { Asset } from '@/hooks/useAssets';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
@@ -45,6 +46,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
     image_url: null as string | null,
     reference_balance: '',
     reference_date: null as Date | null,
+    entity_id: null as string | null,
   });
 
   useEffect(() => {
@@ -63,6 +65,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         image_url: asset.image_url || null,
         reference_balance: asset.reference_balance?.toString() || '',
         reference_date: asset.reference_date ? new Date(asset.reference_date) : null,
+        entity_id: asset.entity_id || null,
       });
     }
   }, [asset]);
@@ -87,6 +90,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         image_url: formData.image_url,
         reference_balance: formData.reference_balance ? parseFloat(formData.reference_balance) : null,
         reference_date: formData.reference_date ? format(formData.reference_date, 'yyyy-MM-dd') : null,
+        entity_id: formData.entity_id,
       });
 
       toast({
@@ -125,6 +129,14 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
             />
           </div>
           
+          <div className="space-y-2">
+            <Label>Owner</Label>
+            <DemoEntitySelect
+              value={formData.entity_id || ''}
+              onChange={(value) => setFormData({ ...formData, entity_id: value || null })}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name">Name</Label>
