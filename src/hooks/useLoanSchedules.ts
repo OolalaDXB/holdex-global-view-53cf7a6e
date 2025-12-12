@@ -1,0 +1,361 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+
+export interface LoanSchedule {
+  id: string;
+  liability_id: string;
+  user_id: string;
+  loan_type: 'amortizing' | 'bullet' | 'balloon' | 'interest_only';
+  principal_amount: number;
+  interest_rate: number | null;
+  rate_type: 'fixed' | 'variable' | 'capped';
+  start_date: string;
+  end_date: string | null;
+  term_months: number | null;
+  payment_frequency: 'monthly' | 'quarterly' | 'semi_annual' | 'annual';
+  monthly_payment: number | null;
+  total_interest: number | null;
+  total_cost: number | null;
+  payments_made: number;
+  next_payment_date: string | null;
+  remaining_principal: number | null;
+  imported_schedule: any | null;
+  is_imported: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LoanPayment {
+  id: string;
+  loan_schedule_id: string;
+  user_id: string;
+  payment_number: number;
+  payment_date: string;
+  principal_amount: number | null;
+  interest_amount: number | null;
+  total_amount: number | null;
+  remaining_principal: number | null;
+  status: 'scheduled' | 'paid' | 'late' | 'missed';
+  actual_payment_date: string | null;
+  actual_amount: number | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface AmortizationEntry {
+  payment_number: number;
+  payment_date: string;
+  principal_amount: number;
+  interest_amount: number;
+  total_amount: number;
+  remaining_principal: number;
+}
+
+// Calculate monthly payment using standard amortization formula
+export function calculateMonthlyPayment(
+  principal: number,
+  annualRate: number,
+  termMonths: number
+): number {
+  if (annualRate === 0) {
+    return principal / termMonths;
+  }
+  const monthlyRate = annualRate / 100 / 12;
+  const payment = principal * (monthlyRate * Math.pow(1 + monthlyRate, termMonths)) / 
+                  (Math.pow(1 + monthlyRate, termMonths) - 1);
+  return Math.round(payment * 100) / 100;
+}
+
+// Generate full amortization schedule
+export function generateAmortizationSchedule(
+  principal: number,
+  annualRate: number,
+  termMonths: number,
+  startDate: Date,
+  frequency: 'monthly' | 'quarterly' | 'semi_annual' | 'annual' = 'monthly'
+): AmortizationEntry[] {
+  const schedule: AmortizationEntry[] = [];
+  const monthlyRate = annualRate / 100 / 12;
+  const monthlyPayment = calculateMonthlyPayment(principal, annualRate, termMonths);
+  
+  let remainingPrincipal = principal;
+  let currentDate = new Date(startDate);
+  
+  const monthsPerPayment = {
+    monthly: 1,
+    quarterly: 3,
+    semi_annual: 6,
+    annual: 12
+  }[frequency];
+  
+  const totalPayments = Math.ceil(termMonths / monthsPerPayment);
+  const paymentAmount = monthlyPayment * monthsPerPayment;
+  const periodRate = monthlyRate * monthsPerPayment;
+  
+  for (let i = 1; i <= totalPayments && remainingPrincipal > 0.01; i++) {
+    const interestAmount = remainingPrincipal * periodRate;
+    let principalAmount = paymentAmount - interestAmount;
+    
+    // Last payment adjustment
+    if (principalAmount > remainingPrincipal) {
+      principalAmount = remainingPrincipal;
+    }
+    
+    remainingPrincipal -= principalAmount;
+    if (remainingPrincipal < 0) remainingPrincipal = 0;
+    
+    schedule.push({
+      payment_number: i,
+      payment_date: currentDate.toISOString().split('T')[0],
+      principal_amount: Math.round(principalAmount * 100) / 100,
+      interest_amount: Math.round(interestAmount * 100) / 100,
+      total_amount: Math.round((principalAmount + interestAmount) * 100) / 100,
+      remaining_principal: Math.round(remainingPrincipal * 100) / 100
+    });
+    
+    currentDate.setMonth(currentDate.getMonth() + monthsPerPayment);
+  }
+  
+  return schedule;
+}
+
+export function useLoanSchedule(liabilityId: string | undefined) {
+  return useQuery({
+    queryKey: ['loan-schedule', liabilityId],
+    queryFn: async () => {
+      if (!liabilityId) return null;
+      
+      const { data, error } = await supabase
+        .from('loan_schedules')
+        .select('*')
+        .eq('liability_id', liabilityId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data as LoanSchedule | null;
+    },
+    enabled: !!liabilityId,
+  });
+}
+
+export function useLoanPayments(scheduleId: string | undefined) {
+  return useQuery({
+    queryKey: ['loan-payments', scheduleId],
+    queryFn: async () => {
+      if (!scheduleId) return [];
+      
+      const { data, error } = await supabase
+        .from('loan_payments')
+        .select('*')
+        .eq('loan_schedule_id', scheduleId)
+        .order('payment_number', { ascending: true });
+      
+      if (error) throw error;
+      return data as LoanPayment[];
+    },
+    enabled: !!scheduleId,
+  });
+}
+
+export function useAllUpcomingLoanPayments() {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['upcoming-loan-payments', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data, error } = await supabase
+        .from('loan_payments')
+        .select(`
+          *,
+          loan_schedules!inner(
+            liability_id,
+            liabilities!inner(name, currency)
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('status', 'scheduled')
+        .gte('payment_date', today)
+        .order('payment_date', { ascending: true })
+        .limit(5);
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+}
+
+export function useCreateLoanSchedule() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: async (schedule: Omit<LoanSchedule, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      const { data, error } = await supabase
+        .from('loan_schedules')
+        .insert({ ...schedule, user_id: user.id })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as LoanSchedule;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['loan-schedule', data.liability_id] });
+    },
+  });
+}
+
+export function useUpdateLoanSchedule() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<LoanSchedule> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('loan_schedules')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as LoanSchedule;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['loan-schedule', data.liability_id] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-loan-payments'] });
+    },
+  });
+}
+
+export function useDeleteLoanSchedule() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('loan_schedules')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['loan-schedule'] });
+      queryClient.invalidateQueries({ queryKey: ['loan-payments'] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-loan-payments'] });
+    },
+  });
+}
+
+export function useCreateLoanPayments() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: async (payments: Omit<LoanPayment, 'id' | 'user_id' | 'created_at'>[]) => {
+      if (!user?.id) throw new Error('Not authenticated');
+      
+      const paymentsWithUser = payments.map(p => ({ ...p, user_id: user.id }));
+      
+      const { data, error } = await supabase
+        .from('loan_payments')
+        .insert(paymentsWithUser)
+        .select();
+      
+      if (error) throw error;
+      return data as LoanPayment[];
+    },
+    onSuccess: (data) => {
+      if (data.length > 0) {
+        queryClient.invalidateQueries({ queryKey: ['loan-payments', data[0].loan_schedule_id] });
+        queryClient.invalidateQueries({ queryKey: ['upcoming-loan-payments'] });
+      }
+    },
+  });
+}
+
+export function useMarkPaymentPaid() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      paymentId, 
+      scheduleId,
+      actualAmount,
+      actualDate 
+    }: { 
+      paymentId: string; 
+      scheduleId: string;
+      actualAmount?: number;
+      actualDate?: string;
+    }) => {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Update the payment
+      const { error: paymentError } = await supabase
+        .from('loan_payments')
+        .update({
+          status: 'paid',
+          actual_payment_date: actualDate || today,
+          actual_amount: actualAmount,
+        })
+        .eq('id', paymentId);
+      
+      if (paymentError) throw paymentError;
+      
+      // Get current schedule
+      const { data: schedule, error: scheduleError } = await supabase
+        .from('loan_schedules')
+        .select('*')
+        .eq('id', scheduleId)
+        .single();
+      
+      if (scheduleError) throw scheduleError;
+      
+      // Get next unpaid payment
+      const { data: nextPayment } = await supabase
+        .from('loan_payments')
+        .select('payment_date, remaining_principal')
+        .eq('loan_schedule_id', scheduleId)
+        .eq('status', 'scheduled')
+        .order('payment_number', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      
+      // Get the payment we just marked as paid to get remaining principal
+      const { data: paidPayment } = await supabase
+        .from('loan_payments')
+        .select('remaining_principal')
+        .eq('id', paymentId)
+        .single();
+      
+      // Update schedule
+      const { error: updateError } = await supabase
+        .from('loan_schedules')
+        .update({
+          payments_made: (schedule.payments_made || 0) + 1,
+          next_payment_date: nextPayment?.payment_date || null,
+          remaining_principal: paidPayment?.remaining_principal ?? schedule.remaining_principal,
+        })
+        .eq('id', scheduleId);
+      
+      if (updateError) throw updateError;
+      
+      return { scheduleId };
+    },
+    onSuccess: ({ scheduleId }) => {
+      queryClient.invalidateQueries({ queryKey: ['loan-payments'] });
+      queryClient.invalidateQueries({ queryKey: ['loan-schedule'] });
+      queryClient.invalidateQueries({ queryKey: ['upcoming-loan-payments'] });
+    },
+  });
+}

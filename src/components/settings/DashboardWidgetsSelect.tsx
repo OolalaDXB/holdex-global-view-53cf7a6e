@@ -16,9 +16,10 @@ const AVAILABLE_WIDGETS: Widget[] = [
   { id: 'breakdown_entity', label: 'Breakdown by Entity', description: 'Assets by ownership' },
   { id: 'leasehold_reminders', label: 'Leasehold Reminders', description: 'Expiring leases' },
   { id: 'expiring_documents', label: 'Expiring Documents', description: 'Documents due soon' },
+  { id: 'pending_receivables', label: 'Pending Receivables', description: 'Money owed to you' },
+  { id: 'upcoming_loan_payments', label: 'Upcoming Loan Payments', description: 'Loan payment due dates' },
   { id: 'world_clocks', label: 'World Clocks', description: 'Time in favorite cities' },
   { id: 'weather_with_clocks', label: 'Weather with Clocks', description: 'Show weather icons' },
-  { id: 'pending_receivables', label: 'Pending Receivables', description: 'Money owed to you' },
   { id: 'news_ticker', label: 'News Ticker', description: 'Financial headlines bar' },
 ];
 

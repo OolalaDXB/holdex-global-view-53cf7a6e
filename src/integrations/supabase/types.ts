@@ -579,6 +579,148 @@ export type Database = {
           },
         ]
       }
+      loan_payments: {
+        Row: {
+          actual_amount: number | null
+          actual_payment_date: string | null
+          created_at: string | null
+          id: string
+          interest_amount: number | null
+          loan_schedule_id: string
+          notes: string | null
+          payment_date: string
+          payment_number: number
+          principal_amount: number | null
+          remaining_principal: number | null
+          status: string | null
+          total_amount: number | null
+          user_id: string
+        }
+        Insert: {
+          actual_amount?: number | null
+          actual_payment_date?: string | null
+          created_at?: string | null
+          id?: string
+          interest_amount?: number | null
+          loan_schedule_id: string
+          notes?: string | null
+          payment_date: string
+          payment_number: number
+          principal_amount?: number | null
+          remaining_principal?: number | null
+          status?: string | null
+          total_amount?: number | null
+          user_id: string
+        }
+        Update: {
+          actual_amount?: number | null
+          actual_payment_date?: string | null
+          created_at?: string | null
+          id?: string
+          interest_amount?: number | null
+          loan_schedule_id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_number?: number
+          principal_amount?: number | null
+          remaining_principal?: number | null
+          status?: string | null
+          total_amount?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_payments_loan_schedule_id_fkey"
+            columns: ["loan_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "loan_schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loan_schedules: {
+        Row: {
+          created_at: string | null
+          end_date: string | null
+          id: string
+          imported_schedule: Json | null
+          interest_rate: number | null
+          is_imported: boolean | null
+          liability_id: string
+          loan_type: string | null
+          monthly_payment: number | null
+          next_payment_date: string | null
+          notes: string | null
+          payment_frequency: string | null
+          payments_made: number | null
+          principal_amount: number
+          rate_type: string | null
+          remaining_principal: number | null
+          start_date: string
+          term_months: number | null
+          total_cost: number | null
+          total_interest: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          imported_schedule?: Json | null
+          interest_rate?: number | null
+          is_imported?: boolean | null
+          liability_id: string
+          loan_type?: string | null
+          monthly_payment?: number | null
+          next_payment_date?: string | null
+          notes?: string | null
+          payment_frequency?: string | null
+          payments_made?: number | null
+          principal_amount: number
+          rate_type?: string | null
+          remaining_principal?: number | null
+          start_date: string
+          term_months?: number | null
+          total_cost?: number | null
+          total_interest?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          imported_schedule?: Json | null
+          interest_rate?: number | null
+          is_imported?: boolean | null
+          liability_id?: string
+          loan_type?: string | null
+          monthly_payment?: number | null
+          next_payment_date?: string | null
+          notes?: string | null
+          payment_frequency?: string | null
+          payments_made?: number | null
+          principal_amount?: number
+          rate_type?: string | null
+          remaining_principal?: number | null
+          start_date?: string
+          term_months?: number | null
+          total_cost?: number | null
+          total_interest?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_schedules_liability_id_fkey"
+            columns: ["liability_id"]
+            isOneToOne: false
+            referencedRelation: "liabilities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       net_worth_history: {
         Row: {
           breakdown_by_country: Json | null
