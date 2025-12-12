@@ -30,7 +30,7 @@ const wealthTypes = [
   { id: 'real-estate', label: 'Real Estate', icon: Building2, description: 'Properties and land' },
   { id: 'bank', label: 'Bank Account', icon: Landmark, description: 'Cash and deposits' },
   { id: 'investment', label: 'Investment', icon: TrendingUp, description: 'Stocks, ETFs, bonds' },
-  { id: 'crypto', label: 'Crypto', icon: Bitcoin, description: 'Digital assets' },
+  { id: 'crypto', label: 'Digital Assets', icon: Bitcoin, description: 'Crypto, tokens, NFTs' },
   { id: 'business', label: 'Business Equity', icon: Briefcase, description: 'Company ownership' },
   { id: 'liability', label: 'Liability', icon: TrendingDown, description: 'Debts and loans' },
 ];
@@ -254,7 +254,7 @@ const AddAssetPage = () => {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                Real estate, investments, bank accounts, crypto, and business equity.
+                Real estate, investments, bank accounts, digital assets, and business equity.
               </p>
             </button>
 

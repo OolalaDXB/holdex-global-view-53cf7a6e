@@ -22,7 +22,7 @@ const ASSET_TYPES = [
   { id: 'real-estate', label: 'Real Estate' },
   { id: 'bank', label: 'Bank Accounts' },
   { id: 'investment', label: 'Investments' },
-  { id: 'crypto', label: 'Crypto' },
+  { id: 'crypto', label: 'Digital Assets' },
   { id: 'business', label: 'Business Equity' },
   { id: 'collections', label: 'Collections' },
 ];

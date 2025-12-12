@@ -132,7 +132,7 @@ const institutionDomains: Record<string, string> = {
   'Chime': 'chime.com',
   'Qonto': 'qonto.com',
   
-  // Crypto Exchanges
+  // Digital Asset Exchanges
   'Coinbase': 'coinbase.com',
   'Binance': 'binance.com',
   'Kraken': 'kraken.com',
