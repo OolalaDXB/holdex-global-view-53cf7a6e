@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CountrySelect } from '@/components/ui/country-select';
 import { useUpdateCollection, Collection } from '@/hooks/useCollections';
 import { useToast } from '@/hooks/use-toast';
 
@@ -15,7 +16,6 @@ interface EditCollectionDialogProps {
 }
 
 const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
-const countries = ['UAE', 'Portugal', 'France', 'Germany', 'Switzerland', 'USA', 'UK', 'Botswana', 'Russia', 'Global'];
 const categories = [
   { value: 'watch', label: 'Watch' },
   { value: 'vehicle', label: 'Vehicle' },
@@ -133,19 +133,10 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
 
             <div className="space-y-2">
               <Label htmlFor="edit-country">Country</Label>
-              <Select 
-                value={formData.country} 
+              <CountrySelect
+                value={formData.country}
                 onValueChange={(value) => setFormData({ ...formData, country: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {countries.map((country) => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
 
             <div className="space-y-2">
