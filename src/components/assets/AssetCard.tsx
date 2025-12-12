@@ -1,4 +1,4 @@
-import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame, HardHat, Calendar } from 'lucide-react';
+import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame, HardHat, Calendar, Moon } from 'lucide-react';
 import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
 import { Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
@@ -126,6 +126,20 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
         >
           <HardHat size={10} className="mr-1" />
           {propertyStatusLabels[asset.property_status || 'off_plan']}
+        </Badge>
+      )}
+      
+      {/* Shariah Compliant badge */}
+      {asset.is_shariah_compliant && (
+        <Badge 
+          variant="secondary" 
+          className={cn(
+            "absolute -top-2 bg-positive/10 text-positive border-positive/20 text-xs",
+            isOffPlan ? "left-20" : "-left-2"
+          )}
+        >
+          <Moon size={10} className="mr-1" />
+          Shariah
         </Badge>
       )}
       
