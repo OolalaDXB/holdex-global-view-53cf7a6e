@@ -1,11 +1,27 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Map of ticker symbols to CoinGecko IDs
+const tickerToId: Record<string, string> = {
+  'BTC': 'bitcoin',
+  'ETH': 'ethereum',
+  'SOL': 'solana',
+  'USDT': 'tether',
+  'USDC': 'usd-coin',
+  'BNB': 'binancecoin',
+  'XRP': 'ripple',
+  'ADA': 'cardano',
+  'DOGE': 'dogecoin',
+  'MATIC': 'matic-network',
+  'DOT': 'polkadot',
+  'LTC': 'litecoin',
+  'AVAX': 'avalanche-2',
+  'LINK': 'chainlink',
+  'UNI': 'uniswap',
 };
 
 serve(async (req) => {
@@ -15,43 +31,38 @@ serve(async (req) => {
   }
 
   try {
-    if (!rapidApiKey) {
-      throw new Error('RAPIDAPI_KEY not configured');
-    }
-
+    const ids = Object.values(tickerToId).join(',');
+    
+    // Use CoinGecko free API (no auth required)
     const response = await fetch(
-      'https://crypto-news51.p.rapidapi.com/api/v1/mini-crypto/prices?base_currency=USD&page=1&page_size=50',
+      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`,
       {
         method: 'GET',
         headers: {
-          'x-rapidapi-host': 'crypto-news51.p.rapidapi.com',
-          'x-rapidapi-key': rapidApiKey,
+          'Accept': 'application/json',
         },
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('RapidAPI error:', response.status, errorText);
-      throw new Error(`RapidAPI error: ${response.status}`);
+      console.error('CoinGecko API error:', response.status, errorText);
+      throw new Error(`CoinGecko API error: ${response.status}`);
     }
 
     const data = await response.json();
     
-    // Transform the data to a simpler format
-    // The API returns an array of crypto prices
+    // Transform the data to our format using ticker symbols
     const prices: Record<string, { price: number; change24h: number }> = {};
     
-    if (data && Array.isArray(data.data)) {
-      data.data.forEach((crypto: any) => {
-        const symbol = crypto.symbol?.toUpperCase();
-        if (symbol) {
-          prices[symbol] = {
-            price: parseFloat(crypto.price) || 0,
-            change24h: parseFloat(crypto.percent_change_24h) || 0,
-          };
-        }
-      });
+    for (const [ticker, coinId] of Object.entries(tickerToId)) {
+      const coinData = data[coinId];
+      if (coinData) {
+        prices[ticker] = {
+          price: coinData.usd || 0,
+          change24h: coinData.usd_24h_change || 0,
+        };
+      }
     }
 
     console.log('Fetched crypto prices:', Object.keys(prices).length, 'tokens');
