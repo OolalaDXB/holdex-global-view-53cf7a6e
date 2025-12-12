@@ -124,10 +124,10 @@ export function useBalanceSheet({
     const filteredReceivables = filterByCertainty(filterByEntity(receivables), 'contractual');
 
     // Categorize assets
-    const cashAndBankAssets = filteredAssets.filter(a => a.type === 'bank-account');
-    const digitalAssets = filteredAssets.filter(a => a.type === 'digital-assets');
+    const cashAndBankAssets = filteredAssets.filter(a => a.type === 'bank');
+    const digitalAssets = filteredAssets.filter(a => a.type === 'crypto');
     const realEstateAssets = filteredAssets.filter(a => a.type === 'real-estate');
-    const investmentAssets = filteredAssets.filter(a => a.type === 'investments' || a.type === 'business-equity');
+    const investmentAssets = filteredAssets.filter(a => a.type === 'investment' || a.type === 'business');
 
     // Categorize collections
     const vehicleCollections = filteredCollections.filter(c => c.type === 'vehicle');
