@@ -30,6 +30,8 @@ export type Database = {
           image_url: string | null
           institution: string | null
           is_shariah_compliant: boolean | null
+          lease_end_date: string | null
+          liquidity_status: string | null
           name: string
           notes: string | null
           ownership_percentage: number | null
@@ -43,6 +45,7 @@ export type Database = {
           reference_date: string | null
           rental_income: number | null
           shariah_certification: string | null
+          tenure_type: string | null
           ticker: string | null
           total_price: number | null
           type: string
@@ -65,6 +68,8 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           is_shariah_compliant?: boolean | null
+          lease_end_date?: string | null
+          liquidity_status?: string | null
           name: string
           notes?: string | null
           ownership_percentage?: number | null
@@ -78,6 +83,7 @@ export type Database = {
           reference_date?: string | null
           rental_income?: number | null
           shariah_certification?: string | null
+          tenure_type?: string | null
           ticker?: string | null
           total_price?: number | null
           type: string
@@ -100,6 +106,8 @@ export type Database = {
           image_url?: string | null
           institution?: string | null
           is_shariah_compliant?: boolean | null
+          lease_end_date?: string | null
+          liquidity_status?: string | null
           name?: string
           notes?: string | null
           ownership_percentage?: number | null
@@ -113,6 +121,7 @@ export type Database = {
           reference_date?: string | null
           rental_income?: number | null
           shariah_certification?: string | null
+          tenure_type?: string | null
           ticker?: string | null
           total_price?: number | null
           type?: string

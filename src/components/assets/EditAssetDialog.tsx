@@ -54,6 +54,11 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
     entity_id: null as string | null,
     is_shariah_compliant: false,
     shariah_certification: '',
+    // UK tenure
+    tenure_type: 'freehold',
+    lease_end_date: null as Date | null,
+    // Liquidity
+    liquidity_status: 'liquid',
   });
 
   useEffect(() => {
@@ -76,6 +81,9 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         entity_id: asset.entity_id || null,
         is_shariah_compliant: asset.is_shariah_compliant || false,
         shariah_certification: asset.shariah_certification || '',
+        tenure_type: (asset as any).tenure_type || 'freehold',
+        lease_end_date: (asset as any).lease_end_date ? new Date((asset as any).lease_end_date) : null,
+        liquidity_status: (asset as any).liquidity_status || 'liquid',
       });
     }
   }, [asset]);
@@ -104,6 +112,9 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         entity_id: formData.entity_id,
         is_shariah_compliant: formData.is_shariah_compliant,
         shariah_certification: formData.shariah_certification || null,
+        tenure_type: asset.type === 'real-estate' ? formData.tenure_type : null,
+        lease_end_date: formData.lease_end_date ? format(formData.lease_end_date, 'yyyy-MM-dd') : null,
+        liquidity_status: formData.liquidity_status,
       });
 
       toast({
@@ -367,6 +378,88 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                       )}
                     </>
                   )}
+
+                  {/* UK Tenure Type for Real Estate */}
+                  {asset.type === 'real-estate' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>Tenure Type</Label>
+                        <Select 
+                          value={formData.tenure_type} 
+                          onValueChange={(value) => setFormData({ ...formData, tenure_type: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="freehold">Freehold</SelectItem>
+                            <SelectItem value="leasehold">Leasehold</SelectItem>
+                            <SelectItem value="share_of_freehold">Share of Freehold</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Lease End Date for Leasehold */}
+                      {formData.tenure_type === 'leasehold' && (
+                        <div className="space-y-2">
+                          <Label>Lease End Date</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !formData.lease_end_date && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {formData.lease_end_date ? format(formData.lease_end_date, 'dd/MM/yyyy') : 'Select date'}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={formData.lease_end_date || undefined}
+                                onSelect={(date) => setFormData({ ...formData, lease_end_date: date || null })}
+                                initialFocus
+                                className="pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                          {formData.lease_end_date && (() => {
+                            const yearsRemaining = Math.floor((formData.lease_end_date.getTime() - new Date().getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+                            if (yearsRemaining < 80) {
+                              return (
+                                <p className="text-xs text-warning">
+                                  ⚠️ {yearsRemaining} years remaining - below 80-year mortgage threshold
+                                </p>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Liquidity Status */}
+                  <div className="col-span-2 space-y-2 pt-4 border-t border-border">
+                    <Label>Liquidity Status</Label>
+                    <Select 
+                      value={formData.liquidity_status} 
+                      onValueChange={(value) => setFormData({ ...formData, liquidity_status: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="liquid">Liquid</SelectItem>
+                        <SelectItem value="restricted">Restricted</SelectItem>
+                        <SelectItem value="frozen">Frozen</SelectItem>
+                        <SelectItem value="blocked">Blocked</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="flex gap-3 pt-4">

@@ -97,6 +97,11 @@ const AddAssetPage = () => {
     bankOwnershipPercentage: '',
     residualValue: '',
     shariahAdvisor: '',
+    // UK real estate tenure
+    tenureType: 'freehold',
+    leaseEndDate: null as Date | null,
+    // Liquidity status
+    liquidityStatus: 'liquid',
   });
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -192,6 +197,11 @@ const AddAssetPage = () => {
           // Shariah compliance for investments
           is_shariah_compliant: selectedType === 'investment' ? formData.isShariahCompliant : false,
           shariah_certification: formData.shariahCertification || null,
+          // UK tenure fields
+          tenure_type: selectedType === 'real-estate' ? formData.tenureType : null,
+          lease_end_date: formData.leaseEndDate ? format(formData.leaseEndDate, 'yyyy-MM-dd') : null,
+          // Liquidity status
+          liquidity_status: formData.liquidityStatus,
         });
       }
 
@@ -375,6 +385,67 @@ const AddAssetPage = () => {
                         <SelectItem value="rented_out">Rented Out</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                )}
+
+                {/* UK Tenure Type for Real Estate */}
+                {selectedType === 'real-estate' && (
+                  <div className="space-y-2">
+                    <Label>Tenure Type</Label>
+                    <Select 
+                      value={formData.tenureType} 
+                      onValueChange={(value) => setFormData({ ...formData, tenureType: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="freehold">Freehold</SelectItem>
+                        <SelectItem value="leasehold">Leasehold</SelectItem>
+                        <SelectItem value="share_of_freehold">Share of Freehold</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Lease End Date for Leasehold properties */}
+                {selectedType === 'real-estate' && formData.tenureType === 'leasehold' && (
+                  <div className="space-y-2">
+                    <Label>Lease End Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !formData.leaseEndDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.leaseEndDate ? format(formData.leaseEndDate, "PPP") : "Select date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.leaseEndDate || undefined}
+                          onSelect={(date) => setFormData({ ...formData, leaseEndDate: date || null })}
+                          initialFocus
+                          className="p-3 pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    {formData.leaseEndDate && (() => {
+                      const yearsRemaining = Math.floor((formData.leaseEndDate.getTime() - new Date().getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+                      if (yearsRemaining < 80) {
+                        return (
+                          <p className="text-xs text-warning">
+                            ⚠️ {yearsRemaining} years remaining - below 80-year mortgage threshold
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
 
@@ -791,6 +862,32 @@ const AddAssetPage = () => {
                   </>
                 )}
               </div>
+
+              {/* Liquidity Status - Advanced Section */}
+              {selectedType !== 'liability' && (
+                <div className="space-y-2 pt-4 border-t border-border">
+                  <Label>Liquidity Status</Label>
+                  <Select 
+                    value={formData.liquidityStatus} 
+                    onValueChange={(value) => setFormData({ ...formData, liquidityStatus: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="liquid">Liquid</SelectItem>
+                      <SelectItem value="restricted">Restricted</SelectItem>
+                      <SelectItem value="frozen">Frozen</SelectItem>
+                      <SelectItem value="blocked">Blocked</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {formData.liquidityStatus !== 'liquid' && (
+                    <p className="text-xs text-muted-foreground">
+                      This asset will be marked with a liquidity warning badge.
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="flex gap-4 pt-4">
                 <Button type="submit" className="flex-1" disabled={isSubmitting}>
