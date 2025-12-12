@@ -42,15 +42,31 @@ export const LEGAL_FORMS = [
 ] as const;
 
 export const TRUST_TYPES = [
-  { value: 'revocable', label: 'Revocable' },
-  { value: 'irrevocable', label: 'Irrevocable' },
-  { value: 'discretionary', label: 'Discretionary' },
-  { value: 'fixed', label: 'Fixed Interest' },
-  { value: 'charitable', label: 'Charitable' },
-  { value: 'waqf', label: 'Waqf (Islamic Endowment)' },
+  { value: 'revocable', label: 'Revocable', compliance: null },
+  { value: 'irrevocable', label: 'Irrevocable', compliance: null },
+  { value: 'discretionary', label: 'Discretionary', compliance: null },
+  { value: 'fixed', label: 'Fixed Interest', compliance: null },
+  { value: 'charitable', label: 'Charitable', compliance: null },
+  { value: 'waqf', label: 'Waqf (Islamic Endowment)', compliance: 'islamic' },
 ] as const;
 
 export type EntityType = typeof ENTITY_TYPES[number]['value'];
+
+// Filter entity types based on compliance mode
+export const getFilteredEntityTypes = (showHindu: boolean) => {
+  return ENTITY_TYPES.filter(type => {
+    if (type.value === 'huf') return showHindu;
+    return true;
+  });
+};
+
+// Filter trust types based on compliance mode
+export const getFilteredTrustTypes = (showIslamic: boolean) => {
+  return TRUST_TYPES.filter(type => {
+    if (type.compliance === 'islamic') return showIslamic;
+    return true;
+  });
+};
 
 export const useEntities = () => {
   const { user } = useAuth();

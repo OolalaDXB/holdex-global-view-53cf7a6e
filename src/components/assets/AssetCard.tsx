@@ -6,6 +6,7 @@ import { getCountryFlag } from '@/hooks/useCountries';
 import { InstitutionLogo } from '@/components/ui/institution-logo';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { useComplianceMode } from '@/hooks/useComplianceMode';
 
 interface CryptoPrice {
   price: number;
@@ -49,6 +50,7 @@ const propertyStatusLabels: Record<string, string> = {
 export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
+  const { showIslamic } = useComplianceMode();
   
   // Check if this is an off-plan property
   const isOffPlan = asset.type === 'real-estate' && ['off_plan', 'under_construction'].includes(asset.property_status || '');
@@ -129,8 +131,8 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
         </Badge>
       )}
       
-      {/* Shariah Compliant badge */}
-      {asset.is_shariah_compliant && (
+      {/* Shariah Compliant badge - only show when Islamic compliance mode enabled */}
+      {showIslamic && asset.is_shariah_compliant && (
         <Badge 
           variant="secondary" 
           className={cn(
@@ -139,7 +141,7 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           )}
         >
           <Moon size={10} className="mr-1" />
-          Shariah
+          ☪️ Shariah
         </Badge>
       )}
       
