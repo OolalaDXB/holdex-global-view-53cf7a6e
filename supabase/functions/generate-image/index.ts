@@ -58,42 +58,60 @@ serve(async (req) => {
   try {
     const { assetType, name, brand, model, description, country } = await req.json() as GenerateRequest;
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      console.error('OpenAI API key not configured');
-      throw new Error('OpenAI API key not configured');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY not configured');
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
     const prompt = generatePrompt({ assetType, name, brand, model, description, country });
     console.log('Generating image with prompt:', prompt);
 
-    // Call OpenAI gpt-image-1
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    // Call Lovable AI Gateway with image generation model
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-image-1',
-        prompt: prompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'medium',
+        model: 'google/gemini-2.5-flash-image-preview',
+        messages: [
+          { role: 'user', content: `Generate a high-quality image: ${prompt}` }
+        ],
+        modalities: ['image', 'text'],
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      console.error('OpenAI API error:', error);
-      throw new Error(error.error?.message || 'Failed to generate image');
+      const errorText = await response.text();
+      console.error('Lovable AI Gateway error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        throw new Error('Rate limit exceeded, please try again later');
+      }
+      if (response.status === 402) {
+        throw new Error('AI credits exhausted, please add funds to continue');
+      }
+      throw new Error(`Failed to generate image: ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('OpenAI response received');
+    console.log('Lovable AI response received');
     
-    // gpt-image-1 returns base64 by default
-    const imageBase64 = data.data[0].b64_json;
+    // Extract base64 image from response
+    const imageData = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    if (!imageData) {
+      console.error('No image in response:', JSON.stringify(data));
+      throw new Error('No image generated');
+    }
+
+    // Extract base64 content (remove data:image/png;base64, prefix)
+    const base64Match = imageData.match(/^data:image\/\w+;base64,(.+)$/);
+    if (!base64Match) {
+      throw new Error('Invalid image format received');
+    }
+    const imageBase64 = base64Match[1];
     
     // Convert base64 to blob
     const imageBytes = Uint8Array.from(atob(imageBase64), c => c.charCodeAt(0));
