@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { DemoProvider } from "@/contexts/DemoContext";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Assets from "./pages/Assets";
@@ -23,27 +24,29 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <DemoProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/demo" element={<Demo />} />
-              <Route path="/demo/assets" element={<DemoAssets />} />
-              <Route path="/demo/collections" element={<DemoCollections />} />
-              <Route path="/demo/add" element={<DemoAddAsset />} />
-              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-              <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
-              <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
-              <Route path="/add" element={<ProtectedRoute><AddAsset /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </DemoProvider>
+      <CurrencyProvider>
+        <DemoProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/demo" element={<Demo />} />
+                <Route path="/demo/assets" element={<DemoAssets />} />
+                <Route path="/demo/collections" element={<DemoCollections />} />
+                <Route path="/demo/add" element={<DemoAddAsset />} />
+                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
+                <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
+                <Route path="/add" element={<ProtectedRoute><AddAsset /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </DemoProvider>
+      </CurrencyProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

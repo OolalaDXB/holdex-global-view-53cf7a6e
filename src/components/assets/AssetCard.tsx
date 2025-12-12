@@ -1,7 +1,8 @@
 import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2 } from 'lucide-react';
-import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
+import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
 import { Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
+import { getCountryFlag } from '@/hooks/useCountries';
 
 interface CryptoPrice {
   price: number;
@@ -12,6 +13,7 @@ interface AssetCardProps {
   asset: Asset;
   rates?: Record<string, number>;
   cryptoPrices?: Record<string, CryptoPrice>;
+  displayCurrency?: string;
   delay?: number;
   onEdit?: (asset: Asset) => void;
   onDelete?: (asset: Asset) => void;
@@ -33,7 +35,7 @@ const typeLabels: Record<string, string> = {
   'business': 'Business Equity',
 };
 
-export function AssetCard({ asset, rates, cryptoPrices, delay = 0, onEdit, onDelete }: AssetCardProps) {
+export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
   
@@ -49,8 +51,13 @@ export function AssetCard({ asset, rates, cryptoPrices, delay = 0, onEdit, onDel
     }
   }
   
+  // Convert to display currency
   const eurValue = convertToEUR(displayValue, asset.currency, activeRates);
+  const displayCurrencyValue = convertFromEUR(eurValue, displayCurrency, activeRates);
   const isPositiveChange = change24h !== undefined && change24h > 0;
+
+  // Get country flag
+  const countryFlag = getCountryFlag(asset.country);
 
   return (
     <div 
@@ -69,7 +76,7 @@ export function AssetCard({ asset, rates, cryptoPrices, delay = 0, onEdit, onDel
           <div>
             <h4 className="font-medium text-foreground">{asset.name}</h4>
             <p className="text-sm text-muted-foreground">
-              {asset.country} · {typeLabels[asset.type] || asset.type}
+              {countryFlag} {asset.country} · {typeLabels[asset.type] || asset.type}
             </p>
           </div>
         </div>
@@ -101,11 +108,11 @@ export function AssetCard({ asset, rates, cryptoPrices, delay = 0, onEdit, onDel
       <div className="space-y-2">
         <div className="flex items-baseline justify-between">
           <span className="text-xl font-semibold tabular-nums text-foreground">
-            {formatCurrency(displayValue, asset.currency)}
+            {formatCurrency(displayCurrencyValue, displayCurrency)}
           </span>
-          {asset.currency !== 'EUR' && (
+          {asset.currency !== displayCurrency && (
             <span className="text-sm text-muted-foreground tabular-nums">
-              ≈ {formatCurrency(eurValue, 'EUR')}
+              {formatCurrency(displayValue, asset.currency)}
             </span>
           )}
         </div>

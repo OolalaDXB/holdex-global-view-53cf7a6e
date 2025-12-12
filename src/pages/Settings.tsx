@@ -13,6 +13,7 @@ import { useSharedAccess, useInvitePartner, useRevokeAccess } from '@/hooks/useS
 import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
+import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { X } from 'lucide-react';
 
 const SettingsPage = () => {
@@ -26,17 +27,27 @@ const SettingsPage = () => {
   const { data: assets = [] } = useAssets();
   const { data: collections = [] } = useCollections();
   const { data: liabilities = [] } = useLiabilities();
+  const { data: exchangeRates } = useExchangeRates();
 
   const [fullName, setFullName] = useState('');
   const [baseCurrency, setBaseCurrency] = useState('EUR');
+  const [secondaryCurrency1, setSecondaryCurrency1] = useState('USD');
+  const [secondaryCurrency2, setSecondaryCurrency2] = useState('AED');
   const [darkMode, setDarkMode] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+
+  // Get all available currencies from exchange rates API
+  const availableCurrencies = exchangeRates?.rates 
+    ? Object.keys(exchangeRates.rates).sort() 
+    : ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
 
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name || '');
       setBaseCurrency(profile.base_currency || 'EUR');
+      setSecondaryCurrency1(profile.secondary_currency_1 || 'USD');
+      setSecondaryCurrency2(profile.secondary_currency_2 || 'AED');
       setDarkMode(profile.dark_mode ?? true);
     }
   }, [profile]);
@@ -47,6 +58,8 @@ const SettingsPage = () => {
       await updateProfile.mutateAsync({
         full_name: fullName,
         base_currency: baseCurrency,
+        secondary_currency_1: secondaryCurrency1,
+        secondary_currency_2: secondaryCurrency2,
         dark_mode: darkMode,
       });
       toast({
@@ -184,39 +197,73 @@ const SettingsPage = () => {
 
           <Separator />
 
-          {/* Preferences Section */}
+          {/* Currency Preferences Section */}
           <section>
-            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Preferences</h2>
-            <div className="space-y-6">
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Currency Preferences</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose your preferred currencies for the dashboard switcher.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="baseCurrency">Base Currency</Label>
-                <Select 
-                  value={baseCurrency} 
-                  onValueChange={setBaseCurrency}
-                >
-                  <SelectTrigger className="w-48">
+                <Select value={baseCurrency} onValueChange={setBaseCurrency}>
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    {['EUR', 'USD', 'AED', 'GBP', 'CHF'].map((currency) => (
+                  <SelectContent className="max-h-60">
+                    {availableCurrencies.map((currency) => (
                       <SelectItem key={currency} value={currency}>{currency}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">All values will be converted to this currency.</p>
+                <p className="text-xs text-muted-foreground">Primary display currency</p>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="darkMode">Dark Mode</Label>
-                  <p className="text-xs text-muted-foreground">Use dark theme for the interface.</p>
-                </div>
-                <Switch
-                  id="darkMode"
-                  checked={darkMode}
-                  onCheckedChange={setDarkMode}
-                />
+              <div className="space-y-2">
+                <Label htmlFor="secondary1">Secondary Currency 1</Label>
+                <Select value={secondaryCurrency1} onValueChange={setSecondaryCurrency1}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {availableCurrencies.map((currency) => (
+                      <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="secondary2">Secondary Currency 2</Label>
+                <Select value={secondaryCurrency2} onValueChange={setSecondaryCurrency2}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {availableCurrencies.map((currency) => (
+                      <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Display Preferences Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Display</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="darkMode">Dark Mode</Label>
+                <p className="text-xs text-muted-foreground">Use dark theme for the interface.</p>
+              </div>
+              <Switch
+                id="darkMode"
+                checked={darkMode}
+                onCheckedChange={setDarkMode}
+              />
             </div>
           </section>
 

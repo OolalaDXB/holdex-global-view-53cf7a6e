@@ -3,6 +3,7 @@ import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Collection } from '@/hooks/useCollections';
 import { Button } from '@/components/ui/button';
+import { getCountryFlag } from '@/hooks/useCountries';
 
 interface CollectionCardProps {
   collection: Collection;
@@ -86,7 +87,7 @@ export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete 
         <div>
           <h4 className="font-medium text-foreground">{collection.name}</h4>
           <p className="text-sm text-muted-foreground">
-            {categoryLabels[collection.type] || collection.type} · {collection.country}
+            {categoryLabels[collection.type] || collection.type} · {getCountryFlag(collection.country)} {collection.country}
           </p>
           {collection.brand && collection.model && (
             <p className="text-xs text-muted-foreground">
