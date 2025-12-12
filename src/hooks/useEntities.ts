@@ -9,7 +9,7 @@ export type EntityUpdate = TablesUpdate<'entities'>;
 
 export const ENTITY_TYPES = [
   { value: 'personal', label: 'Personal', icon: 'User', category: 'individual' },
-  { value: 'spouse', label: 'Spouse', icon: 'UserCircle', category: 'individual' },
+  { value: 'partner', label: 'Partner', icon: 'UserCircle', category: 'individual' },
   { value: 'couple', label: 'Couple', icon: 'Users', category: 'relationship' },
   { value: 'company', label: 'Company', icon: 'Building2', category: 'legal_entity' },
   { value: 'holding', label: 'Holding', icon: 'Landmark', category: 'legal_entity' },

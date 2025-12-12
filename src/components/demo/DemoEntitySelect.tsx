@@ -9,7 +9,7 @@ import { useDemo } from '@/contexts/DemoContext';
 import { User, Plus } from 'lucide-react';
 
 const QUICK_ENTITY_TYPES = [
-  { value: 'spouse', label: 'Spouse', color: '#9B6B6B' },
+  { value: 'partner', label: 'Partner', color: '#9B6B6B' },
   { value: 'couple', label: 'Couple (joint)', color: '#7D8B75' },
   { value: 'company', label: 'Company', color: '#6B7B9B' },
   { value: 'holding', label: 'Holding', color: '#8B7B6B' },
@@ -33,7 +33,7 @@ export const DemoEntitySelect = ({
 }: DemoEntitySelectProps) => {
   const { entities, addEntity } = useDemo();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newEntity, setNewEntity] = useState({ name: '', type: 'spouse', country: '' });
+  const [newEntity, setNewEntity] = useState({ name: '', type: 'partner', country: '' });
 
   // Find personal entity and sort entities for better UX
   const { personalEntity, otherEntities } = useMemo(() => {
@@ -52,7 +52,7 @@ export const DemoEntitySelect = ({
       type: newEntity.type,
       country: newEntity.country || null,
       color: typeInfo?.color || '#C4785A',
-      icon: newEntity.type === 'spouse' ? 'UserCircle' : 'Building2',
+      icon: newEntity.type === 'partner' ? 'UserCircle' : 'Building2',
       legal_name: null,
       registration_number: null,
       jurisdiction: null,
@@ -66,7 +66,7 @@ export const DemoEntitySelect = ({
     
     onChange(newId);
     setShowCreateDialog(false);
-    setNewEntity({ name: '', type: 'spouse', country: '' });
+    setNewEntity({ name: '', type: 'partner', country: '' });
   };
 
   // Get display name for selected value

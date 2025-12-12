@@ -9,7 +9,7 @@ import { useEntities, useCreateEntity, ENTITY_TYPES } from '@/hooks/useEntities'
 import { Loader2, User, Plus } from 'lucide-react';
 
 const QUICK_ENTITY_TYPES = [
-  { value: 'spouse', label: 'Spouse', color: '#9B6B6B' },
+  { value: 'partner', label: 'Partner', color: '#9B6B6B' },
   { value: 'couple', label: 'Couple (joint)', color: '#7D8B75' },
   { value: 'company', label: 'Company', color: '#6B7B9B' },
   { value: 'holding', label: 'Holding', color: '#8B7B6B' },
@@ -34,7 +34,7 @@ export const EntitySelect = ({
   const { data: entities, isLoading } = useEntities();
   const createEntity = useCreateEntity();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [newEntity, setNewEntity] = useState({ name: '', type: 'spouse', country: '' });
+  const [newEntity, setNewEntity] = useState({ name: '', type: 'partner', country: '' });
   const [isCreating, setIsCreating] = useState(false);
 
   // Find personal entity and sort entities for better UX
@@ -58,14 +58,14 @@ export const EntitySelect = ({
         type: newEntity.type,
         country: newEntity.country || null,
         color: typeInfo?.color || '#C4785A',
-        icon: newEntity.type === 'spouse' ? '👤' : '🏢',
+        icon: newEntity.type === 'partner' ? '👤' : '🏢',
         owned_by_entity_id: personalEntity?.id || null,
         ownership_percentage: 100,
       });
       
       onChange(result.id);
       setShowCreateDialog(false);
-      setNewEntity({ name: '', type: 'spouse', country: '' });
+      setNewEntity({ name: '', type: 'partner', country: '' });
     } catch (error) {
       console.error('Failed to create entity:', error);
     } finally {
@@ -151,7 +151,7 @@ export const EntitySelect = ({
             <div className="h-px bg-border my-1" />
           )}
           
-          {/* Other entities: spouse, companies, trusts, etc. */}
+          {/* Other entities: partners, companies, trusts, etc. */}
           {otherEntities.map((entity) => {
             const typeInfo = ENTITY_TYPES.find(t => t.value === entity.type);
             return (

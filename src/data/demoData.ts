@@ -47,6 +47,8 @@ export interface DemoAsset {
   size_sqm?: number | null;
   // Certainty
   certainty?: string | null;
+  // Ownership allocation for shared ownership
+  ownership_allocation?: { entity_id: string; percentage: number }[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -75,6 +77,8 @@ export interface DemoCollection {
   acquisition_type: string | null;
   acquisition_from: string | null;
   certainty?: string | null;
+  // Ownership allocation for shared ownership
+  ownership_allocation?: { entity_id: string; percentage: number }[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -226,6 +230,7 @@ export const demoProfile: DemoProfile = {
 
 const DEMO_USER_ID = 'demo-user-lucas-soleil';
 const DEMO_ENTITY_PERSONAL = 'demo-entity-personal';
+const DEMO_ENTITY_PARTNER = 'demo-entity-partner';
 const DEMO_ENTITY_COMPANY = 'demo-entity-company';
 const DEMO_ENTITY_HOLDING = 'demo-entity-holding';
 
@@ -249,6 +254,26 @@ export const demoEntities: DemoEntity[] = [
     icon: 'User',
     notes: null,
     created_at: '2019-01-01T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+  {
+    id: DEMO_ENTITY_PARTNER,
+    user_id: DEMO_USER_ID,
+    name: 'Darya',
+    type: 'partner',
+    legal_name: null,
+    registration_number: null,
+    country: 'AE',
+    jurisdiction: null,
+    is_active: true,
+    formation_date: null,
+    dissolution_date: null,
+    owned_by_entity_id: null,
+    ownership_percentage: 100,
+    color: '#9B6B6B',
+    icon: 'UserCircle',
+    notes: 'Life partner',
+    created_at: '2020-01-01T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
   {

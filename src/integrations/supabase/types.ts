@@ -38,6 +38,7 @@ export type Database = {
           longitude: number | null
           name: string
           notes: string | null
+          ownership_allocation: Json | null
           ownership_percentage: number | null
           platform: string | null
           project_name: string | null
@@ -83,6 +84,7 @@ export type Database = {
           longitude?: number | null
           name: string
           notes?: string | null
+          ownership_allocation?: Json | null
           ownership_percentage?: number | null
           platform?: string | null
           project_name?: string | null
@@ -128,6 +130,7 @@ export type Database = {
           longitude?: number | null
           name?: string
           notes?: string | null
+          ownership_allocation?: Json | null
           ownership_percentage?: number | null
           platform?: string | null
           project_name?: string | null
@@ -187,6 +190,7 @@ export type Database = {
           model: string | null
           name: string
           notes: string | null
+          ownership_allocation: Json | null
           purchase_date: string | null
           purchase_value: number | null
           type: string
@@ -213,6 +217,7 @@ export type Database = {
           model?: string | null
           name: string
           notes?: string | null
+          ownership_allocation?: Json | null
           purchase_date?: string | null
           purchase_value?: number | null
           type: string
@@ -239,6 +244,7 @@ export type Database = {
           model?: string | null
           name?: string
           notes?: string | null
+          ownership_allocation?: Json | null
           purchase_date?: string | null
           purchase_value?: number | null
           type?: string
