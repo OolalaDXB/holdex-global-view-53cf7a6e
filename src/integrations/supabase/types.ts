@@ -16,10 +16,13 @@ export type Database = {
     Tables: {
       assets: {
         Row: {
+          acquisition_from: string | null
+          acquisition_type: string | null
           country: string
           created_at: string | null
           currency: string
           current_value: number
+          entity_id: string | null
           id: string
           image_url: string | null
           institution: string | null
@@ -39,10 +42,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          acquisition_from?: string | null
+          acquisition_type?: string | null
           country: string
           created_at?: string | null
           currency: string
           current_value: number
+          entity_id?: string | null
           id?: string
           image_url?: string | null
           institution?: string | null
@@ -62,10 +68,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          acquisition_from?: string | null
+          acquisition_type?: string | null
           country?: string
           created_at?: string | null
           currency?: string
           current_value?: number
+          entity_id?: string | null
           id?: string
           image_url?: string | null
           institution?: string | null
@@ -86,6 +95,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "assets_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "assets_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -96,6 +112,8 @@ export type Database = {
       }
       collections: {
         Row: {
+          acquisition_from: string | null
+          acquisition_type: string | null
           brand: string | null
           called_amount: number | null
           commitment_amount: number | null
@@ -105,6 +123,7 @@ export type Database = {
           current_value: number
           description: string | null
           distribution_status: string | null
+          entity_id: string | null
           fund_name: string | null
           id: string
           image_url: string | null
@@ -119,6 +138,8 @@ export type Database = {
           year: number | null
         }
         Insert: {
+          acquisition_from?: string | null
+          acquisition_type?: string | null
           brand?: string | null
           called_amount?: number | null
           commitment_amount?: number | null
@@ -128,6 +149,7 @@ export type Database = {
           current_value: number
           description?: string | null
           distribution_status?: string | null
+          entity_id?: string | null
           fund_name?: string | null
           id?: string
           image_url?: string | null
@@ -142,6 +164,8 @@ export type Database = {
           year?: number | null
         }
         Update: {
+          acquisition_from?: string | null
+          acquisition_type?: string | null
           brand?: string | null
           called_amount?: number | null
           commitment_amount?: number | null
@@ -151,6 +175,7 @@ export type Database = {
           current_value?: number
           description?: string | null
           distribution_status?: string | null
+          entity_id?: string | null
           fund_name?: string | null
           id?: string
           image_url?: string | null
@@ -166,10 +191,88 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "collections_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "collections_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entities: {
+        Row: {
+          color: string | null
+          country: string | null
+          created_at: string
+          dissolution_date: string | null
+          formation_date: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          jurisdiction: string | null
+          legal_name: string | null
+          name: string
+          notes: string | null
+          owned_by_entity_id: string | null
+          ownership_percentage: number | null
+          registration_number: string | null
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          country?: string | null
+          created_at?: string
+          dissolution_date?: string | null
+          formation_date?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          jurisdiction?: string | null
+          legal_name?: string | null
+          name: string
+          notes?: string | null
+          owned_by_entity_id?: string | null
+          ownership_percentage?: number | null
+          registration_number?: string | null
+          type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          country?: string | null
+          created_at?: string
+          dissolution_date?: string | null
+          formation_date?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          jurisdiction?: string | null
+          legal_name?: string | null
+          name?: string
+          notes?: string | null
+          owned_by_entity_id?: string | null
+          ownership_percentage?: number | null
+          registration_number?: string | null
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entities_owned_by_entity_id_fkey"
+            columns: ["owned_by_entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
             referencedColumns: ["id"]
           },
         ]
@@ -181,6 +284,7 @@ export type Database = {
           currency: string
           current_balance: number
           end_date: string | null
+          entity_id: string | null
           id: string
           institution: string | null
           interest_rate: number | null
@@ -200,6 +304,7 @@ export type Database = {
           currency: string
           current_balance: number
           end_date?: string | null
+          entity_id?: string | null
           id?: string
           institution?: string | null
           interest_rate?: number | null
@@ -219,6 +324,7 @@ export type Database = {
           currency?: string
           current_balance?: number
           end_date?: string | null
+          entity_id?: string | null
           id?: string
           institution?: string | null
           interest_rate?: number | null
@@ -233,6 +339,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "liabilities_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "liabilities_linked_asset_id_fkey"
             columns: ["linked_asset_id"]
