@@ -7,7 +7,7 @@ const corsHeaders = {
 }
 
 interface GenerateRequest {
-  assetType: 'watch' | 'vehicle' | 'art' | 'wine' | 'real-estate' | 'jewelry' | 'other';
+  assetType: 'watch' | 'vehicle' | 'art' | 'wine' | 'real-estate' | 'jewelry' | 'business' | 'crypto' | 'other';
   name: string;
   brand?: string;
   model?: string;
@@ -37,6 +37,12 @@ const generatePrompt = (req: GenerateRequest): string => {
     case 'real-estate':
       const location = req.country ? `in ${req.country}` : '';
       return `Luxury property ${location}, ${req.name}, architectural photography, golden hour lighting, high-end real estate exterior, manicured landscape, ${baseStyle}`;
+    
+    case 'business':
+      return `${req.name}, corporate headquarters building, modern glass architecture, executive business environment, professional corporate imagery, ${baseStyle}`;
+    
+    case 'crypto':
+      return `Digital cryptocurrency concept art, ${req.name}, futuristic blockchain visualization, glowing digital currency, tech-forward aesthetic, abstract digital asset representation, ${baseStyle}`;
     
     default:
       return `${req.name}, ${req.description || ''}, premium luxury item, ${baseStyle}`;
