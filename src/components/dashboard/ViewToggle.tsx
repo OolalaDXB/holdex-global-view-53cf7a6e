@@ -8,12 +8,14 @@ import {
 } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 
 export type ViewMode = 'all' | 'financial' | 'custom';
 
 export interface ViewConfig {
   mode: ViewMode;
   customTypes: string[];
+  includeFrozenBlocked: boolean;
 }
 
 const ASSET_TYPES = [
@@ -32,6 +34,7 @@ const STORAGE_KEY = 'dashboard-view-config';
 const defaultConfig: ViewConfig = {
   mode: 'all',
   customTypes: ASSET_TYPES.map(t => t.id),
+  includeFrozenBlocked: true,
 };
 
 export function useViewConfig() {
@@ -68,7 +71,13 @@ export function useViewConfig() {
     return getIncludedTypes().includes('collections');
   };
 
-  return { config, setConfig, getIncludedTypes, includesCollections };
+  const shouldIncludeAsset = (liquidityStatus: string | null | undefined): boolean => {
+    if (config.includeFrozenBlocked) return true;
+    const status = liquidityStatus || 'liquid';
+    return status === 'liquid' || status === 'restricted';
+  };
+
+  return { config, setConfig, getIncludedTypes, includesCollections, shouldIncludeAsset };
 }
 
 interface ViewToggleProps {
@@ -82,7 +91,7 @@ export function ViewToggle({ config, onChange }: ViewToggleProps) {
   const handleModeChange = (mode: ViewMode) => {
     if (mode === 'custom' && config.mode !== 'custom') {
       // When switching to custom, initialize with all types
-      onChange({ mode, customTypes: ASSET_TYPES.map(t => t.id) });
+      onChange({ ...config, mode, customTypes: ASSET_TYPES.map(t => t.id) });
     } else {
       onChange({ ...config, mode });
     }
@@ -95,7 +104,11 @@ export function ViewToggle({ config, onChange }: ViewToggleProps) {
     const newTypes = config.customTypes.includes(typeId)
       ? config.customTypes.filter(t => t !== typeId)
       : [...config.customTypes, typeId];
-    onChange({ mode: 'custom', customTypes: newTypes });
+    onChange({ ...config, mode: 'custom', customTypes: newTypes });
+  };
+
+  const handleFrozenToggle = () => {
+    onChange({ ...config, includeFrozenBlocked: !config.includeFrozenBlocked });
   };
 
   const getModeLabel = () => {
@@ -184,6 +197,22 @@ export function ViewToggle({ config, onChange }: ViewToggleProps) {
               ))}
             </div>
           )}
+
+          {/* Frozen/Blocked toggle */}
+          <Separator className="my-2" />
+          <div className="flex items-center gap-2 px-3 py-1">
+            <Checkbox
+              id="include-frozen"
+              checked={config.includeFrozenBlocked}
+              onCheckedChange={handleFrozenToggle}
+            />
+            <Label 
+              htmlFor="include-frozen"
+              className="text-sm text-muted-foreground cursor-pointer"
+            >
+              Include frozen/blocked
+            </Label>
+          </div>
         </div>
       </PopoverContent>
     </Popover>

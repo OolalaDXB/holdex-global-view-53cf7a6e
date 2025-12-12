@@ -7,6 +7,7 @@ import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
 import { ViewToggle, useViewConfig } from '@/components/dashboard/ViewToggle';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
 import { ExpiringDocumentsWidget } from '@/components/dashboard/ExpiringDocumentsWidget';
+import { LeaseholdRemindersWidget } from '@/components/dashboard/LeaseholdRemindersWidget';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
@@ -33,7 +34,7 @@ const Dashboard = () => {
   const { data: cryptoPrices, dataUpdatedAt: cryptoUpdatedAt } = useCryptoPrices();
   const saveSnapshot = useSaveSnapshot();
   const { displayCurrency, convertToDisplay, formatInDisplayCurrency } = useCurrency();
-  const { config: viewConfig, setConfig: setViewConfig, getIncludedTypes, includesCollections } = useViewConfig();
+  const { config: viewConfig, setConfig: setViewConfig, getIncludedTypes, includesCollections, shouldIncludeAsset } = useViewConfig();
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
   const rates = exchangeRates?.rates || fallbackRates;
@@ -54,8 +55,10 @@ const Dashboard = () => {
     return asset.current_value;
   };
 
-  // Filter assets based on view config
-  const filteredAssets = assets.filter(asset => includedTypes.includes(asset.type));
+  // Filter assets based on view config and liquidity status
+  const filteredAssets = assets.filter(asset => 
+    includedTypes.includes(asset.type) && shouldIncludeAsset(asset.liquidity_status)
+  );
   const filteredCollections = showCollections ? collections : [];
 
   // Calculate totals using live rates and crypto prices (in EUR for storage)
@@ -304,6 +307,9 @@ const Dashboard = () => {
 
             {/* Expiring Documents Widget */}
             <ExpiringDocumentsWidget />
+
+            {/* Leasehold Reminders Widget */}
+            <LeaseholdRemindersWidget assets={assets} />
 
             {/* Collections Gallery - only show if collections are included */}
             {showCollections && <CollectionsGallery collections={collections} />}
