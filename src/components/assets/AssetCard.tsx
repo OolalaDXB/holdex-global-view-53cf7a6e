@@ -93,6 +93,9 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
             <h4 className="font-medium text-foreground">{asset.name}</h4>
             <p className="text-sm text-muted-foreground">
               {countryFlag} {asset.country} · {typeLabels[asset.type] || asset.type}
+              {asset.institution && (
+                <span className="text-muted-foreground"> · {asset.institution}</span>
+              )}
             </p>
           </div>
         </div>
@@ -165,13 +168,6 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           </div>
         )}
 
-        {asset.institution && !showInstitutionLogo && (
-          <div className="pt-2 border-t border-border">
-            <span className="text-sm text-muted-foreground">
-              {asset.institution}
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );
