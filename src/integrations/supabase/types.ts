@@ -543,6 +543,155 @@ export type Database = {
         }
         Relationships: []
       }
+      receivable_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string
+          id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string | null
+          receivable_id: string
+          reference: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency: string
+          id?: string
+          notes?: string | null
+          payment_date: string
+          payment_method?: string | null
+          receivable_id: string
+          reference?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          receivable_id?: string
+          reference?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receivable_payments_receivable_id_fkey"
+            columns: ["receivable_id"]
+            isOneToOne: false
+            referencedRelation: "receivables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receivables: {
+        Row: {
+          created_at: string | null
+          currency: string
+          current_balance: number
+          debtor_contact: string | null
+          debtor_name: string
+          debtor_type: string | null
+          deposit_type: string | null
+          description: string | null
+          due_date: string | null
+          entity_id: string | null
+          id: string
+          interest_rate: number | null
+          issue_date: string | null
+          last_payment_amount: number | null
+          last_payment_date: string | null
+          linked_asset_id: string | null
+          name: string
+          notes: string | null
+          original_amount: number
+          recovery_probability: string | null
+          refund_conditions: string | null
+          repayment_schedule: string | null
+          status: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          currency: string
+          current_balance: number
+          debtor_contact?: string | null
+          debtor_name: string
+          debtor_type?: string | null
+          deposit_type?: string | null
+          description?: string | null
+          due_date?: string | null
+          entity_id?: string | null
+          id?: string
+          interest_rate?: number | null
+          issue_date?: string | null
+          last_payment_amount?: number | null
+          last_payment_date?: string | null
+          linked_asset_id?: string | null
+          name: string
+          notes?: string | null
+          original_amount: number
+          recovery_probability?: string | null
+          refund_conditions?: string | null
+          repayment_schedule?: string | null
+          status?: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string
+          current_balance?: number
+          debtor_contact?: string | null
+          debtor_name?: string
+          debtor_type?: string | null
+          deposit_type?: string | null
+          description?: string | null
+          due_date?: string | null
+          entity_id?: string | null
+          id?: string
+          interest_rate?: number | null
+          issue_date?: string | null
+          last_payment_amount?: number | null
+          last_payment_date?: string | null
+          linked_asset_id?: string | null
+          name?: string
+          notes?: string | null
+          original_amount?: number
+          recovery_probability?: string | null
+          refund_conditions?: string | null
+          repayment_schedule?: string | null
+          status?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receivables_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receivables_linked_asset_id_fkey"
+            columns: ["linked_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_access: {
         Row: {
           created_at: string | null
