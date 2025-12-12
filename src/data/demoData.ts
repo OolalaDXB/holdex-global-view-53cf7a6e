@@ -197,6 +197,8 @@ export interface DemoProfile {
   blur_amounts: boolean;
   fiscal_year_start: string;
   area_unit: 'sqm' | 'sqft';
+  monthly_income: number | null;
+  monthly_income_currency: string;
   created_at: string;
   updated_at: string;
 }
@@ -218,12 +220,14 @@ export const demoProfile: DemoProfile = {
     { name: 'Gaborone', timezone: 'Africa/Gaborone' },
   ],
   dashboard_widgets: [
-    'net_worth', 'chart', 'certainty_breakdown', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
+    'net_worth', 'chart', 'certainty_breakdown', 'debt_to_income', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
     'leasehold_reminders', 'expiring_documents', 'world_clocks', 'weather_with_clocks', 'pending_receivables', 'upcoming_loan_payments'
   ],
   blur_amounts: false,
   fiscal_year_start: '01-01',
   area_unit: 'sqm',
+  monthly_income: 18500,
+  monthly_income_currency: 'EUR',
   created_at: '2019-01-01T10:00:00Z',
   updated_at: '2024-12-01T10:00:00Z',
 };

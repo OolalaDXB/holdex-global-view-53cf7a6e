@@ -15,6 +15,7 @@ import { PendingReceivablesWidget } from '@/components/dashboard/PendingReceivab
 import { UpcomingLoanPaymentsWidget } from '@/components/dashboard/UpcomingLoanPaymentsWidget';
 import { EntityBreakdown } from '@/components/dashboard/EntityBreakdown';
 import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
+import { DebtToIncomeWidget } from '@/components/dashboard/DebtToIncomeWidget';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
@@ -365,6 +366,11 @@ const Dashboard = () => {
                 isBlurred={isBlurred}
                 delay={150}
               />
+            )}
+
+            {/* Debt-to-Income Ratio Widget */}
+            {showWidget('debt_to_income') && (
+              <DebtToIncomeWidget isBlurred={isBlurred} delay={175} />
             )}
 
             {/* Breakdowns */}
