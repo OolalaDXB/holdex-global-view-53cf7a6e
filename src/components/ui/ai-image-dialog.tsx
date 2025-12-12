@@ -172,7 +172,7 @@ function getAutoPrompt(type: string, name: string, brand?: string, model?: strin
     case 'business':
       return `${name} corporate headquarters, professional business imagery`;
     case 'crypto':
-      return `${name} cryptocurrency concept, digital asset visualization`;
+      return `${name} digital asset concept, modern blockchain visualization`;
     default:
       return `${name}, premium professional photography`;
   }

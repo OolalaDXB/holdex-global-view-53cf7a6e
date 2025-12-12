@@ -24,7 +24,7 @@ const wealthTypes = [
   { id: 'real-estate', label: 'Real Estate', icon: Building2, description: 'Properties and land' },
   { id: 'bank', label: 'Bank Account', icon: Landmark, description: 'Cash and deposits' },
   { id: 'investment', label: 'Investment', icon: TrendingUp, description: 'Stocks, ETFs, bonds' },
-  { id: 'crypto', label: 'Digital Assets', icon: Bitcoin, description: 'Crypto, tokens, NFTs' },
+  { id: 'crypto', label: 'Digital Assets', icon: Bitcoin, description: 'Tokens, NFTs, stablecoins' },
   { id: 'business', label: 'Business Equity', icon: Briefcase, description: 'Company ownership' },
   { id: 'liability', label: 'Liability', icon: TrendingDown, description: 'Debts and loans' },
 ];
@@ -71,6 +71,8 @@ const DemoAddAssetPage = () => {
     institution: '',
     image_url: null as string | null,
     entityId: undefined as string | null | undefined, // Will be set to default on mount
+    // Real estate address
+    address: '',
     // Shariah compliance (for investments)
     isShariahCompliant: false,
     shariahCertification: '',
@@ -182,7 +184,8 @@ const DemoAddAssetPage = () => {
           project_name: null,
           is_shariah_compliant: selectedType === 'investment' ? formData.isShariahCompliant : false,
           shariah_certification: formData.shariahCertification || null,
-        });
+          address: formData.address || null,
+        } as any);
       }
 
       toast({
@@ -313,6 +316,7 @@ const DemoAddAssetPage = () => {
                     onChange={(url) => setFormData({ ...formData, image_url: url })}
                     assetId={tempAssetId}
                     onGenerateAI={() => setShowAIDialog(true)}
+                    hideAIButton={selectedType === 'real-estate'}
                   />
                 </div>
               )}
@@ -436,6 +440,18 @@ const DemoAddAssetPage = () => {
                       max="100"
                       value={formData.ownershipPercent}
                       onChange={(e) => setFormData({ ...formData, ownershipPercent: e.target.value })}
+                    />
+                  </div>
+                )}
+
+                {selectedType === 'real-estate' && (
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="address">Address (optional)</Label>
+                    <Input
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      placeholder="e.g., 123 Marina Walk, Dubai Marina"
                     />
                   </div>
                 )}

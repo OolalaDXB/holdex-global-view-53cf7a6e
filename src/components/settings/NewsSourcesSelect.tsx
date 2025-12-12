@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 const NEWS_SOURCES = [
   { id: 'bloomberg', label: 'Bloomberg Markets', description: 'Financial markets news' },
   { id: 'reuters', label: 'Reuters Business', description: 'Global business headlines' },
-  { id: 'crypto', label: 'Digital Assets', description: 'Cryptocurrency & blockchain news' },
+  { id: 'crypto', label: 'Digital Assets', description: 'Digital assets & blockchain news' },
 ];
 
 interface NewsSourcesSelectProps {

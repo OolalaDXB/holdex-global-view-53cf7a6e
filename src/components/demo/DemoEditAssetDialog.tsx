@@ -47,6 +47,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
     reference_balance: '',
     reference_date: null as Date | null,
     entity_id: null as string | null,
+    address: '',
   });
 
   useEffect(() => {
@@ -66,6 +67,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         reference_balance: asset.reference_balance?.toString() || '',
         reference_date: asset.reference_date ? new Date(asset.reference_date) : null,
         entity_id: asset.entity_id || null,
+        address: (asset as any).address || '',
       });
     }
   }, [asset]);
@@ -91,7 +93,8 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         reference_balance: formData.reference_balance ? parseFloat(formData.reference_balance) : null,
         reference_date: formData.reference_date ? format(formData.reference_date, 'yyyy-MM-dd') : null,
         entity_id: formData.entity_id,
-      });
+        address: formData.address || null,
+      } as any);
 
       toast({
         title: "Asset updated",
@@ -126,6 +129,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
               onChange={(url) => setFormData({ ...formData, image_url: url })}
               assetId={asset.id}
               onGenerateAI={() => setShowAIDialog(true)}
+              hideAIButton={asset.type === 'real-estate'}
             />
           </div>
           
@@ -222,15 +226,26 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
             )}
 
             {asset.type === 'real-estate' && (
-              <div className="space-y-2">
-                <Label htmlFor="edit-rental">Annual Rental Income</Label>
-                <Input
-                  id="edit-rental"
-                  type="number"
-                  value={formData.rental_income}
-                  onChange={(e) => setFormData({ ...formData, rental_income: e.target.value })}
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-rental">Annual Rental Income</Label>
+                  <Input
+                    id="edit-rental"
+                    type="number"
+                    value={formData.rental_income}
+                    onChange={(e) => setFormData({ ...formData, rental_income: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2 col-span-2">
+                  <Label htmlFor="edit-address">Address</Label>
+                  <Input
+                    id="edit-address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="e.g., 123 Marina Walk, Dubai"
+                  />
+                </div>
+              </>
             )}
 
             {(asset.type === 'bank' || asset.type === 'investment') && (
