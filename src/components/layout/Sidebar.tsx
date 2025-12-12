@@ -23,16 +23,19 @@ interface SidebarProps {
   isDemo?: boolean;
 }
 
-const navigation = [
-  { name: 'Dashboard', href: '/', demoHref: '/demo', icon: LayoutDashboard },
+const mainNavigation = [
+  { name: 'Dashboard', href: '/', demoHref: '/demo', icon: LayoutDashboard, shortcut: '⌘⇧D' },
   { name: 'Assets', href: '/assets', demoHref: '/demo/assets', icon: Wallet },
   { name: 'Collections', href: '/collections', demoHref: '/demo/collections', icon: Gem },
   { name: 'Liabilities', href: '/liabilities', demoHref: '/demo/liabilities', icon: TrendingDown },
   { name: 'Receivables', href: '/receivables', demoHref: '/demo/receivables', icon: Handshake },
   { name: 'Documents', href: '/documents', demoHref: '/demo/documents', icon: FileText },
   { name: 'Entities', href: '/entities', demoHref: '/demo/entities', icon: Building },
-  { name: 'Add Asset', href: '/add', demoHref: '/demo/add', icon: Plus },
-  { name: 'Add Liability', href: '/add-liability', demoHref: '/demo/add-liability', icon: TrendingDown },
+];
+
+const actionNavigation = [
+  { name: 'Add Asset', href: '/add', demoHref: '/demo/add', icon: Plus, shortcut: '⌘⇧A' },
+  { name: 'Add Liability', href: '/add-liability', demoHref: '/demo/add-liability', icon: TrendingDown, shortcut: '⌘⇧L' },
 ];
 
 export function Sidebar({ isDemo = false }: SidebarProps) {
@@ -74,26 +77,71 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-6 space-y-1">
-          {navigation.map((item) => (
-            <NavLink
-              key={item.name}
-              to={isDemo ? item.demoHref : item.href}
-              end={item.href === '/' || item.demoHref === '/demo'}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
-                  isActive
-                    ? "bg-sidebar-accent text-sidebar-primary" 
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  collapsed && "justify-center"
-                )
-              }
-            >
-              <item.icon size={20} strokeWidth={1.5} />
-              {!collapsed && <span>{item.name}</span>}
-            </NavLink>
-          ))}
+        <nav className="flex-1 px-3 py-6 space-y-6 overflow-y-auto">
+          {/* Main Section */}
+          <div className="space-y-1">
+            {!collapsed && (
+              <p className="px-3 mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Main
+              </p>
+            )}
+            {mainNavigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={isDemo ? item.demoHref : item.href}
+                end={item.href === '/' || item.demoHref === '/demo'}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-primary" 
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    collapsed && "justify-center"
+                  )
+                }
+              >
+                <item.icon size={20} strokeWidth={1.5} />
+                {!collapsed && (
+                  <span className="flex-1">{item.name}</span>
+                )}
+                {!collapsed && item.shortcut && (
+                  <span className="text-[10px] text-muted-foreground font-mono">{item.shortcut}</span>
+                )}
+              </NavLink>
+            ))}
+          </div>
+
+          {/* Actions Section */}
+          <div className="space-y-1">
+            {!collapsed && (
+              <p className="px-3 mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Actions
+              </p>
+            )}
+            {actionNavigation.map((item) => (
+              <NavLink
+                key={item.name}
+                to={isDemo ? item.demoHref : item.href}
+                className={({ isActive }) =>
+                  cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-primary" 
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    collapsed && "justify-center"
+                  )
+                }
+              >
+                <item.icon size={20} strokeWidth={1.5} />
+                {!collapsed && (
+                  <span className="flex-1">{item.name}</span>
+                )}
+                {!collapsed && item.shortcut && (
+                  <span className="text-[10px] text-muted-foreground font-mono">{item.shortcut}</span>
+                )}
+              </NavLink>
+            ))}
+          </div>
         </nav>
 
         {/* Bottom section */}

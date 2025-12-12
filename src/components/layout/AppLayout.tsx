@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { cn } from '@/lib/utils';
 
 interface AppLayoutProps {
@@ -8,6 +9,8 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children, isDemo = false }: AppLayoutProps) {
+  useKeyboardShortcuts(isDemo);
+  
   return (
     <div className="min-h-screen bg-background">
       <Sidebar isDemo={isDemo} />
