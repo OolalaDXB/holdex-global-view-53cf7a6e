@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { RefreshCw, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 
@@ -34,6 +35,11 @@ const AssetsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
+  
+  // Property filters
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>('all');
+  const [minRooms, setMinRooms] = useState('');
+  const [minSize, setMinSize] = useState('');
   
   const { data: assets = [], isLoading } = useAssets();
   const { data: entities = [] } = useEntities();
@@ -71,6 +77,27 @@ const AssetsPage = () => {
         a.ticker?.toLowerCase().includes(query) ||
         a.country.toLowerCase().includes(query)
       );
+    })
+    // Property type filter (only for real estate)
+    .filter(a => {
+      if (propertyTypeFilter === 'all') return true;
+      if (a.type !== 'real-estate') return filter !== 'real-estate';
+      return (a as any).property_type === propertyTypeFilter;
+    })
+    // Min rooms filter
+    .filter(a => {
+      if (!minRooms) return true;
+      if (a.type !== 'real-estate') return true;
+      return ((a as any).rooms || 0) >= parseInt(minRooms);
+    })
+    // Min size filter
+    .filter(a => {
+      if (!minSize) return true;
+      if (a.type !== 'real-estate') return true;
+      const minSizeNum = parseFloat(minSize);
+      const assetSizeSqm = (a as any).size_sqm || 0;
+      const compareSize = areaUnit === 'sqft' ? minSizeNum / 10.7639 : minSizeNum;
+      return assetSizeSqm >= compareSize;
     });
 
   const hasCryptoAssets = assets.some(a => a.type === 'crypto');
@@ -134,6 +161,53 @@ const AssetsPage = () => {
               </button>
             ))}
           </div>
+
+          {/* Property-specific filters */}
+          {(filter === 'all' || filter === 'real-estate') && (
+            <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Type:</span>
+                <Select value={propertyTypeFilter} onValueChange={setPropertyTypeFilter}>
+                  <SelectTrigger className="w-32 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="apartment">Apartment</SelectItem>
+                    <SelectItem value="villa">Villa</SelectItem>
+                    <SelectItem value="studio">Studio</SelectItem>
+                    <SelectItem value="penthouse">Penthouse</SelectItem>
+                    <SelectItem value="townhouse">Townhouse</SelectItem>
+                    <SelectItem value="office">Office</SelectItem>
+                    <SelectItem value="land">Land</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Min rooms:</span>
+                <Input
+                  type="number"
+                  min="0"
+                  value={minRooms}
+                  onChange={(e) => setMinRooms(e.target.value)}
+                  className="w-16 h-8 text-sm"
+                  placeholder="0"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Min size:</span>
+                <Input
+                  type="number"
+                  min="0"
+                  value={minSize}
+                  onChange={(e) => setMinSize(e.target.value)}
+                  className="w-20 h-8 text-sm"
+                  placeholder="0"
+                />
+                <span className="text-xs text-muted-foreground">{areaUnit === 'sqm' ? 'm²' : 'sq ft'}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {isLoading ? (
