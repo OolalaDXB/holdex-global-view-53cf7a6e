@@ -22,10 +22,11 @@ const iconMap: Record<string, LucideIcon> = {
   Home,
 };
 
-// Color classes for each entity type
+// Color classes for each entity type (partner replaces spouse)
 const colorMap: Record<string, string> = {
   personal: 'text-slate-500',
-  spouse: 'text-rose-500',
+  partner: 'text-rose-500',
+  spouse: 'text-rose-500', // backward compatibility
   couple: 'text-violet-500',
   company: 'text-zinc-500',
   holding: 'text-amber-500',
@@ -37,7 +38,8 @@ const colorMap: Record<string, string> = {
 
 const bgColorMap: Record<string, string> = {
   personal: 'bg-slate-500/10',
-  spouse: 'bg-rose-500/10',
+  partner: 'bg-rose-500/10',
+  spouse: 'bg-rose-500/10', // backward compatibility
   couple: 'bg-violet-500/10',
   company: 'bg-zinc-500/10',
   holding: 'bg-amber-500/10',
@@ -86,7 +88,8 @@ export const EntityIcon = ({ iconName, entityType, size = 'md', className }: Ent
 export const getEntityIconName = (type: string): string => {
   const typeToIcon: Record<string, string> = {
     personal: 'User',
-    spouse: 'UserCircle',
+    partner: 'UserCircle',
+    spouse: 'UserCircle', // backward compatibility
     couple: 'Users',
     company: 'Building2',
     holding: 'Landmark',

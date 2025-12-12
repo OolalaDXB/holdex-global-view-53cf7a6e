@@ -364,7 +364,7 @@ const Demo = () => {
         )}
 
         {/* Collections Gallery - only show if collections are included */}
-        {showCollections && <CollectionsGallery collections={collections} />}
+        {showCollections && <CollectionsGallery collections={collections as any} />}
 
         {/* Recent Updates */}
         {recentAssets.length > 0 && (

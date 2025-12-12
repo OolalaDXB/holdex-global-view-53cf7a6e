@@ -117,11 +117,11 @@ const DemoCollectionsPage = () => {
           {filteredCollections.map((collection, index) => (
             <CollectionCard 
               key={collection.id} 
-              collection={collection} 
+              collection={collection as any} 
               rates={rates} 
               delay={index * 50}
-              onEdit={setEditingCollection}
-              onDelete={setDeletingCollection}
+              onEdit={(c) => setEditingCollection(c as any)}
+              onDelete={(c) => setDeletingCollection(c as any)}
             />
           ))}
         </div>

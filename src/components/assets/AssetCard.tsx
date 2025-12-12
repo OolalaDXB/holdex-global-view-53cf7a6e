@@ -163,8 +163,8 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
       return entity.name;
     }
     
-    // For spouse/couple, show shared ownership
-    if (['spouse', 'couple'].includes(entity.type)) {
+    // For partner/couple (or legacy spouse), show shared ownership
+    if (['partner', 'spouse', 'couple'].includes(entity.type)) {
       const myShare = asset.ownership_percentage || 50;
       const theirShare = 100 - myShare;
       return `${myShare}/${theirShare} with ${entity.name}`;
