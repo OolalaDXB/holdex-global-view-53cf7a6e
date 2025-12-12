@@ -56,7 +56,7 @@ const Dashboard = () => {
   const favoriteCities: City[] = (profile as any)?.favorite_cities || [];
   const dashboardWidgets: string[] = (profile as any)?.dashboard_widgets || [
     'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
-    'leasehold_reminders', 'expiring_documents'
+    'leasehold_reminders', 'expiring_documents', 'world_clocks', 'weather_with_clocks'
   ];
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;

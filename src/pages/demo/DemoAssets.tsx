@@ -19,7 +19,7 @@ const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'real-estate', label: 'Real Estate' },
   { value: 'bank', label: 'Bank Accounts' },
   { value: 'investment', label: 'Investments' },
-  { value: 'crypto', label: 'Crypto' },
+  { value: 'crypto', label: 'Digital Assets' },
   { value: 'business', label: 'Business' },
 ];
 
