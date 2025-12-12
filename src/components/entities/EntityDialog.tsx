@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { CountrySelect } from '@/components/ui/country-select';
-import { Entity, EntityInsert, ENTITY_TYPES, MATRIMONIAL_REGIMES, LEGAL_FORMS, TRUST_TYPES, useEntities } from '@/hooks/useEntities';
+import { Entity, EntityInsert, ENTITY_TYPES, MATRIMONIAL_REGIMES, LEGAL_FORMS, TRUST_TYPES, useEntities, getFilteredEntityTypes, getFilteredTrustTypes } from '@/hooks/useEntities';
 import { Loader2 } from 'lucide-react';
+import { useComplianceMode } from '@/hooks/useComplianceMode';
 
 interface EntityDialogProps {
   open: boolean;
@@ -47,6 +48,9 @@ export const EntityDialog = ({
   isLoading,
 }: EntityDialogProps) => {
   const { data: entities } = useEntities();
+  const { showHindu, showIslamic } = useComplianceMode();
+  const filteredEntityTypes = getFilteredEntityTypes(showHindu);
+  const filteredTrustTypes = getFilteredTrustTypes(showIslamic);
   const [formData, setFormData] = useState<Omit<EntityInsert, 'user_id'>>({
     name: '',
     type: 'company',
@@ -354,7 +358,7 @@ export const EntityDialog = ({
               <SelectValue placeholder="Select type..." />
             </SelectTrigger>
             <SelectContent>
-              {TRUST_TYPES.map((type) => (
+              {filteredTrustTypes.map((type) => (
                 <SelectItem key={type.value} value={type.value}>
                   {type.label}
                 </SelectItem>
@@ -464,7 +468,7 @@ export const EntityDialog = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ENTITY_TYPES.map((type) => (
+                  {filteredEntityTypes.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.icon} {type.label}
                     </SelectItem>

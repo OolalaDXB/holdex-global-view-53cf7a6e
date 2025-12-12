@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Edit2, Trash2, Building2, MapPin } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
+import { useComplianceMode } from '@/hooks/useComplianceMode';
 
 interface EntityCardProps {
   entity: Entity;
@@ -24,6 +25,9 @@ export const EntityCard = ({
 }: EntityCardProps) => {
   const entityType = ENTITY_TYPES.find(t => t.value === entity.type);
   const isPersonal = entity.type === 'personal';
+  const isHUF = entity.type === 'huf';
+  const isWaqf = entity.trust_type === 'waqf';
+  const { showHindu, showIslamic } = useComplianceMode();
 
   return (
     <Card className="group hover:border-primary/30 transition-colors">
@@ -38,10 +42,22 @@ export const EntityCard = ({
             </div>
             <div>
               <h3 className="font-medium text-foreground">{entity.name}</h3>
-              <div className="flex items-center gap-2 mt-1">
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <Badge variant="outline" className="text-xs font-normal">
                   {entityType?.label || entity.type}
                 </Badge>
+                {/* HUF compliance badge */}
+                {showHindu && isHUF && (
+                  <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20">
+                    🪷 HUF
+                  </Badge>
+                )}
+                {/* Waqf compliance badge */}
+                {showIslamic && isWaqf && (
+                  <Badge variant="secondary" className="text-xs bg-positive/10 text-positive border-positive/20">
+                    ☪️ Waqf
+                  </Badge>
+                )}
                 {entity.country && (
                   <span className="text-xs text-muted-foreground flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
