@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { CountrySelect } from '@/components/ui/country-select';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { useUpdateAsset, Asset } from '@/hooks/useAssets';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface EditAssetDialogProps {
   asset: Asset | null;
@@ -36,6 +41,8 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
     institution: '',
     rental_income: '',
     image_url: null as string | null,
+    reference_balance: '',
+    reference_date: null as Date | null,
   });
 
   useEffect(() => {
@@ -53,6 +60,8 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         institution: asset.institution || '',
         rental_income: asset.rental_income?.toString() || '',
         image_url: asset.image_url || null,
+        reference_balance: asset.reference_balance?.toString() || '',
+        reference_date: asset.reference_date ? new Date(asset.reference_date) : null,
       });
     }
   }, [asset]);
@@ -76,6 +85,8 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         institution: formData.institution || null,
         rental_income: formData.rental_income ? parseFloat(formData.rental_income) : null,
         image_url: formData.image_url,
+        reference_balance: formData.reference_balance ? parseFloat(formData.reference_balance) : null,
+        reference_date: formData.reference_date ? format(formData.reference_date, 'yyyy-MM-dd') : null,
       });
 
       toast({
@@ -235,6 +246,47 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                     onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
                   />
                 </div>
+              )}
+
+              {asset.type === 'bank' && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-reference-balance">Solde de référence</Label>
+                    <Input
+                      id="edit-reference-balance"
+                      type="number"
+                      value={formData.reference_balance}
+                      onChange={(e) => setFormData({ ...formData, reference_balance: e.target.value })}
+                      placeholder="Solde à comparer"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Date de référence</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !formData.reference_date && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {formData.reference_date ? format(formData.reference_date, 'dd/MM/yyyy') : 'Sélectionner une date'}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={formData.reference_date || undefined}
+                          onSelect={(date) => setFormData({ ...formData, reference_date: date || null })}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </>
               )}
 
               {asset.type !== 'bank' && (
