@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountrySelect } from '@/components/ui/country-select';
+import { EntitySelect } from '@/components/entities/EntitySelect';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { Calendar } from '@/components/ui/calendar';
@@ -17,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCreateAsset } from '@/hooks/useAssets';
 import { useCreateCollection } from '@/hooks/useCollections';
 import { useCreateLiability } from '@/hooks/useLiabilities';
+import { useEntities } from '@/hooks/useEntities';
 import { cn } from '@/lib/utils';
 
 type Step = 'category' | 'type' | 'form';
@@ -48,6 +50,7 @@ const AddAssetPage = () => {
   const createAsset = useCreateAsset();
   const createCollection = useCreateCollection();
   const createLiability = useCreateLiability();
+  const { data: entities } = useEntities();
   
   const [step, setStep] = useState<Step>('category');
   const [category, setCategory] = useState<Category | null>(null);
@@ -68,6 +71,7 @@ const AddAssetPage = () => {
     institution: '',
     referenceBalance: '',
     referenceDate: null as Date | null,
+    entityId: null as string | null,
   });
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -105,6 +109,7 @@ const AddAssetPage = () => {
           original_amount: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
           institution: formData.institution || null,
           notes: formData.notes || null,
+          entity_id: formData.entityId,
         });
       } else if (category === 'collections') {
         await createCollection.mutateAsync({
@@ -117,6 +122,7 @@ const AddAssetPage = () => {
           purchase_value: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
           notes: formData.notes || null,
           image_url: imageUrl,
+          entity_id: formData.entityId,
         });
       } else {
         await createAsset.mutateAsync({
@@ -136,6 +142,7 @@ const AddAssetPage = () => {
           reference_date: formData.referenceDate ? format(formData.referenceDate, 'yyyy-MM-dd') : null,
           notes: formData.notes || null,
           image_url: imageUrl,
+          entity_id: formData.entityId,
         });
       }
 
@@ -311,6 +318,15 @@ const AddAssetPage = () => {
                     onChange={(e) => setFormData({ ...formData, currentValue: e.target.value })}
                     placeholder="0"
                     required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Owner (optional)</Label>
+                  <EntitySelect
+                    value={formData.entityId}
+                    onChange={(value) => setFormData({ ...formData, entityId: value })}
+                    placeholder="Select owner"
                   />
                 </div>
 

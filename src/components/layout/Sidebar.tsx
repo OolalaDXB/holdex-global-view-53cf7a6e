@@ -12,7 +12,8 @@ import {
   ChevronRight,
   User,
   LogOut,
-  LogIn
+  LogIn,
+  Building
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -23,6 +24,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', demoHref: '/demo', icon: LayoutDashboard },
   { name: 'Assets', href: '/assets', demoHref: '/demo/assets', icon: Wallet },
   { name: 'Collections', href: '/collections', demoHref: '/demo/collections', icon: Gem },
+  { name: 'Entities', href: '/entities', demoHref: '/demo/entities', icon: Building },
   { name: 'Add Asset', href: '/add', demoHref: '/demo/add', icon: Plus },
 ];
 

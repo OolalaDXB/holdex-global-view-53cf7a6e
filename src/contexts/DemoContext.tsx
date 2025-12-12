@@ -2,12 +2,13 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 import { Asset } from '@/hooks/useAssets';
 import { Collection } from '@/hooks/useCollections';
 import { Liability } from '@/hooks/useLiabilities';
-import { demoAssets, demoCollections, demoLiabilities, demoNetWorthHistory } from '@/data/demoData';
+import { demoAssets, demoCollections, demoLiabilities, demoNetWorthHistory, demoEntities, DemoEntity } from '@/data/demoData';
 
 interface DemoContextType {
   assets: Asset[];
   collections: Collection[];
   liabilities: Liability[];
+  entities: DemoEntity[];
   netWorthHistory: typeof demoNetWorthHistory;
   addAsset: (asset: Omit<Asset, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
   updateAsset: (id: string, updates: Partial<Asset>) => void;
@@ -26,6 +27,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [assets, setAssets] = useState<Asset[]>(demoAssets);
   const [collections, setCollections] = useState<Collection[]>(demoCollections);
   const [liabilities, setLiabilities] = useState<Liability[]>(demoLiabilities);
+  const [entities] = useState<DemoEntity[]>(demoEntities);
 
   const generateId = () => `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   const now = () => new Date().toISOString();
@@ -98,6 +100,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       assets,
       collections,
       liabilities,
+      entities,
       netWorthHistory: demoNetWorthHistory,
       addAsset,
       updateAsset,
