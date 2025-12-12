@@ -865,6 +865,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          area_unit: string | null
           base_currency: string | null
           blur_amounts: boolean | null
           compliance_mode: string | null
@@ -882,6 +883,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          area_unit?: string | null
           base_currency?: string | null
           blur_amounts?: boolean | null
           compliance_mode?: string | null
@@ -899,6 +901,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          area_unit?: string | null
           base_currency?: string | null
           blur_amounts?: boolean | null
           compliance_mode?: string | null

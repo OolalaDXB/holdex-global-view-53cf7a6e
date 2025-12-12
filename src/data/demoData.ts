@@ -160,6 +160,7 @@ export interface DemoProfile {
   dashboard_widgets: string[];
   blur_amounts: boolean;
   fiscal_year_start: string;
+  area_unit: 'sqm' | 'sqft';
   created_at: string;
   updated_at: string;
 }
@@ -186,6 +187,7 @@ export const demoProfile: DemoProfile = {
   ],
   blur_amounts: false,
   fiscal_year_start: '01-01',
+  area_unit: 'sqm',
   created_at: '2019-01-01T10:00:00Z',
   updated_at: '2024-12-01T10:00:00Z',
 };

@@ -62,6 +62,7 @@ const SettingsPage = () => {
   const [blurAmounts, setBlurAmounts] = useState(false);
   const [fiscalYearStart, setFiscalYearStart] = useState('01-01');
   const [newsSources, setNewsSources] = useState<string[]>(['bloomberg', 'reuters']);
+  const [areaUnit, setAreaUnit] = useState<'sqm' | 'sqft'>('sqm');
 
   // Get all available currencies from exchange rates API
   const availableCurrencies = exchangeRates?.rates 
@@ -86,6 +87,7 @@ const SettingsPage = () => {
       setBlurAmounts((profile as any).blur_amounts || false);
       setFiscalYearStart((profile as any).fiscal_year_start || '01-01');
       setNewsSources((profile as any).news_sources || ['bloomberg', 'reuters']);
+      setAreaUnit((profile as any).area_unit || 'sqm');
     }
   }, [profile]);
 
@@ -104,6 +106,7 @@ const SettingsPage = () => {
         blur_amounts: blurAmounts,
         fiscal_year_start: fiscalYearStart,
         news_sources: newsSources,
+        area_unit: areaUnit,
       } as any);
       toast({
         title: "Settings saved",
@@ -350,6 +353,17 @@ const SettingsPage = () => {
                   id="darkMode"
                   checked={darkMode}
                   onCheckedChange={setDarkMode}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="areaUnit">Property Size in Square Feet</Label>
+                  <p className="text-xs text-muted-foreground">Display property sizes in sq ft instead of m².</p>
+                </div>
+                <Switch
+                  id="areaUnit"
+                  checked={areaUnit === 'sqft'}
+                  onCheckedChange={(checked) => setAreaUnit(checked ? 'sqft' : 'sqm')}
                 />
               </div>
             </div>
