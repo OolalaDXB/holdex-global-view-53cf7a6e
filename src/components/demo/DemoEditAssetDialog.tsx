@@ -48,6 +48,9 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
     reference_date: null as Date | null,
     entity_id: null as string | null,
     address: '',
+    property_type: '',
+    rooms: '',
+    size_sqm: '',
   });
 
   useEffect(() => {
@@ -68,6 +71,9 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         reference_date: asset.reference_date ? new Date(asset.reference_date) : null,
         entity_id: asset.entity_id || null,
         address: (asset as any).address || '',
+        property_type: (asset as any).property_type || '',
+        rooms: (asset as any).rooms?.toString() || '',
+        size_sqm: (asset as any).size_sqm?.toString() || '',
       });
     }
   }, [asset]);
@@ -94,6 +100,9 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         reference_date: formData.reference_date ? format(formData.reference_date, 'yyyy-MM-dd') : null,
         entity_id: formData.entity_id,
         address: formData.address || null,
+        property_type: asset.type === 'real-estate' ? (formData.property_type || null) : null,
+        rooms: asset.type === 'real-estate' && formData.rooms ? parseInt(formData.rooms) : null,
+        size_sqm: asset.type === 'real-estate' && formData.size_sqm ? parseFloat(formData.size_sqm) : null,
       } as any);
 
       toast({
@@ -227,6 +236,49 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
 
             {asset.type === 'real-estate' && (
               <>
+                <div className="space-y-2">
+                  <Label>Property Type</Label>
+                  <Select 
+                    value={formData.property_type} 
+                    onValueChange={(value) => setFormData({ ...formData, property_type: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="apartment">Apartment</SelectItem>
+                      <SelectItem value="villa">Villa</SelectItem>
+                      <SelectItem value="studio">Studio</SelectItem>
+                      <SelectItem value="penthouse">Penthouse</SelectItem>
+                      <SelectItem value="townhouse">Townhouse</SelectItem>
+                      <SelectItem value="office">Office</SelectItem>
+                      <SelectItem value="warehouse">Warehouse</SelectItem>
+                      <SelectItem value="land">Land</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-rooms">Rooms</Label>
+                  <Input
+                    id="edit-rooms"
+                    type="number"
+                    min="0"
+                    value={formData.rooms}
+                    onChange={(e) => setFormData({ ...formData, rooms: e.target.value })}
+                    placeholder="e.g., 3"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-size">Size (m²)</Label>
+                  <Input
+                    id="edit-size"
+                    type="number"
+                    min="0"
+                    value={formData.size_sqm}
+                    onChange={(e) => setFormData({ ...formData, size_sqm: e.target.value })}
+                    placeholder="e.g., 120"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-rental">Annual Rental Income</Label>
                   <Input

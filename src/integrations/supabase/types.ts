@@ -41,13 +41,16 @@ export type Database = {
           platform: string | null
           project_name: string | null
           property_status: string | null
+          property_type: string | null
           purchase_date: string | null
           purchase_value: number | null
           quantity: number | null
           reference_balance: number | null
           reference_date: string | null
           rental_income: number | null
+          rooms: number | null
           shariah_certification: string | null
+          size_sqm: number | null
           tenure_type: string | null
           ticker: string | null
           total_price: number | null
@@ -82,13 +85,16 @@ export type Database = {
           platform?: string | null
           project_name?: string | null
           property_status?: string | null
+          property_type?: string | null
           purchase_date?: string | null
           purchase_value?: number | null
           quantity?: number | null
           reference_balance?: number | null
           reference_date?: string | null
           rental_income?: number | null
+          rooms?: number | null
           shariah_certification?: string | null
+          size_sqm?: number | null
           tenure_type?: string | null
           ticker?: string | null
           total_price?: number | null
@@ -123,13 +129,16 @@ export type Database = {
           platform?: string | null
           project_name?: string | null
           property_status?: string | null
+          property_type?: string | null
           purchase_date?: string | null
           purchase_value?: number | null
           quantity?: number | null
           reference_balance?: number | null
           reference_date?: string | null
           rental_income?: number | null
+          rooms?: number | null
           shariah_certification?: string | null
+          size_sqm?: number | null
           tenure_type?: string | null
           ticker?: string | null
           total_price?: number | null
