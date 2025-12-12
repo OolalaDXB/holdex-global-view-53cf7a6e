@@ -123,6 +123,7 @@ export interface DemoProfile {
   secondary_currency_1: string;
   secondary_currency_2: string;
   dark_mode: boolean;
+  compliance_mode: string;
   created_at: string;
   updated_at: string;
 }
@@ -136,6 +137,7 @@ export const demoProfile: DemoProfile = {
   secondary_currency_1: 'USD',
   secondary_currency_2: 'AED',
   dark_mode: true,
+  compliance_mode: 'all',
   created_at: '2019-01-01T10:00:00Z',
   updated_at: '2024-12-01T10:00:00Z',
 };

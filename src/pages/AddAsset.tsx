@@ -18,8 +18,9 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateAsset } from '@/hooks/useAssets';
 import { useCreateCollection } from '@/hooks/useCollections';
-import { useCreateLiability, FINANCING_TYPES, isIslamicFinancing } from '@/hooks/useLiabilities';
+import { useCreateLiability, getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
 import { useEntities } from '@/hooks/useEntities';
+import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { cn } from '@/lib/utils';
 
 type Step = 'category' | 'type' | 'form';
@@ -52,6 +53,10 @@ const AddAssetPage = () => {
   const createCollection = useCreateCollection();
   const createLiability = useCreateLiability();
   const { data: entities } = useEntities();
+  const { showIslamic, showJewish } = useComplianceMode();
+  
+  // Get filtered financing types based on compliance mode
+  const filteredFinancingTypes = getFilteredFinancingTypes(showIslamic, showJewish);
   
   const [step, setStep] = useState<Step>('category');
   const [category, setCategory] = useState<Category | null>(null);
@@ -600,7 +605,7 @@ const AddAssetPage = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {FINANCING_TYPES.map((type) => (
+                          {filteredFinancingTypes.map((type) => (
                             <SelectItem key={type.value} value={type.value}>
                               <div className="flex flex-col">
                                 <span>{type.label}</span>
@@ -715,8 +720,8 @@ const AddAssetPage = () => {
                   </>
                 )}
 
-                {/* Shariah Compliance for Investments */}
-                {selectedType === 'investment' && (
+                {/* Shariah Compliance for Investments - only show if Islamic mode enabled */}
+                {selectedType === 'investment' && showIslamic && (
                   <>
                     <div className="col-span-2 flex items-center justify-between rounded-lg border border-border p-4">
                       <div className="flex items-center gap-3">

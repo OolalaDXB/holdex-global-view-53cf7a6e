@@ -34,6 +34,7 @@ const SettingsPage = () => {
   const [secondaryCurrency1, setSecondaryCurrency1] = useState('USD');
   const [secondaryCurrency2, setSecondaryCurrency2] = useState('AED');
   const [darkMode, setDarkMode] = useState(true);
+  const [complianceMode, setComplianceMode] = useState('none');
   const [inviteEmail, setInviteEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -49,6 +50,7 @@ const SettingsPage = () => {
       setSecondaryCurrency1(profile.secondary_currency_1 || 'USD');
       setSecondaryCurrency2(profile.secondary_currency_2 || 'AED');
       setDarkMode(profile.dark_mode ?? true);
+      setComplianceMode(profile.compliance_mode || 'none');
     }
   }, [profile]);
 
@@ -61,6 +63,7 @@ const SettingsPage = () => {
         secondary_currency_1: secondaryCurrency1,
         secondary_currency_2: secondaryCurrency2,
         dark_mode: darkMode,
+        compliance_mode: complianceMode,
       });
       toast({
         title: "Settings saved",
@@ -264,6 +267,87 @@ const SettingsPage = () => {
                 checked={darkMode}
                 onCheckedChange={setDarkMode}
               />
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Ethical & Compliant Finance Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-2">Ethical & Compliant Finance</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Enable specialized features for religious or ethical finance structures.
+            </p>
+            <div className="space-y-3">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="complianceMode"
+                  value="none"
+                  checked={complianceMode === 'none'}
+                  onChange={(e) => setComplianceMode(e.target.value)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <div>
+                  <span className="text-sm text-foreground">None</span>
+                  <span className="text-xs text-muted-foreground ml-2">(default)</span>
+                </div>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="complianceMode"
+                  value="islamic"
+                  checked={complianceMode === 'islamic'}
+                  onChange={(e) => setComplianceMode(e.target.value)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <div>
+                  <span className="text-sm text-foreground">Islamic Finance</span>
+                  <span className="text-xs text-muted-foreground ml-2">(Ijara, Murabaha, Musharaka, Waqf)</span>
+                </div>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="complianceMode"
+                  value="jewish"
+                  checked={complianceMode === 'jewish'}
+                  onChange={(e) => setComplianceMode(e.target.value)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <div>
+                  <span className="text-sm text-foreground">Jewish Finance</span>
+                  <span className="text-xs text-muted-foreground ml-2">(Heter Iska)</span>
+                </div>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="complianceMode"
+                  value="hindu"
+                  checked={complianceMode === 'hindu'}
+                  onChange={(e) => setComplianceMode(e.target.value)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <div>
+                  <span className="text-sm text-foreground">Hindu Family</span>
+                  <span className="text-xs text-muted-foreground ml-2">(HUF structures)</span>
+                </div>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="radio"
+                  name="complianceMode"
+                  value="all"
+                  checked={complianceMode === 'all'}
+                  onChange={(e) => setComplianceMode(e.target.value)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <div>
+                  <span className="text-sm text-foreground">All compliant options</span>
+                </div>
+              </label>
             </div>
           </section>
 

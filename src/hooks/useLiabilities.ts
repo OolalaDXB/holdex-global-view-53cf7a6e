@@ -7,18 +7,28 @@ export type Liability = Tables<'liabilities'>;
 export type LiabilityInsert = TablesInsert<'liabilities'>;
 
 export const FINANCING_TYPES = [
-  { value: 'conventional', label: 'Conventional', description: 'Standard interest-based financing' },
-  { value: 'ijara', label: 'Ijara', description: 'Islamic lease-to-own' },
-  { value: 'murabaha', label: 'Murabaha', description: 'Islamic cost-plus financing' },
-  { value: 'diminishing_musharaka', label: 'Diminishing Musharaka', description: 'Islamic co-ownership' },
-  { value: 'istisna', label: 'Istisna', description: 'Islamic construction financing' },
-  { value: 'qard_hassan', label: 'Qard Hassan', description: 'Interest-free loan' },
-  { value: 'heter_iska', label: 'Heter Iska', description: 'Jewish partnership structure' },
-  { value: 'other_compliant', label: 'Other Compliant', description: 'Other ethical/religious compliant' },
+  { value: 'conventional', label: 'Conventional', description: 'Standard interest-based financing', compliance: null },
+  { value: 'ijara', label: 'Ijara', description: 'Islamic lease-to-own', compliance: 'islamic' },
+  { value: 'murabaha', label: 'Murabaha', description: 'Islamic cost-plus financing', compliance: 'islamic' },
+  { value: 'diminishing_musharaka', label: 'Diminishing Musharaka', description: 'Islamic co-ownership', compliance: 'islamic' },
+  { value: 'istisna', label: 'Istisna', description: 'Islamic construction financing', compliance: 'islamic' },
+  { value: 'qard_hassan', label: 'Qard Hassan', description: 'Interest-free loan', compliance: 'islamic' },
+  { value: 'heter_iska', label: 'Heter Iska', description: 'Jewish partnership structure', compliance: 'jewish' },
+  { value: 'other_compliant', label: 'Other Compliant', description: 'Other ethical/religious compliant', compliance: 'all' },
 ] as const;
 
 export const isIslamicFinancing = (type: string) => 
   ['ijara', 'murabaha', 'diminishing_musharaka', 'istisna', 'qard_hassan'].includes(type);
+
+export const getFilteredFinancingTypes = (showIslamic: boolean, showJewish: boolean) => {
+  return FINANCING_TYPES.filter(type => {
+    if (type.compliance === null) return true; // Always show conventional
+    if (type.compliance === 'islamic') return showIslamic;
+    if (type.compliance === 'jewish') return showJewish;
+    if (type.compliance === 'all') return showIslamic || showJewish;
+    return false;
+  });
+};
 
 export const useLiabilities = () => {
   const { user } = useAuth();

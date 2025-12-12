@@ -17,6 +17,7 @@ import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { Switch } from '@/components/ui/switch';
 import { useUpdateAsset, Asset } from '@/hooks/useAssets';
 import { useEntities } from '@/hooks/useEntities';
+import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +33,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
   const { toast } = useToast();
   const updateAsset = useUpdateAsset();
   const { data: entities } = useEntities();
+  const { showIslamic } = useComplianceMode();
   const [showAIDialog, setShowAIDialog] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -336,7 +338,8 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                   )}
 
                   {/* Shariah Compliance for investments */}
-                  {asset.type === 'investment' && (
+                  {/* Shariah Compliance for investments - only show if Islamic mode enabled */}
+                  {asset.type === 'investment' && showIslamic && (
                     <>
                       <div className="col-span-2 flex items-center justify-between rounded-lg border border-border p-4">
                         <div className="flex items-center gap-3">

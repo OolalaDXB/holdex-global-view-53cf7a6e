@@ -13,7 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useDemo } from '@/contexts/DemoContext';
-import { FINANCING_TYPES, isIslamicFinancing } from '@/hooks/useLiabilities';
+import { getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
+import { useDemoComplianceMode } from '@/hooks/useComplianceMode';
 
 type Step = 'category' | 'type' | 'form';
 type Category = 'wealth' | 'collections';
@@ -42,6 +43,10 @@ const DemoAddAssetPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { addAsset, addCollection, addLiability } = useDemo();
+  const { showIslamic, showJewish } = useDemoComplianceMode();
+  
+  // Get filtered financing types based on compliance mode
+  const filteredFinancingTypes = getFilteredFinancingTypes(showIslamic, showJewish);
   
   const [step, setStep] = useState<Step>('category');
   const [category, setCategory] = useState<Category | null>(null);
@@ -474,7 +479,7 @@ const DemoAddAssetPage = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {FINANCING_TYPES.map((type) => (
+                          {filteredFinancingTypes.map((type) => (
                             <SelectItem key={type.value} value={type.value}>
                               <div className="flex flex-col">
                                 <span>{type.label}</span>
@@ -589,8 +594,8 @@ const DemoAddAssetPage = () => {
                   </>
                 )}
 
-                {/* Shariah Compliance for Investments */}
-                {selectedType === 'investment' && (
+                {/* Shariah Compliance for Investments - only show if Islamic mode enabled */}
+                {selectedType === 'investment' && showIslamic && (
                   <>
                     <div className="col-span-2 flex items-center justify-between rounded-lg border border-border p-4">
                       <div className="flex items-center gap-3">
