@@ -11,7 +11,7 @@ import { LiabilityDialog } from '@/components/liabilities/LiabilityDialog';
 import { DeleteLiabilityDialog } from '@/components/liabilities/DeleteLiabilityDialog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { LiabilityIcon } from '@/components/liabilities/LiabilityIcon';
-import { LiabilityBreakdownChart } from '@/components/liabilities/LiabilityBreakdownChart';
+
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
@@ -248,10 +248,6 @@ const LiabilitiesPage = () => {
           </Select>
         </div>
         
-        {/* Liability Breakdown Chart */}
-        {liabilities.length > 0 && (
-          <LiabilityBreakdownChart liabilities={liabilities} />
-        )}
         
         {/* Monthly Payment Summary Widget */}
         <MonthlyPaymentSummary />
