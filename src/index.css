@@ -169,3 +169,87 @@
     border-color: hsl(var(--border));
   }
 }
+
+/* Print styles for Balance Sheet and other documents */
+@media print {
+  /* Force light mode for printing */
+  :root {
+    --background: 0 0% 100% !important;
+    --foreground: 0 0% 10% !important;
+    --card: 0 0% 100% !important;
+    --card-foreground: 0 0% 10% !important;
+    --popover: 0 0% 100% !important;
+    --popover-foreground: 0 0% 10% !important;
+    --secondary: 0 0% 96% !important;
+    --secondary-foreground: 0 0% 10% !important;
+    --muted: 0 0% 96% !important;
+    --muted-foreground: 0 0% 45% !important;
+    --accent: 0 0% 96% !important;
+    --accent-foreground: 0 0% 10% !important;
+    --border: 0 0% 85% !important;
+    --input: 0 0% 90% !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide non-print elements */
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  /* Reset backgrounds */
+  * {
+    background-color: transparent !important;
+  }
+
+  /* Keep specific backgrounds for visual elements */
+  [class*="bg-secondary"] {
+    background-color: #f5f5f5 !important;
+  }
+
+  /* Ensure proper text colors */
+  h1, h2, h3, h4, h5, h6, p, span, td, th {
+    color: #1a1a1a !important;
+  }
+
+  .text-muted-foreground {
+    color: #666666 !important;
+  }
+
+  .text-primary {
+    color: #C4785A !important;
+  }
+
+  /* Table styling for print */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    padding: 4px 0;
+  }
+
+  /* Border colors */
+  .border-border,
+  .border-t,
+  .border-b {
+    border-color: #e0e0e0 !important;
+  }
+
+  /* Remove shadows */
+  * {
+    box-shadow: none !important;
+  }
+}

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, FileDown } from 'lucide-react';
+import { CalendarIcon, FileDown, Printer, Loader2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useBalanceSheet, CertaintyFilter } from '@/hooks/useBalanceSheet';
 import { useAssets } from '@/hooks/useAssets';
@@ -14,8 +14,9 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { BalanceSheetStatement } from '@/components/balance-sheet/BalanceSheetStatement';
+import { BalanceSheetStatement, BalanceSheetStatementRef } from '@/components/balance-sheet/BalanceSheetStatement';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type SimpleCertaintyFilter = 'all' | 'confirmed' | 'projected';
 
@@ -23,6 +24,8 @@ const BalanceSheetPage = () => {
   const [asOfDate, setAsOfDate] = useState<Date>(new Date());
   const [entityFilter, setEntityFilter] = useState<string>('all');
   const [certaintyFilter, setCertaintyFilter] = useState<SimpleCertaintyFilter>('all');
+  const [isExporting, setIsExporting] = useState(false);
+  const statementRef = useRef<BalanceSheetStatementRef>(null);
 
   const { displayCurrency } = useCurrency();
   const { isBlurred } = useBlur();
@@ -50,6 +53,30 @@ const BalanceSheetPage = () => {
   });
 
   const selectedEntity = entities.find(e => e.id === entityFilter);
+
+  const handleExportPDF = async () => {
+    if (isBlurred) {
+      toast.error('Please disable blur mode before exporting');
+      return;
+    }
+    setIsExporting(true);
+    try {
+      await statementRef.current?.exportToPDF();
+      toast.success('PDF exported successfully');
+    } catch (error) {
+      toast.error('Failed to export PDF');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handlePrint = () => {
+    if (isBlurred) {
+      toast.error('Please disable blur mode before printing');
+      return;
+    }
+    statementRef.current?.print();
+  };
 
   return (
     <AppLayout>
@@ -130,16 +157,38 @@ const BalanceSheetPage = () => {
 
             <div className="flex-1" />
 
-            {/* Export Button */}
-            <Button variant="outline" size="sm" className="bg-secondary border-border" disabled>
-              <FileDown className="mr-2 h-4 w-4" />
-              Export PDF
-            </Button>
+            {/* Export Buttons */}
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-secondary border-border"
+                onClick={handlePrint}
+              >
+                <Printer className="mr-2 h-4 w-4" />
+                Print
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-secondary border-border"
+                onClick={handleExportPDF}
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileDown className="mr-2 h-4 w-4" />
+                )}
+                Export PDF
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Balance Sheet Statement */}
         <BalanceSheetStatement
+          ref={statementRef}
           data={balanceSheet}
           asOfDate={asOfDate}
           displayCurrency={displayCurrency}

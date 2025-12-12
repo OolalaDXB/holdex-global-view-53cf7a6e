@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { format } from 'date-fns';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -66,15 +66,60 @@ interface BalanceSheetStatementProps {
   hideZeroLines?: boolean;
 }
 
-export const BalanceSheetStatement = ({
+export interface BalanceSheetStatementRef {
+  exportToPDF: () => Promise<void>;
+  print: () => void;
+}
+
+export const BalanceSheetStatement = forwardRef<BalanceSheetStatementRef, BalanceSheetStatementProps>(({
   data,
   asOfDate,
   displayCurrency,
   isBlurred,
   entityName = 'Consolidated',
   hideZeroLines = false,
-}: BalanceSheetStatementProps) => {
+}, ref) => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [isExporting, setIsExporting] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    exportToPDF: async () => {
+      if (!contentRef.current || isExporting) return;
+      
+      setIsExporting(true);
+      try {
+        const html2pdf = (await import('html2pdf.js')).default;
+        
+        const element = contentRef.current;
+        const opt = {
+          margin: [15, 15, 15, 15],
+          filename: `balance-sheet-${format(asOfDate, 'yyyy-MM-dd')}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+          },
+          jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait' 
+          },
+        };
+        
+        await html2pdf().set(opt).from(element).save();
+      } catch (error) {
+        console.error('PDF export failed:', error);
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    print: () => {
+      window.print();
+    },
+  }));
 
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);
@@ -226,17 +271,34 @@ export const BalanceSheetStatement = ({
   );
 
   return (
-    <div className="max-w-[800px] mx-auto print:max-w-none">
+    <div 
+      ref={contentRef}
+      className={cn(
+        "max-w-[800px] mx-auto",
+        // Print styles - light mode, clean layout
+        "print:max-w-none print:mx-0 print:p-8",
+        "print:bg-white print:text-black",
+        "[&_*]:print:!text-black [&_*]:print:!border-gray-300",
+        "[&_.text-muted-foreground]:print:!text-gray-600",
+        "[&_.text-primary]:print:!text-[#C4785A]",
+        "[&_.bg-secondary]:print:!bg-gray-100",
+        "[&_.border-primary]:print:!border-[#C4785A]",
+        isExporting && "bg-white text-black [&_*]:!text-black [&_.text-muted-foreground]:!text-gray-600 [&_.text-primary]:!text-[#C4785A]"
+      )}
+    >
       {/* Statement Header */}
-      <div className="text-center mb-6 pb-4 border-b border-border">
-        <h2 className="text-lg font-medium tracking-wide uppercase mb-1">
+      <div className={cn(
+        "text-center mb-6 pb-4 border-b border-border",
+        "print:border-gray-300"
+      )}>
+        <h2 className="text-lg font-medium tracking-wide uppercase mb-1 print:text-black">
           Statement of Financial Position
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground print:text-gray-600">
           As at {format(asOfDate, 'MMMM d, yyyy')}
         </p>
         {entityName !== 'Consolidated' && (
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1 print:text-gray-500">
             {entityName}
           </p>
         )}
@@ -400,11 +462,16 @@ export const BalanceSheetStatement = ({
       </table>
 
       {/* Footer */}
-      <div className="mt-8 pt-4 border-t border-border text-center">
-        <p className="text-[10px] text-muted-foreground/60">
+      <div className="mt-8 pt-4 border-t border-border text-center print:border-gray-300">
+        <p className="text-[10px] text-muted-foreground/60 print:text-gray-500">
           This statement is prepared for informational purposes only and does not constitute financial advice.
+        </p>
+        <p className="text-[9px] text-muted-foreground/40 mt-1 print:text-gray-400">
+          Generated on {format(new Date(), 'MMMM d, yyyy')} • HOLDEX
         </p>
       </div>
     </div>
   );
-};
+});
+
+BalanceSheetStatement.displayName = 'BalanceSheetStatement';
