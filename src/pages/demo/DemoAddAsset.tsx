@@ -131,6 +131,8 @@ const DemoAddAssetPage = () => {
           quantity: formData.cryptoQuantity ? parseFloat(formData.cryptoQuantity) : null,
           institution: formData.institution || null,
           platform: formData.cryptoPlatform || null,
+          reference_balance: null,
+          reference_date: null,
           notes: formData.notes || null,
           rental_income: null,
           image_url: formData.image_url,
