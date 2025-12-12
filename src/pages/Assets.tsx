@@ -19,7 +19,7 @@ const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'real-estate', label: 'Real Estate' },
   { value: 'bank', label: 'Bank Accounts' },
   { value: 'investment', label: 'Investments' },
-  { value: 'crypto', label: 'Crypto' },
+  { value: 'crypto', label: 'Digital Assets' },
   { value: 'business', label: 'Business' },
 ];
 
@@ -64,7 +64,7 @@ const AssetsPage = () => {
           {hasCryptoAssets && lastCryptoUpdate && (
             <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
               <RefreshCw size={12} className={cryptoLoading ? 'animate-spin' : ''} />
-              <span>Crypto prices updated at {lastCryptoUpdate}</span>
+              <span>Digital asset prices updated at {lastCryptoUpdate}</span>
             </div>
           )}
         </header>

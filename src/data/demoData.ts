@@ -154,7 +154,7 @@ export const demoProfile: DemoProfile = {
   ],
   dashboard_widgets: [
     'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
-    'leasehold_reminders', 'expiring_documents', 'world_clocks', 'pending_receivables'
+    'leasehold_reminders', 'expiring_documents', 'world_clocks', 'weather_with_clocks', 'pending_receivables'
   ],
   blur_amounts: false,
   fiscal_year_start: '01-01',
