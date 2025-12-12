@@ -1,9 +1,11 @@
-import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame } from 'lucide-react';
+import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame, HardHat, Calendar } from 'lucide-react';
 import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
 import { Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { InstitutionLogo } from '@/components/ui/institution-logo';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 interface CryptoPrice {
   price: number;
@@ -36,9 +38,20 @@ const typeLabels: Record<string, string> = {
   'business': 'Business Equity',
 };
 
+const propertyStatusLabels: Record<string, string> = {
+  'off_plan': 'Off-Plan',
+  'under_construction': 'Under Construction',
+  'delivered': 'Delivered',
+  'rented_out': 'Rented Out',
+  'owned': 'Owned',
+};
+
 export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
+  
+  // Check if this is an off-plan property
+  const isOffPlan = asset.type === 'real-estate' && ['off_plan', 'under_construction'].includes(asset.property_status || '');
   
   // Calculate crypto value from live prices if available
   let displayValue = asset.current_value;
@@ -51,6 +64,16 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
       change24h = cryptoPrice.change24h;
     }
   }
+  
+  // For off-plan: display value is amount_paid
+  if (isOffPlan && asset.amount_paid) {
+    displayValue = asset.amount_paid;
+  }
+  
+  // Calculate payment progress for off-plan
+  const paymentProgress = isOffPlan && asset.total_price && asset.amount_paid
+    ? (asset.amount_paid / asset.total_price) * 100
+    : 0;
   
   // Convert to display currency
   const eurValue = convertToEUR(displayValue, asset.currency, activeRates);
@@ -77,17 +100,37 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
   const isSignificantPositive = balanceChangePercent > 5;
   const isSignificantNegative = balanceChangePercent < -5;
 
+  // Format expected delivery date
+  const formatDeliveryDate = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    const date = new Date(dateStr);
+    const quarter = Math.ceil((date.getMonth() + 1) / 3);
+    return `Q${quarter} ${date.getFullYear()}`;
+  };
+
   return (
     <div 
       className={cn(
         "asset-card animate-fade-in group relative",
         isSignificantPositive && "ring-1 ring-positive/30",
-        isSignificantNegative && "ring-1 ring-negative/30"
+        isSignificantNegative && "ring-1 ring-negative/30",
+        isOffPlan && "ring-1 ring-primary/20"
       )}
       style={{ animationDelay: `${delay}ms` }}
     >
+      {/* Off-plan badge */}
+      {isOffPlan && (
+        <Badge 
+          variant="secondary" 
+          className="absolute -top-2 -left-2 bg-primary/10 text-primary border-primary/20 text-xs"
+        >
+          <HardHat size={10} className="mr-1" />
+          {propertyStatusLabels[asset.property_status || 'off_plan']}
+        </Badge>
+      )}
+      
       {/* Significant change indicator badge */}
-      {(isSignificantPositive || isSignificantNegative) && (
+      {(isSignificantPositive || isSignificantNegative) && !isOffPlan && (
         <div className={cn(
           "absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center",
           isSignificantPositive ? "bg-positive text-positive-foreground" : "bg-negative text-negative-foreground"
@@ -99,6 +142,7 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           )}
         </div>
       )}
+      
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           {/* Icon/Logo/Image area */}
@@ -122,12 +166,15 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           <div>
             <h4 className="font-medium text-foreground">{asset.name}</h4>
             <p className="text-sm text-muted-foreground">
-              {countryFlag} {asset.country} · {typeLabels[asset.type] || asset.type}
+              {!isOffPlan && countryFlag} {!isOffPlan && asset.country} {!isOffPlan && '·'} {typeLabels[asset.type] || asset.type}
               {asset.institution && (
                 <span className="text-muted-foreground"> · {asset.institution}</span>
               )}
               {asset.type === 'crypto' && asset.platform && (
                 <span className="text-muted-foreground"> · {asset.platform}</span>
+              )}
+              {isOffPlan && asset.developer && (
+                <span className="text-muted-foreground"> · {asset.developer}</span>
               )}
             </p>
           </div>
@@ -158,16 +205,42 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
       </div>
 
       <div className="space-y-2">
-        <div className="flex items-baseline justify-between">
-          <span className="text-xl font-semibold tabular-nums text-foreground">
-            {formatCurrency(displayCurrencyValue, displayCurrency)}
-          </span>
-          {asset.currency !== displayCurrency && (
-            <span className="text-sm text-muted-foreground tabular-nums">
-              {formatCurrency(displayValue, asset.currency)}
+        {/* Off-plan: Show paid/total with progress */}
+        {isOffPlan && asset.total_price ? (
+          <>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xl font-semibold tabular-nums text-foreground">
+                {formatCurrency(asset.amount_paid || 0, asset.currency)} paid
+              </span>
+              <span className="text-sm text-muted-foreground tabular-nums">
+                / {formatCurrency(asset.total_price, asset.currency)}
+              </span>
+            </div>
+            <div className="space-y-1">
+              <Progress value={paymentProgress} className="h-1.5" />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{paymentProgress.toFixed(0)}% paid</span>
+                {asset.expected_delivery && (
+                  <span className="flex items-center gap-1">
+                    <Calendar size={10} />
+                    Handover: {formatDeliveryDate(asset.expected_delivery)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-baseline justify-between">
+            <span className="text-xl font-semibold tabular-nums text-foreground">
+              {formatCurrency(displayCurrencyValue, displayCurrency)}
             </span>
-          )}
-        </div>
+            {asset.currency !== displayCurrency && (
+              <span className="text-sm text-muted-foreground tabular-nums">
+                {formatCurrency(displayValue, asset.currency)}
+              </span>
+            )}
+          </div>
+        )}
 
         {asset.type === 'crypto' && asset.quantity && asset.ticker && (
           <div className="flex items-center justify-between pt-2 border-t border-border">
@@ -209,7 +282,16 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           })()
         )}
 
-        {asset.rental_income && (
+        {/* Off-plan project details */}
+        {isOffPlan && asset.project_name && (
+          <div className="pt-2 border-t border-border">
+            <span className="text-sm text-muted-foreground">
+              {asset.project_name}{asset.unit_number && ` · ${asset.unit_number}`}
+            </span>
+          </div>
+        )}
+
+        {asset.rental_income && !isOffPlan && (
           <div className="pt-2 border-t border-border">
             <span className="text-sm text-muted-foreground">
               Rental: {formatCurrency(asset.rental_income, asset.currency)}/yr

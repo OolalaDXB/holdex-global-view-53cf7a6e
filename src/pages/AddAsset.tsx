@@ -72,6 +72,14 @@ const AddAssetPage = () => {
     referenceBalance: '',
     referenceDate: null as Date | null,
     entityId: null as string | null,
+    // Off-plan fields
+    propertyStatus: 'owned',
+    projectName: '',
+    developer: '',
+    unitNumber: '',
+    totalPrice: '',
+    amountPaid: '',
+    expectedDelivery: null as Date | null,
   });
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -125,13 +133,17 @@ const AddAssetPage = () => {
           entity_id: formData.entityId,
         });
       } else {
+        const isOffPlan = selectedType === 'real-estate' && ['off_plan', 'under_construction'].includes(formData.propertyStatus);
         await createAsset.mutateAsync({
           id: tempAssetId,
           name: formData.name,
           type: selectedType,
           country: formData.country,
           currency: formData.currency,
-          current_value: parseFloat(formData.currentValue) || 0,
+          // For off-plan: current_value = amount_paid
+          current_value: isOffPlan 
+            ? (parseFloat(formData.amountPaid) || 0)
+            : (parseFloat(formData.currentValue) || 0),
           purchase_value: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
           ownership_percentage: parseFloat(formData.ownershipPercent) || 100,
           ticker: formData.cryptoToken || null,
@@ -143,6 +155,14 @@ const AddAssetPage = () => {
           notes: formData.notes || null,
           image_url: imageUrl,
           entity_id: formData.entityId,
+          // Off-plan fields
+          property_status: selectedType === 'real-estate' ? formData.propertyStatus : null,
+          project_name: formData.projectName || null,
+          developer: formData.developer || null,
+          unit_number: formData.unitNumber || null,
+          total_price: formData.totalPrice ? parseFloat(formData.totalPrice) : null,
+          amount_paid: formData.amountPaid ? parseFloat(formData.amountPaid) : null,
+          expected_delivery: formData.expectedDelivery ? format(formData.expectedDelivery, 'yyyy-MM-dd') : null,
         });
       }
 
@@ -307,19 +327,44 @@ const AddAssetPage = () => {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="currentValue">
-                    {selectedType === 'liability' ? 'Outstanding Balance' : 'Current Value'}
-                  </Label>
-                  <Input
-                    id="currentValue"
-                    type="number"
-                    value={formData.currentValue}
-                    onChange={(e) => setFormData({ ...formData, currentValue: e.target.value })}
-                    placeholder="0"
-                    required
-                  />
-                </div>
+                {/* Property Status for Real Estate */}
+                {selectedType === 'real-estate' && (
+                  <div className="space-y-2">
+                    <Label>Property Status</Label>
+                    <Select 
+                      value={formData.propertyStatus} 
+                      onValueChange={(value) => setFormData({ ...formData, propertyStatus: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="owned">Owned</SelectItem>
+                        <SelectItem value="off_plan">Off-Plan / VEFA</SelectItem>
+                        <SelectItem value="under_construction">Under Construction</SelectItem>
+                        <SelectItem value="delivered">Delivered</SelectItem>
+                        <SelectItem value="rented_out">Rented Out</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Current Value - hidden for off-plan (auto-calculated) */}
+                {!(selectedType === 'real-estate' && ['off_plan', 'under_construction'].includes(formData.propertyStatus)) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="currentValue">
+                      {selectedType === 'liability' ? 'Outstanding Balance' : 'Current Value'}
+                    </Label>
+                    <Input
+                      id="currentValue"
+                      type="number"
+                      value={formData.currentValue}
+                      onChange={(e) => setFormData({ ...formData, currentValue: e.target.value })}
+                      placeholder="0"
+                      required={!(selectedType === 'real-estate' && ['off_plan', 'under_construction'].includes(formData.propertyStatus))}
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label>Owner (optional)</Label>
@@ -329,6 +374,94 @@ const AddAssetPage = () => {
                     placeholder="Select owner"
                   />
                 </div>
+
+                {/* Off-Plan Fields */}
+                {selectedType === 'real-estate' && ['off_plan', 'under_construction'].includes(formData.propertyStatus) && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="projectName">Project Name</Label>
+                      <Input
+                        id="projectName"
+                        value={formData.projectName}
+                        onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
+                        placeholder="e.g., Dubai Creek Harbour"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="developer">Developer</Label>
+                      <Select 
+                        value={formData.developer} 
+                        onValueChange={(value) => setFormData({ ...formData, developer: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select developer" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['Emaar Properties', 'Damac Properties', 'Sobha Realty', 'Nakheel', 'Meraas', 'Dubai Properties', 'Azizi Developments', 'Danube Properties', 'Ellington Properties', 'Select Group', 'Aldar', 'Imkan', 'Eagle Hills', 'Omniyat', 'Other'].map((dev) => (
+                            <SelectItem key={dev} value={dev}>{dev}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="unitNumber">Unit Number</Label>
+                      <Input
+                        id="unitNumber"
+                        value={formData.unitNumber}
+                        onChange={(e) => setFormData({ ...formData, unitNumber: e.target.value })}
+                        placeholder="e.g., A-1805"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="totalPrice">Total Price</Label>
+                      <Input
+                        id="totalPrice"
+                        type="number"
+                        value={formData.totalPrice}
+                        onChange={(e) => setFormData({ ...formData, totalPrice: e.target.value })}
+                        placeholder="0"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="amountPaid">Amount Paid</Label>
+                      <Input
+                        id="amountPaid"
+                        type="number"
+                        value={formData.amountPaid}
+                        onChange={(e) => setFormData({ ...formData, amountPaid: e.target.value })}
+                        placeholder="0"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Expected Delivery</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !formData.expectedDelivery && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {formData.expectedDelivery ? format(formData.expectedDelivery, "PPP") : "Select date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={formData.expectedDelivery || undefined}
+                            onSelect={(date) => setFormData({ ...formData, expectedDelivery: date || null })}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </>
+                )}
 
                 {selectedType === 'crypto' && (
                   <>
