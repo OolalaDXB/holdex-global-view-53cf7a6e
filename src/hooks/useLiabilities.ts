@@ -6,6 +6,20 @@ import { useAuth } from '@/contexts/AuthContext';
 export type Liability = Tables<'liabilities'>;
 export type LiabilityInsert = TablesInsert<'liabilities'>;
 
+export const FINANCING_TYPES = [
+  { value: 'conventional', label: 'Conventional', description: 'Standard interest-based financing' },
+  { value: 'ijara', label: 'Ijara', description: 'Islamic lease-to-own' },
+  { value: 'murabaha', label: 'Murabaha', description: 'Islamic cost-plus financing' },
+  { value: 'diminishing_musharaka', label: 'Diminishing Musharaka', description: 'Islamic co-ownership' },
+  { value: 'istisna', label: 'Istisna', description: 'Islamic construction financing' },
+  { value: 'qard_hassan', label: 'Qard Hassan', description: 'Interest-free loan' },
+  { value: 'heter_iska', label: 'Heter Iska', description: 'Jewish partnership structure' },
+  { value: 'other_compliant', label: 'Other Compliant', description: 'Other ethical/religious compliant' },
+] as const;
+
+export const isIslamicFinancing = (type: string) => 
+  ['ijara', 'murabaha', 'diminishing_musharaka', 'istisna', 'qard_hassan'].includes(type);
+
 export const useLiabilities = () => {
   const { user } = useAuth();
 

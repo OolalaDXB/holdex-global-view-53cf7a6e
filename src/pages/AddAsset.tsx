@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Moon } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, TrendingDown, Watch, Car, Palette, Gem, Wine, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,10 +14,11 @@ import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateAsset } from '@/hooks/useAssets';
 import { useCreateCollection } from '@/hooks/useCollections';
-import { useCreateLiability } from '@/hooks/useLiabilities';
+import { useCreateLiability, FINANCING_TYPES, isIslamicFinancing } from '@/hooks/useLiabilities';
 import { useEntities } from '@/hooks/useEntities';
 import { cn } from '@/lib/utils';
 
@@ -80,6 +81,17 @@ const AddAssetPage = () => {
     totalPrice: '',
     amountPaid: '',
     expectedDelivery: null as Date | null,
+    // Shariah compliance (for investments)
+    isShariahCompliant: false,
+    shariahCertification: '',
+    // Islamic financing (for liabilities)
+    financingType: 'conventional',
+    monthlyRental: '',
+    costPrice: '',
+    profitMargin: '',
+    bankOwnershipPercentage: '',
+    residualValue: '',
+    shariahAdvisor: '',
   });
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -108,6 +120,7 @@ const AddAssetPage = () => {
 
     try {
       if (selectedType === 'liability') {
+        const isIslamic = isIslamicFinancing(formData.financingType);
         await createLiability.mutateAsync({
           name: formData.name,
           type: 'loan',
@@ -118,6 +131,14 @@ const AddAssetPage = () => {
           institution: formData.institution || null,
           notes: formData.notes || null,
           entity_id: formData.entityId,
+          financing_type: formData.financingType,
+          is_shariah_compliant: isIslamic,
+          shariah_advisor: formData.shariahAdvisor || null,
+          cost_price: formData.costPrice ? parseFloat(formData.costPrice) : null,
+          profit_margin: formData.profitMargin ? parseFloat(formData.profitMargin) : null,
+          monthly_rental: formData.monthlyRental ? parseFloat(formData.monthlyRental) : null,
+          residual_value: formData.residualValue ? parseFloat(formData.residualValue) : null,
+          bank_ownership_percentage: formData.bankOwnershipPercentage ? parseFloat(formData.bankOwnershipPercentage) : null,
         });
       } else if (category === 'collections') {
         await createCollection.mutateAsync({
@@ -163,6 +184,9 @@ const AddAssetPage = () => {
           total_price: formData.totalPrice ? parseFloat(formData.totalPrice) : null,
           amount_paid: formData.amountPaid ? parseFloat(formData.amountPaid) : null,
           expected_delivery: formData.expectedDelivery ? format(formData.expectedDelivery, 'yyyy-MM-dd') : null,
+          // Shariah compliance for investments
+          is_shariah_compliant: selectedType === 'investment' ? formData.isShariahCompliant : false,
+          shariah_certification: formData.shariahCertification || null,
         });
       }
 
@@ -537,11 +561,9 @@ const AddAssetPage = () => {
                   </div>
                 )}
 
-                {selectedType !== 'bank' && (
+                {selectedType !== 'bank' && selectedType !== 'liability' && (
                   <div className="space-y-2">
-                    <Label htmlFor="purchasePrice">
-                      {selectedType === 'liability' ? 'Original Amount (optional)' : 'Purchase Price (optional)'}
-                    </Label>
+                    <Label htmlFor="purchasePrice">Purchase Price (optional)</Label>
                     <Input
                       id="purchasePrice"
                       type="number"
@@ -550,6 +572,177 @@ const AddAssetPage = () => {
                       placeholder="0"
                     />
                   </div>
+                )}
+
+                {selectedType === 'liability' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="purchasePrice">Original Amount (optional)</Label>
+                    <Input
+                      id="purchasePrice"
+                      type="number"
+                      value={formData.purchasePrice}
+                      onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
+                      placeholder="0"
+                    />
+                  </div>
+                )}
+
+                {/* Islamic Financing Section for Liabilities */}
+                {selectedType === 'liability' && (
+                  <>
+                    <div className="col-span-2 space-y-2">
+                      <Label>Financing Type</Label>
+                      <Select 
+                        value={formData.financingType} 
+                        onValueChange={(value) => setFormData({ ...formData, financingType: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FINANCING_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              <div className="flex flex-col">
+                                <span>{type.label}</span>
+                                <span className="text-xs text-muted-foreground">{type.description}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Show Shariah badge for Islamic types */}
+                    {isIslamicFinancing(formData.financingType) && (
+                      <div className="col-span-2 flex items-center gap-2 p-3 rounded-lg bg-positive/10 border border-positive/20">
+                        <Moon size={18} className="text-positive" />
+                        <span className="text-sm text-positive font-medium">Shariah Compliant Financing</span>
+                      </div>
+                    )}
+
+                    {/* Shariah Advisor field for Islamic financing */}
+                    {isIslamicFinancing(formData.financingType) && (
+                      <div className="col-span-2 space-y-2">
+                        <Label htmlFor="shariahAdvisor">Shariah Advisor (optional)</Label>
+                        <Input
+                          id="shariahAdvisor"
+                          value={formData.shariahAdvisor}
+                          onChange={(e) => setFormData({ ...formData, shariahAdvisor: e.target.value })}
+                          placeholder="e.g., Dubai Islamic Bank Shariah Board"
+                        />
+                      </div>
+                    )}
+
+                    {/* Murabaha specific fields */}
+                    {formData.financingType === 'murabaha' && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="costPrice">Cost Price</Label>
+                          <Input
+                            id="costPrice"
+                            type="number"
+                            value={formData.costPrice}
+                            onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+                            placeholder="Original asset cost"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="profitMargin">Profit Margin</Label>
+                          <Input
+                            id="profitMargin"
+                            type="number"
+                            value={formData.profitMargin}
+                            onChange={(e) => setFormData({ ...formData, profitMargin: e.target.value })}
+                            placeholder="Bank's markup"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Ijara specific fields */}
+                    {formData.financingType === 'ijara' && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="monthlyRental">Monthly Rental</Label>
+                          <Input
+                            id="monthlyRental"
+                            type="number"
+                            value={formData.monthlyRental}
+                            onChange={(e) => setFormData({ ...formData, monthlyRental: e.target.value })}
+                            placeholder="0"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="residualValue">Residual Value</Label>
+                          <Input
+                            id="residualValue"
+                            type="number"
+                            value={formData.residualValue}
+                            onChange={(e) => setFormData({ ...formData, residualValue: e.target.value })}
+                            placeholder="Transfer price at end"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    {/* Diminishing Musharaka specific fields */}
+                    {formData.financingType === 'diminishing_musharaka' && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="bankOwnershipPercentage">Bank Ownership %</Label>
+                          <Input
+                            id="bankOwnershipPercentage"
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={formData.bankOwnershipPercentage}
+                            onChange={(e) => setFormData({ ...formData, bankOwnershipPercentage: e.target.value })}
+                            placeholder="Current bank share"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="monthlyRental">Monthly Payment</Label>
+                          <Input
+                            id="monthlyRental"
+                            type="number"
+                            value={formData.monthlyRental}
+                            onChange={(e) => setFormData({ ...formData, monthlyRental: e.target.value })}
+                            placeholder="Rent + buyout"
+                          />
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {/* Shariah Compliance for Investments */}
+                {selectedType === 'investment' && (
+                  <>
+                    <div className="col-span-2 flex items-center justify-between rounded-lg border border-border p-4">
+                      <div className="flex items-center gap-3">
+                        <Moon size={18} className={formData.isShariahCompliant ? 'text-positive' : 'text-muted-foreground'} />
+                        <div>
+                          <Label className="text-sm font-medium">Shariah Compliant</Label>
+                          <p className="text-xs text-muted-foreground">Mark this investment as Shariah compliant</p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={formData.isShariahCompliant}
+                        onCheckedChange={(checked) => setFormData({ ...formData, isShariahCompliant: checked })}
+                      />
+                    </div>
+                    {formData.isShariahCompliant && (
+                      <div className="col-span-2 space-y-2">
+                        <Label htmlFor="shariahCertification">Certification (optional)</Label>
+                        <Input
+                          id="shariahCertification"
+                          value={formData.shariahCertification}
+                          onChange={(e) => setFormData({ ...formData, shariahCertification: e.target.value })}
+                          placeholder="e.g., AAOIFI Compliant"
+                        />
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {selectedType === 'bank' && (

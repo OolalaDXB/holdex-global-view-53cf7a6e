@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, FileText } from 'lucide-react';
+import { CalendarIcon, FileText, Moon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import { EntitySelect } from '@/components/entities/EntitySelect';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
+import { Switch } from '@/components/ui/switch';
 import { useUpdateAsset, Asset } from '@/hooks/useAssets';
 import { useEntities } from '@/hooks/useEntities';
 import { useToast } from '@/hooks/use-toast';
@@ -49,6 +50,8 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
     reference_balance: '',
     reference_date: null as Date | null,
     entity_id: null as string | null,
+    is_shariah_compliant: false,
+    shariah_certification: '',
   });
 
   useEffect(() => {
@@ -69,6 +72,8 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         reference_balance: asset.reference_balance?.toString() || '',
         reference_date: asset.reference_date ? new Date(asset.reference_date) : null,
         entity_id: asset.entity_id || null,
+        is_shariah_compliant: asset.is_shariah_compliant || false,
+        shariah_certification: asset.shariah_certification || '',
       });
     }
   }, [asset]);
@@ -95,6 +100,8 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         reference_balance: formData.reference_balance ? parseFloat(formData.reference_balance) : null,
         reference_date: formData.reference_date ? format(formData.reference_date, 'yyyy-MM-dd') : null,
         entity_id: formData.entity_id,
+        is_shariah_compliant: formData.is_shariah_compliant,
+        shariah_certification: formData.shariah_certification || null,
       });
 
       toast({
@@ -326,6 +333,36 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                         onChange={(e) => setFormData({ ...formData, purchase_value: e.target.value })}
                       />
                     </div>
+                  )}
+
+                  {/* Shariah Compliance for investments */}
+                  {asset.type === 'investment' && (
+                    <>
+                      <div className="col-span-2 flex items-center justify-between rounded-lg border border-border p-4">
+                        <div className="flex items-center gap-3">
+                          <Moon size={18} className={formData.is_shariah_compliant ? 'text-positive' : 'text-muted-foreground'} />
+                          <div>
+                            <Label className="text-sm font-medium">Shariah Compliant</Label>
+                            <p className="text-xs text-muted-foreground">Mark this investment as Shariah compliant</p>
+                          </div>
+                        </div>
+                        <Switch
+                          checked={formData.is_shariah_compliant}
+                          onCheckedChange={(checked) => setFormData({ ...formData, is_shariah_compliant: checked })}
+                        />
+                      </div>
+                      {formData.is_shariah_compliant && (
+                        <div className="col-span-2 space-y-2">
+                          <Label htmlFor="edit-shariah-cert">Certification (optional)</Label>
+                          <Input
+                            id="edit-shariah-cert"
+                            value={formData.shariah_certification}
+                            onChange={(e) => setFormData({ ...formData, shariah_certification: e.target.value })}
+                            placeholder="e.g., AAOIFI Compliant"
+                          />
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
