@@ -70,3 +70,42 @@ export const useCreateLiability = () => {
     },
   });
 };
+
+export const useUpdateLiability = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: { id: string } & Partial<Omit<LiabilityInsert, 'user_id'>>) => {
+      const { data, error } = await supabase
+        .from('liabilities')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['liabilities'] });
+    },
+  });
+};
+
+export const useDeleteLiability = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('liabilities')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['liabilities'] });
+    },
+  });
+};

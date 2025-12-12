@@ -1349,7 +1349,7 @@ export const demoCollections: DemoCollection[] = [
   },
 ];
 
-// Liabilities (2)
+// Liabilities (4)
 export const demoLiabilities: DemoLiability[] = [
   {
     id: 'liability-1',
@@ -1383,7 +1383,7 @@ export const demoLiabilities: DemoLiability[] = [
     id: 'liability-2',
     user_id: DEMO_USER_ID,
     name: 'Porsche Financing',
-    type: 'loan',
+    type: 'car_loan',
     country: 'DE',
     currency: 'EUR',
     current_balance: 45000,
@@ -1434,6 +1434,35 @@ export const demoLiabilities: DemoLiability[] = [
     residual_value: null,
     bank_ownership_percentage: 64,
     created_at: '2022-01-15T10:00:00Z',
+    updated_at: '2024-12-01T10:00:00Z',
+  },
+  // Credit Card
+  {
+    id: 'liability-4',
+    user_id: DEMO_USER_ID,
+    name: 'AMEX Platinum Balance',
+    type: 'credit_card',
+    country: 'AE',
+    currency: 'AED',
+    current_balance: 18500,
+    original_amount: null,
+    interest_rate: 0,
+    monthly_payment: null,
+    start_date: null,
+    end_date: null,
+    linked_asset_id: null,
+    institution: 'American Express',
+    notes: 'Paid in full monthly, current outstanding balance',
+    entity_id: DEMO_ENTITY_PERSONAL,
+    financing_type: 'conventional',
+    is_shariah_compliant: false,
+    shariah_advisor: null,
+    cost_price: null,
+    profit_margin: null,
+    monthly_rental: null,
+    residual_value: null,
+    bank_ownership_percentage: null,
+    created_at: '2023-01-01T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
 ];

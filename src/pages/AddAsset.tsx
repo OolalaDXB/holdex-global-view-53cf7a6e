@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { CalendarIcon, Moon, MapPin, Loader2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -61,10 +61,22 @@ const AddAssetPage = () => {
   // Get filtered financing types based on compliance mode
   const filteredFinancingTypes = getFilteredFinancingTypes(showIslamic, showJewish);
   
+  const [searchParams] = useSearchParams();
+  const typeParam = searchParams.get('type');
+  
   const [step, setStep] = useState<Step>('category');
   const [category, setCategory] = useState<Category | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pre-select type from URL param
+  useEffect(() => {
+    if (typeParam === 'liability') {
+      setCategory('wealth');
+      setSelectedType('liability');
+      setStep('form');
+    }
+  }, [typeParam]);
 
   const [formData, setFormData] = useState({
     name: '',

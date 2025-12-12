@@ -1,18 +1,30 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useLiabilities, Liability } from '@/hooks/useLiabilities';
 import { useLoanSchedule } from '@/hooks/useLoanSchedules';
 import { LoanScheduleSection } from '@/components/liabilities/LoanScheduleSection';
 import { MonthlyPaymentSummary } from '@/components/liabilities/MonthlyPaymentSummary';
 import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool';
+import { LiabilityDialog } from '@/components/liabilities/LiabilityDialog';
+import { DeleteLiabilityDialog } from '@/components/liabilities/DeleteLiabilityDialog';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Landmark, TrendingDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, Landmark, TrendingDown, Pencil, Trash2, Plus } from 'lucide-react';
 
-function LiabilityCard({ liability }: { liability: Liability }) {
+function LiabilityCard({ 
+  liability, 
+  onEdit, 
+  onDelete 
+}: { 
+  liability: Liability;
+  onEdit: (liability: Liability) => void;
+  onDelete: (liability: Liability) => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const { data: schedule } = useLoanSchedule(liability.id);
   
@@ -61,6 +73,33 @@ function LiabilityCard({ liability }: { liability: Liability }) {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent className="pt-0 space-y-4">
+            {/* Action buttons */}
+            <div className="flex gap-2 justify-end border-b border-border pb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(liability);
+                }}
+              >
+                <Pencil className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(liability);
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </div>
+
             {/* Details */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm border-t border-border pt-4">
               {liability.interest_rate && (
@@ -116,6 +155,9 @@ function LiabilityCard({ liability }: { liability: Liability }) {
 
 const LiabilitiesPage = () => {
   const { data: liabilities = [], isLoading } = useLiabilities();
+  const [editingLiability, setEditingLiability] = useState<Liability | null>(null);
+  const [deletingLiability, setDeletingLiability] = useState<Liability | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   
   return (
     <AppLayout>
@@ -127,7 +169,13 @@ const LiabilitiesPage = () => {
               Manage your loans, mortgages, and payment schedules.
             </p>
           </div>
-          <LoanComparisonTool />
+          <div className="flex items-center gap-2">
+            <LoanComparisonTool />
+            <Button onClick={() => setShowAddDialog(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Add Liability
+            </Button>
+          </div>
         </header>
         
         {/* Monthly Payment Summary Widget */}
@@ -141,21 +189,46 @@ const LiabilitiesPage = () => {
           <div className="text-center py-16">
             <TrendingDown className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground mb-4">No liabilities yet.</p>
-            <a 
-              href="/add" 
-              className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
-            >
+            <Button onClick={() => setShowAddDialog(true)}>
+              <Plus className="h-4 w-4 mr-1" />
               Add Liability
-            </a>
+            </Button>
           </div>
         ) : (
           <div className="space-y-4">
             {liabilities.map((liability) => (
-              <LiabilityCard key={liability.id} liability={liability} />
+              <LiabilityCard 
+                key={liability.id} 
+                liability={liability}
+                onEdit={setEditingLiability}
+                onDelete={setDeletingLiability}
+              />
             ))}
           </div>
         )}
       </div>
+
+      {/* Add/Edit Dialog */}
+      <LiabilityDialog
+        open={showAddDialog || !!editingLiability}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowAddDialog(false);
+            setEditingLiability(null);
+          }
+        }}
+        liability={editingLiability}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      {deletingLiability && (
+        <DeleteLiabilityDialog
+          open={!!deletingLiability}
+          onOpenChange={(open) => !open && setDeletingLiability(null)}
+          liabilityId={deletingLiability.id}
+          liabilityName={deletingLiability.name}
+        />
+      )}
     </AppLayout>
   );
 };

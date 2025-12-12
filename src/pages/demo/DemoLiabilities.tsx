@@ -4,22 +4,40 @@ import { useDemo } from '@/contexts/DemoContext';
 import { demoLoanSchedules, demoLoanPayments, DemoLoanSchedule, DemoLiability } from '@/data/demoData';
 import { DemoMonthlyPaymentSummary } from '@/components/liabilities/DemoMonthlyPaymentSummary';
 import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool';
+import { DemoLiabilityDialog } from '@/components/liabilities/DemoLiabilityDialog';
+import { DemoDeleteLiabilityDialog } from '@/components/liabilities/DemoDeleteLiabilityDialog';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Landmark, TrendingDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, Landmark, TrendingDown, Pencil, Trash2, Plus, CreditCard, Car } from 'lucide-react';
 
-function DemoLiabilityCard({ liability }: { liability: DemoLiability }) {
+function DemoLiabilityCard({ 
+  liability,
+  onEdit,
+  onDelete,
+}: { 
+  liability: DemoLiability;
+  onEdit: (liability: DemoLiability) => void;
+  onDelete: (liability: DemoLiability) => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   
   // Find matching loan schedule
   const schedule = demoLoanSchedules.find(s => s.liability_id === liability.id);
   const payments = schedule ? demoLoanPayments.filter(p => p.loan_schedule_id === schedule.id) : [];
   
-  const icon = liability.type === 'mortgage' ? Landmark : TrendingDown;
-  const Icon = icon;
+  const getIcon = () => {
+    switch (liability.type) {
+      case 'mortgage': return Landmark;
+      case 'car_loan': return Car;
+      case 'credit_card': return CreditCard;
+      default: return TrendingDown;
+    }
+  };
+  const Icon = getIcon();
   
   // Convert demo schedule to LoanSchedule format for the component
   const scheduleData = schedule ? {
@@ -89,6 +107,33 @@ function DemoLiabilityCard({ liability }: { liability: DemoLiability }) {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent className="pt-0 space-y-4">
+            {/* Action buttons */}
+            <div className="flex gap-2 justify-end border-b border-border pb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(liability);
+                }}
+              >
+                <Pencil className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(liability);
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Delete
+              </Button>
+            </div>
+
             {/* Details */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm border-t border-border pt-4">
               {liability.interest_rate && (
@@ -281,6 +326,9 @@ function DemoLoanScheduleDisplay({ schedule, payments, currency }: {
 
 const DemoLiabilitiesPage = () => {
   const { liabilities } = useDemo();
+  const [editingLiability, setEditingLiability] = useState<DemoLiability | null>(null);
+  const [deletingLiability, setDeletingLiability] = useState<DemoLiability | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   
   return (
     <AppLayout isDemo>
@@ -295,7 +343,13 @@ const DemoLiabilitiesPage = () => {
               Manage your loans, mortgages, and payment schedules.
             </p>
           </div>
-          <LoanComparisonTool />
+          <div className="flex items-center gap-2">
+            <LoanComparisonTool />
+            <Button onClick={() => setShowAddDialog(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Add Liability
+            </Button>
+          </div>
         </header>
         
         {/* Monthly Payment Summary Widget */}
@@ -303,10 +357,37 @@ const DemoLiabilitiesPage = () => {
         
         <div className="space-y-4">
           {liabilities.map((liability) => (
-            <DemoLiabilityCard key={liability.id} liability={liability} />
+            <DemoLiabilityCard 
+              key={liability.id} 
+              liability={liability}
+              onEdit={setEditingLiability}
+              onDelete={setDeletingLiability}
+            />
           ))}
         </div>
       </div>
+
+      {/* Add/Edit Dialog */}
+      <DemoLiabilityDialog
+        open={showAddDialog || !!editingLiability}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowAddDialog(false);
+            setEditingLiability(null);
+          }
+        }}
+        liability={editingLiability}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      {deletingLiability && (
+        <DemoDeleteLiabilityDialog
+          open={!!deletingLiability}
+          onOpenChange={(open) => !open && setDeletingLiability(null)}
+          liabilityId={deletingLiability.id}
+          liabilityName={deletingLiability.name}
+        />
+      )}
     </AppLayout>
   );
 };
