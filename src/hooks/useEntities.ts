@@ -8,14 +8,46 @@ export type EntityInsert = TablesInsert<'entities'>;
 export type EntityUpdate = TablesUpdate<'entities'>;
 
 export const ENTITY_TYPES = [
-  { value: 'personal', label: 'Personal', icon: '👤' },
-  { value: 'spouse', label: 'Spouse', icon: '💑' },
-  { value: 'couple', label: 'Couple', icon: '👫' },
-  { value: 'company', label: 'Company', icon: '🏢' },
-  { value: 'holding', label: 'Holding', icon: '🏛️' },
-  { value: 'spv', label: 'SPV', icon: '📁' },
-  { value: 'trust', label: 'Trust', icon: '🔒' },
-  { value: 'family', label: 'Family', icon: '👨‍👩‍👧‍👦' },
+  { value: 'personal', label: 'Personal', icon: '👤', category: 'individual' },
+  { value: 'spouse', label: 'Spouse', icon: '👤', category: 'individual' },
+  { value: 'couple', label: 'Couple', icon: '👫', category: 'relationship' },
+  { value: 'company', label: 'Company', icon: '🏢', category: 'legal_entity' },
+  { value: 'holding', label: 'Holding', icon: '🏛️', category: 'legal_entity' },
+  { value: 'spv', label: 'SPV', icon: '📦', category: 'legal_entity' },
+  { value: 'trust', label: 'Trust', icon: '🔒', category: 'trust' },
+  { value: 'family', label: 'Family', icon: '👨‍👩‍👧‍👦', category: 'group' },
+  { value: 'huf', label: 'HUF (Hindu Undivided Family)', icon: '🪷', category: 'huf' },
+] as const;
+
+export const MATRIMONIAL_REGIMES = [
+  { value: 'community', label: 'Community of Property' },
+  { value: 'legal_community', label: 'Legal Community (French default)' },
+  { value: 'separation', label: 'Separation of Assets' },
+  { value: 'participation', label: 'Participation in Acquisitions' },
+  { value: 'mahr', label: 'Mahr (Islamic)' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+export const LEGAL_FORMS = [
+  { value: 'sarl', label: 'SARL' },
+  { value: 'sas', label: 'SAS' },
+  { value: 'sa', label: 'SA' },
+  { value: 'llc', label: 'LLC' },
+  { value: 'fz-llc', label: 'FZ-LLC (Free Zone)' },
+  { value: 'ltd', label: 'Ltd' },
+  { value: 'llp', label: 'LLP' },
+  { value: 'gmbh', label: 'GmbH' },
+  { value: 'bv', label: 'BV' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+export const TRUST_TYPES = [
+  { value: 'revocable', label: 'Revocable' },
+  { value: 'irrevocable', label: 'Irrevocable' },
+  { value: 'discretionary', label: 'Discretionary' },
+  { value: 'fixed', label: 'Fixed Interest' },
+  { value: 'charitable', label: 'Charitable' },
+  { value: 'waqf', label: 'Waqf (Islamic Endowment)' },
 ] as const;
 
 export type EntityType = typeof ENTITY_TYPES[number]['value'];

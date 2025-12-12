@@ -321,7 +321,7 @@ const Demo = () => {
               {recentAssets.map((asset, index) => (
                 <AssetCard 
                   key={asset.id} 
-                  asset={asset} 
+                  asset={asset as any} 
                   rates={rates}
                   cryptoPrices={prices}
                   displayCurrency={displayCurrency}

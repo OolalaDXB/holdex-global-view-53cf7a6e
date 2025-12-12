@@ -27,6 +27,28 @@ const institutionDomains: Record<string, string> = {
   'Noor Bank': 'emiratesnbd.com',
   'LIV': 'liv.me',
   'Liv': 'liv.me',
+  // Islamic Banks - UAE
+  'Abu Dhabi Islamic Bank': 'adib.ae',
+  'ADIB': 'adib.ae',
+  'Emirates Islamic': 'emiratesislamic.ae',
+  'EI': 'emiratesislamic.ae',
+  'Sharjah Islamic Bank': 'sib.ae',
+  'SIB': 'sib.ae',
+  // Islamic Banks - GCC
+  'Al Rajhi Bank': 'alrajhibank.com.sa',
+  'Al Rajhi': 'alrajhibank.com.sa',
+  'Kuwait Finance House': 'kfh.com',
+  'KFH': 'kfh.com',
+  'Qatar Islamic Bank': 'qib.com.qa',
+  'QIB': 'qib.com.qa',
+  'Bahrain Islamic Bank': 'bisb.com',
+  'BISB': 'bisb.com',
+  // Islamic Windows
+  'ENBD Islamic': 'emiratesnbd.com',
+  'ADCB Islamic': 'adcb.com',
+  'FAB Islamic': 'bankfab.com',
+  'HSBC Amanah': 'hsbc.com',
+  'Standard Chartered Saadiq': 'sc.com',
   
   // Banks - France
   'BNP': 'bnpparibas.com',

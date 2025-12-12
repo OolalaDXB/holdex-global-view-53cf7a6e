@@ -1,34 +1,31 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { Asset } from '@/hooks/useAssets';
-import { Collection } from '@/hooks/useCollections';
-import { Liability } from '@/hooks/useLiabilities';
-import { demoAssets, demoCollections, demoLiabilities, demoNetWorthHistory, demoEntities, demoProfile, DemoEntity, DemoProfile } from '@/data/demoData';
+import { demoAssets, demoCollections, demoLiabilities, demoNetWorthHistory, demoEntities, demoProfile, DemoEntity, DemoProfile, DemoAsset, DemoLiability, DemoCollection } from '@/data/demoData';
 
 interface DemoContextType {
-  assets: Asset[];
-  collections: Collection[];
-  liabilities: Liability[];
+  assets: DemoAsset[];
+  collections: DemoCollection[];
+  liabilities: DemoLiability[];
   entities: DemoEntity[];
   profile: DemoProfile;
   netWorthHistory: typeof demoNetWorthHistory;
   updateProfile: (updates: Partial<DemoProfile>) => void;
-  addAsset: (asset: Omit<Asset, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
-  updateAsset: (id: string, updates: Partial<Asset>) => void;
+  addAsset: (asset: Omit<DemoAsset, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  updateAsset: (id: string, updates: Partial<DemoAsset>) => void;
   deleteAsset: (id: string) => void;
-  addCollection: (collection: Omit<Collection, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
-  updateCollection: (id: string, updates: Partial<Collection>) => void;
+  addCollection: (collection: Omit<DemoCollection, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  updateCollection: (id: string, updates: Partial<DemoCollection>) => void;
   deleteCollection: (id: string) => void;
-  addLiability: (liability: Omit<Liability, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
-  updateLiability: (id: string, updates: Partial<Liability>) => void;
+  addLiability: (liability: Omit<DemoLiability, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  updateLiability: (id: string, updates: Partial<DemoLiability>) => void;
   deleteLiability: (id: string) => void;
 }
 
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
 
 export function DemoProvider({ children }: { children: ReactNode }) {
-  const [assets, setAssets] = useState<Asset[]>(demoAssets);
-  const [collections, setCollections] = useState<Collection[]>(demoCollections);
-  const [liabilities, setLiabilities] = useState<Liability[]>(demoLiabilities);
+  const [assets, setAssets] = useState<DemoAsset[]>(demoAssets);
+  const [collections, setCollections] = useState<DemoCollection[]>(demoCollections);
+  const [liabilities, setLiabilities] = useState<DemoLiability[]>(demoLiabilities);
   const [entities] = useState<DemoEntity[]>(demoEntities);
   const [profile, setProfile] = useState<DemoProfile>(demoProfile);
 
@@ -39,8 +36,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const generateId = () => `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   const now = () => new Date().toISOString();
 
-  const addAsset = (asset: Omit<Asset, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    const newAsset: Asset = {
+  const addAsset = (asset: Omit<DemoAsset, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    const newAsset: DemoAsset = {
       ...asset,
       id: generateId(),
       user_id: 'demo-user-lucas-soleil',
@@ -50,7 +47,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setAssets(prev => [newAsset, ...prev]);
   };
 
-  const updateAsset = (id: string, updates: Partial<Asset>) => {
+  const updateAsset = (id: string, updates: Partial<DemoAsset>) => {
     setAssets(prev => prev.map(a => 
       a.id === id ? { ...a, ...updates, updated_at: now() } : a
     ));
@@ -60,8 +57,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setAssets(prev => prev.filter(a => a.id !== id));
   };
 
-  const addCollection = (collection: Omit<Collection, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    const newCollection: Collection = {
+  const addCollection = (collection: Omit<DemoCollection, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    const newCollection: DemoCollection = {
       ...collection,
       id: generateId(),
       user_id: 'demo-user-lucas-soleil',
@@ -71,7 +68,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setCollections(prev => [newCollection, ...prev]);
   };
 
-  const updateCollection = (id: string, updates: Partial<Collection>) => {
+  const updateCollection = (id: string, updates: Partial<DemoCollection>) => {
     setCollections(prev => prev.map(c => 
       c.id === id ? { ...c, ...updates, updated_at: now() } : c
     ));
@@ -81,8 +78,8 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setCollections(prev => prev.filter(c => c.id !== id));
   };
 
-  const addLiability = (liability: Omit<Liability, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    const newLiability: Liability = {
+  const addLiability = (liability: Omit<DemoLiability, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    const newLiability: DemoLiability = {
       ...liability,
       id: generateId(),
       user_id: 'demo-user-lucas-soleil',
@@ -92,7 +89,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setLiabilities(prev => [newLiability, ...prev]);
   };
 
-  const updateLiability = (id: string, updates: Partial<Liability>) => {
+  const updateLiability = (id: string, updates: Partial<DemoLiability>) => {
     setLiabilities(prev => prev.map(l => 
       l.id === id ? { ...l, ...updates, updated_at: now() } : l
     ));
