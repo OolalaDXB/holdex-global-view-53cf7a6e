@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { EditAssetDialog } from '@/components/assets/EditAssetDialog';
@@ -9,8 +10,9 @@ import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Search } from 'lucide-react';
+import { RefreshCw, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 
@@ -24,6 +26,9 @@ const filterOptions: { value: FilterType; label: string }[] = [
 ];
 
 const AssetsPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const entityFilter = searchParams.get('entity');
+  
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
@@ -37,8 +42,23 @@ const AssetsPage = () => {
   const rates = exchangeRates?.rates || fallbackRates;
   const prices = cryptoPrices || fallbackCryptoPrices;
 
+  const clearEntityFilter = () => {
+    setSearchParams({});
+  };
+
+  const getEntityName = (entityId: string) => {
+    if (entityId === 'unassigned') return 'Unassigned';
+    const entity = entities.find(e => e.id === entityId);
+    return entity?.name || 'Unknown Entity';
+  };
+
   const filteredAssets = assets
     .filter(a => filter === 'all' || a.type === filter)
+    .filter(a => {
+      if (!entityFilter) return true;
+      if (entityFilter === 'unassigned') return !a.entity_id;
+      return a.entity_id === entityFilter;
+    })
     .filter(a => {
       if (!searchQuery.trim()) return true;
       const query = searchQuery.toLowerCase();
@@ -61,6 +81,20 @@ const AssetsPage = () => {
         <header className="mb-8">
           <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>
           <p className="text-muted-foreground">Your wealth portfolio across all categories.</p>
+          {entityFilter && (
+            <div className="flex items-center gap-2 mt-3">
+              <span className="text-sm text-muted-foreground">Filtered by:</span>
+              <div className="inline-flex items-center gap-1 px-2 py-1 bg-secondary rounded-md text-sm">
+                <span>{getEntityName(entityFilter)}</span>
+                <button
+                  onClick={clearEntityFilter}
+                  className="ml-1 p-0.5 hover:bg-muted rounded transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+          )}
           {hasCryptoAssets && lastCryptoUpdate && (
             <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
               <RefreshCw size={12} className={cryptoLoading ? 'animate-spin' : ''} />

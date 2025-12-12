@@ -16,6 +16,7 @@ import { useLiabilities } from '@/hooks/useLiabilities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { FavoriteCitiesSelect } from '@/components/settings/FavoriteCitiesSelect';
 import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
+import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
 import { X } from 'lucide-react';
 
 interface City {
@@ -60,6 +61,7 @@ const SettingsPage = () => {
   ]);
   const [blurAmounts, setBlurAmounts] = useState(false);
   const [fiscalYearStart, setFiscalYearStart] = useState('01-01');
+  const [newsSources, setNewsSources] = useState<string[]>(['bloomberg', 'reuters']);
 
   // Get all available currencies from exchange rates API
   const availableCurrencies = exchangeRates?.rates 
@@ -83,6 +85,7 @@ const SettingsPage = () => {
       ]);
       setBlurAmounts((profile as any).blur_amounts || false);
       setFiscalYearStart((profile as any).fiscal_year_start || '01-01');
+      setNewsSources((profile as any).news_sources || ['bloomberg', 'reuters']);
     }
   }, [profile]);
 
@@ -100,6 +103,7 @@ const SettingsPage = () => {
         dashboard_widgets: dashboardWidgets,
         blur_amounts: blurAmounts,
         fiscal_year_start: fiscalYearStart,
+        news_sources: newsSources,
       } as any);
       toast({
         title: "Settings saved",
@@ -314,6 +318,20 @@ const SettingsPage = () => {
             <DashboardWidgetsSelect
               value={dashboardWidgets}
               onChange={setDashboardWidgets}
+            />
+          </section>
+
+          <Separator />
+
+          {/* News Sources Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">News Sources</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Select which news feeds to display in the ticker (when enabled).
+            </p>
+            <NewsSourcesSelect
+              value={newsSources}
+              onChange={setNewsSources}
             />
           </section>
 

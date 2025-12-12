@@ -84,7 +84,7 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
     if (entityId === 'unassigned') {
       navigate('/assets?entity=unassigned');
     } else {
-      navigate(`/entities?selected=${entityId}`);
+      navigate(`/assets?entity=${entityId}`);
     }
   };
 

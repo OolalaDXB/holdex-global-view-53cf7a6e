@@ -8,12 +8,25 @@ interface NewsItem {
   source: string;
 }
 
+interface FeedConfig {
+  url: string;
+  source: string;
+  id: string;
+}
+
+const ALL_FEEDS: FeedConfig[] = [
+  { id: 'bloomberg', url: 'https://feeds.bloomberg.com/markets/news.rss', source: 'Bloomberg' },
+  { id: 'reuters', url: 'https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best', source: 'Reuters' },
+  { id: 'crypto', url: 'https://cointelegraph.com/rss', source: 'Cointelegraph' },
+];
+
 // Fetch news from RSS feeds via a public CORS proxy
-const fetchNews = async (): Promise<NewsItem[]> => {
-  const feeds = [
-    { url: 'https://feeds.bloomberg.com/markets/news.rss', source: 'Bloomberg' },
-    { url: 'https://www.reutersagency.com/feed/?taxonomy=best-sectors&post_type=best', source: 'Reuters' },
-  ];
+const fetchNews = async (enabledSources: string[]): Promise<NewsItem[]> => {
+  const feeds = ALL_FEEDS.filter(feed => enabledSources.includes(feed.id));
+  
+  if (feeds.length === 0) {
+    return [];
+  }
 
   const allNews: NewsItem[] = [];
 
@@ -55,18 +68,23 @@ const fetchNews = async (): Promise<NewsItem[]> => {
 
 interface NewsTickerProps {
   onDismiss?: () => void;
+  enabledSources?: string[];
 }
 
-export const NewsTicker: React.FC<NewsTickerProps> = ({ onDismiss }) => {
+export const NewsTicker: React.FC<NewsTickerProps> = ({ 
+  onDismiss,
+  enabledSources = ['bloomberg', 'reuters']
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDismissed, setIsDismissed] = useState(false);
 
   const { data: news = [] } = useQuery({
-    queryKey: ['news-ticker'],
-    queryFn: fetchNews,
+    queryKey: ['news-ticker', enabledSources],
+    queryFn: () => fetchNews(enabledSources),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: false,
+    enabled: enabledSources.length > 0,
   });
 
   // Rotate headlines every 10 seconds
