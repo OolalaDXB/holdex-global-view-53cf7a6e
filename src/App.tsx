@@ -27,6 +27,7 @@ import DemoEntities from "./pages/demo/DemoEntities";
 import DemoReceivables from "./pages/demo/DemoReceivables";
 import DemoDocuments from "./pages/demo/DemoDocuments";
 import DemoLiabilities from "./pages/demo/DemoLiabilities";
+import DemoAddLiability from "./pages/demo/DemoAddLiability";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
                   <Route path="/demo/receivables" element={<DemoReceivables />} />
                   <Route path="/demo/documents" element={<DemoDocuments />} />
                   <Route path="/demo/liabilities" element={<DemoLiabilities />} />
+                  <Route path="/demo/add-liability" element={<DemoAddLiability />} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
                   <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />

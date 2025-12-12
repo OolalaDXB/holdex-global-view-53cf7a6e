@@ -32,6 +32,7 @@ const navigation = [
   { name: 'Documents', href: '/documents', demoHref: '/demo/documents', icon: FileText },
   { name: 'Entities', href: '/entities', demoHref: '/demo/entities', icon: Building },
   { name: 'Add Asset', href: '/add', demoHref: '/demo/add', icon: Plus },
+  { name: 'Add Liability', href: '/add-liability', demoHref: '/demo/add-liability', icon: TrendingDown },
 ];
 
 export function Sidebar({ isDemo = false }: SidebarProps) {
