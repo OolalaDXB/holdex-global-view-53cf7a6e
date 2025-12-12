@@ -59,18 +59,31 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const secondaryCurrency2 = profile?.secondary_currency_2 || 'AED';
   const rates = exchangeRates?.rates || fallbackRates;
   
+  // Get the user's configured currencies
+  const userCurrencies = [baseCurrency, secondaryCurrency1, secondaryCurrency2].filter(
+    (c, i, arr) => arr.indexOf(c) === i
+  );
+  
   const [displayCurrency, setDisplayCurrencyState] = useState(() => {
     const saved = localStorage.getItem(DISPLAY_CURRENCY_KEY);
-    return saved || baseCurrency;
+    // Only use saved if it's still in the user's configured currencies
+    if (saved && userCurrencies.includes(saved)) {
+      return saved;
+    }
+    return baseCurrency;
   });
 
-  // Update display currency when base currency changes
+  // Update display currency when user's currency preferences change
   useEffect(() => {
     const saved = localStorage.getItem(DISPLAY_CURRENCY_KEY);
-    if (!saved) {
+    // If saved currency is no longer in user's configured currencies, reset to base
+    if (saved && !userCurrencies.includes(saved)) {
+      setDisplayCurrencyState(baseCurrency);
+      localStorage.removeItem(DISPLAY_CURRENCY_KEY);
+    } else if (!saved) {
       setDisplayCurrencyState(baseCurrency);
     }
-  }, [baseCurrency]);
+  }, [baseCurrency, secondaryCurrency1, secondaryCurrency2]);
 
   const setDisplayCurrency = (currency: string) => {
     setDisplayCurrencyState(currency);
