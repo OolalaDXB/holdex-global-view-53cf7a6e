@@ -6,6 +6,7 @@ import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
 import { ViewToggle, useViewConfig } from '@/components/dashboard/ViewToggle';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
+import { ExpiringDocumentsWidget } from '@/components/dashboard/ExpiringDocumentsWidget';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
@@ -300,6 +301,9 @@ const Dashboard = () => {
                 <CurrencyBreakdown items={currencyBreakdown} delay={400} />
               </section>
             )}
+
+            {/* Expiring Documents Widget */}
+            <ExpiringDocumentsWidget />
 
             {/* Collections Gallery - only show if collections are included */}
             {showCollections && <CollectionsGallery collections={collections} />}
