@@ -10,8 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Collection } from '@/hooks/useCollections';
 import { DemoEditCollectionDialog } from '@/components/demo/DemoEditCollectionDialog';
 import { DemoDeleteCollectionDialog } from '@/components/demo/DemoDeleteCollectionDialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'lp-position' | 'other';
+type CertaintyFilter = 'all' | 'certain' | 'estimated' | 'projected';
 
 const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -27,6 +29,7 @@ const filterOptions: { value: FilterType; label: string }[] = [
 const DemoCollectionsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
   
@@ -35,6 +38,7 @@ const DemoCollectionsPage = () => {
 
   const filteredCollections = collections
     .filter(c => filter === 'all' || c.type === filter)
+    .filter(c => certaintyFilter === 'all' || (c as any).certainty === certaintyFilter)
     .filter(c => {
       if (!searchQuery.trim()) return true;
       const query = searchQuery.toLowerCase();
@@ -66,14 +70,28 @@ const DemoCollectionsPage = () => {
 
         {/* Search and Filters */}
         <div className="space-y-4 mb-8">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search collections..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-secondary border-border"
-            />
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="relative max-w-sm flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search collections..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-secondary border-border"
+              />
+            </div>
+            
+            <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
+              <SelectTrigger className="w-[160px] bg-secondary border-border">
+                <SelectValue placeholder="Certainty" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Certainty</SelectItem>
+                <SelectItem value="certain">Confirmed</SelectItem>
+                <SelectItem value="estimated">Estimated</SelectItem>
+                <SelectItem value="projected">Projected</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="flex flex-wrap gap-2">

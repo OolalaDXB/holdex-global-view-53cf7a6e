@@ -1222,6 +1222,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_COMPANY,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'estimated', // Vehicle value estimated from market
     created_at: '2023-01-15T10:00:00Z',
     updated_at: '2024-10-15T10:00:00Z',
   },
@@ -1250,6 +1251,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_PERSONAL,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'projected', // Emerging artist value uncertain
     created_at: '2022-09-01T10:00:00Z',
     updated_at: '2024-09-01T10:00:00Z',
   },
@@ -1276,6 +1278,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_PERSONAL,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'estimated', // Art auction value estimated
     created_at: '2019-11-15T10:00:00Z',
     updated_at: '2024-08-01T10:00:00Z',
   },
@@ -1304,6 +1307,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_PERSONAL,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'estimated', // Wine value based on Liv-ex index
     created_at: '2018-06-01T10:00:00Z',
     updated_at: '2024-07-01T10:00:00Z',
   },
@@ -1332,6 +1336,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_PERSONAL,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'certain', // Gold bullion with known spot value
     created_at: '2022-02-01T10:00:00Z',
     updated_at: '2024-12-01T10:00:00Z',
   },
@@ -1360,6 +1365,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_HOLDING,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'projected', // LP position value uncertain
     created_at: '2022-01-15T10:00:00Z',
     updated_at: '2024-11-01T10:00:00Z',
   },
@@ -1386,6 +1392,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_HOLDING,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'estimated', // LP deploying, value based on NAV
     created_at: '2023-06-01T10:00:00Z',
     updated_at: '2024-10-01T10:00:00Z',
   },
