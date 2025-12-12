@@ -17,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Switch } from '@/components/ui/switch';
 import { CountrySelect } from '@/components/ui/country-select';
 import { DemoEntitySelect } from '@/components/demo/DemoEntitySelect';
-import { getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
+import { getFilteredFinancingTypes, isIslamicFinancing, LIABILITY_TYPES } from '@/hooks/useLiabilities';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -30,9 +30,6 @@ interface DemoLiabilityDialogProps {
 }
 
 const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
-
-// Use centralized LIABILITY_TYPES from useLiabilities hook
-import { LIABILITY_TYPES } from '@/hooks/useLiabilities';
 
 export function DemoLiabilityDialog({ open, onOpenChange, liability }: DemoLiabilityDialogProps) {
   const { toast } = useToast();
