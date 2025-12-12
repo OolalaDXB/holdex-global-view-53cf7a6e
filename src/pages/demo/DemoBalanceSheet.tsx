@@ -71,10 +71,10 @@ const DemoBalanceSheetPage = () => {
   const filteredLiabilities = filterLiabilitiesByCertainty(filterByEntity(liabilities));
 
   // Categorize assets
-  const cashAndBank = filteredAssets.filter(a => a.type === 'bank-account');
-  const digitalAssets = filteredAssets.filter(a => a.type === 'digital-assets');
+  const cashAndBank = filteredAssets.filter(a => a.type === 'bank');
+  const digitalAssets = filteredAssets.filter(a => a.type === 'crypto');
   const realEstate = filteredAssets.filter(a => a.type === 'real-estate');
-  const investments = filteredAssets.filter(a => a.type === 'investments' || a.type === 'business-equity');
+  const investments = filteredAssets.filter(a => a.type === 'investment' || a.type === 'business');
   const vehicles = filteredCollections.filter(c => c.type === 'vehicle');
   const otherCollections = filteredCollections.filter(c => c.type !== 'vehicle');
 
