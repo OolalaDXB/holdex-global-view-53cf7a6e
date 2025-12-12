@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CollectionCard } from '@/components/collections/CollectionCard';
-import { useCollections } from '@/hooks/useCollections';
+import { EditCollectionDialog } from '@/components/collections/EditCollectionDialog';
+import { DeleteCollectionDialog } from '@/components/collections/DeleteCollectionDialog';
+import { useCollections, Collection } from '@/hooks/useCollections';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
@@ -21,6 +23,9 @@ const filterOptions: { value: FilterType; label: string }[] = [
 
 const CollectionsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
+  
   const { data: collections = [], isLoading } = useCollections();
   const { data: exchangeRates } = useExchangeRates();
   
@@ -65,7 +70,14 @@ const CollectionsPage = () => {
             {/* Collections Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredCollections.map((collection, index) => (
-                <CollectionCard key={collection.id} collection={collection} rates={rates} delay={index * 50} />
+                <CollectionCard 
+                  key={collection.id} 
+                  collection={collection} 
+                  rates={rates} 
+                  delay={index * 50}
+                  onEdit={setEditingCollection}
+                  onDelete={setDeletingCollection}
+                />
               ))}
             </div>
 
@@ -90,6 +102,20 @@ const CollectionsPage = () => {
           </>
         )}
       </div>
+
+      {/* Edit Dialog */}
+      <EditCollectionDialog
+        collection={editingCollection}
+        open={!!editingCollection}
+        onOpenChange={(open) => !open && setEditingCollection(null)}
+      />
+
+      {/* Delete Dialog */}
+      <DeleteCollectionDialog
+        collection={deletingCollection}
+        open={!!deletingCollection}
+        onOpenChange={(open) => !open && setDeletingCollection(null)}
+      />
     </AppLayout>
   );
 };
