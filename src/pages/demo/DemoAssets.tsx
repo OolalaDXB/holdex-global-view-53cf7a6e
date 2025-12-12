@@ -5,12 +5,14 @@ import { useDemo } from '@/contexts/DemoContext';
 import { fallbackRates } from '@/lib/currency';
 import { fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { cn } from '@/lib/utils';
-import { Search, Info } from 'lucide-react';
+import { Search, Info, Ruler } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Asset } from '@/hooks/useAssets';
 import { DemoEditAssetDialog } from '@/components/demo/DemoEditAssetDialog';
 import { DemoDeleteAssetDialog } from '@/components/demo/DemoDeleteAssetDialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 
@@ -29,10 +31,19 @@ const DemoAssetsPage = () => {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   
-  const { assets, entities, profile } = useDemo();
+  // Property filters
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>('all');
+  const [minRooms, setMinRooms] = useState('');
+  const [minSize, setMinSize] = useState('');
+  
+  const { assets, entities, profile, updateProfile } = useDemo();
   const rates = fallbackRates;
   const prices = fallbackCryptoPrices;
   const areaUnit = profile?.area_unit || 'sqm';
+
+  const toggleAreaUnit = () => {
+    updateProfile({ area_unit: areaUnit === 'sqm' ? 'sqft' : 'sqm' });
+  };
 
   const filteredAssets = assets
     .filter(a => filter === 'all' || a.type === filter)
@@ -45,6 +56,27 @@ const DemoAssetsPage = () => {
         a.ticker?.toLowerCase().includes(query) ||
         a.country.toLowerCase().includes(query)
       );
+    })
+    // Property type filter (only for real estate)
+    .filter(a => {
+      if (propertyTypeFilter === 'all') return true;
+      if (a.type !== 'real-estate') return filter !== 'real-estate'; // Show non-real-estate if not filtering by real-estate
+      return a.property_type === propertyTypeFilter;
+    })
+    // Min rooms filter
+    .filter(a => {
+      if (!minRooms) return true;
+      if (a.type !== 'real-estate') return true;
+      return (a.rooms || 0) >= parseInt(minRooms);
+    })
+    // Min size filter (input is in display unit, convert to sqm for comparison)
+    .filter(a => {
+      if (!minSize) return true;
+      if (a.type !== 'real-estate') return true;
+      const minSizeNum = parseFloat(minSize);
+      const assetSizeSqm = a.size_sqm || 0;
+      const compareSize = areaUnit === 'sqft' ? minSizeNum / 10.7639 : minSizeNum;
+      return assetSizeSqm >= compareSize;
     });
 
   return (
@@ -60,7 +92,18 @@ const DemoAssetsPage = () => {
         </div>
 
         <header className="mb-8">
-          <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="font-serif text-3xl font-medium text-foreground">Assets</h1>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleAreaUnit}
+              className="flex items-center gap-2"
+            >
+              <Ruler size={14} />
+              {areaUnit === 'sqm' ? 'm²' : 'sq ft'}
+            </Button>
+          </div>
           <p className="text-muted-foreground">Your wealth portfolio across all categories.</p>
         </header>
 
@@ -92,6 +135,53 @@ const DemoAssetsPage = () => {
               </button>
             ))}
           </div>
+
+          {/* Property-specific filters - show when real-estate selected or all */}
+          {(filter === 'all' || filter === 'real-estate') && (
+            <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Type:</span>
+                <Select value={propertyTypeFilter} onValueChange={setPropertyTypeFilter}>
+                  <SelectTrigger className="w-32 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All</SelectItem>
+                    <SelectItem value="apartment">Apartment</SelectItem>
+                    <SelectItem value="villa">Villa</SelectItem>
+                    <SelectItem value="studio">Studio</SelectItem>
+                    <SelectItem value="penthouse">Penthouse</SelectItem>
+                    <SelectItem value="townhouse">Townhouse</SelectItem>
+                    <SelectItem value="office">Office</SelectItem>
+                    <SelectItem value="land">Land</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Min rooms:</span>
+                <Input
+                  type="number"
+                  min="0"
+                  value={minRooms}
+                  onChange={(e) => setMinRooms(e.target.value)}
+                  className="w-16 h-8 text-sm"
+                  placeholder="0"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Min size:</span>
+                <Input
+                  type="number"
+                  min="0"
+                  value={minSize}
+                  onChange={(e) => setMinSize(e.target.value)}
+                  className="w-20 h-8 text-sm"
+                  placeholder="0"
+                />
+                <span className="text-xs text-muted-foreground">{areaUnit === 'sqm' ? 'm²' : 'sq ft'}</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Assets Grid */}
