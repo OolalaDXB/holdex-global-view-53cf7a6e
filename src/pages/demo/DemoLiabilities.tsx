@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useDemo } from '@/contexts/DemoContext';
-import { demoLoanSchedules, demoLoanPayments, DemoLoanSchedule } from '@/data/demoData';
+import { demoLoanSchedules, demoLoanPayments, DemoLoanSchedule, DemoLiability } from '@/data/demoData';
 import { DemoMonthlyPaymentSummary } from '@/components/liabilities/DemoMonthlyPaymentSummary';
+import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp, Landmark, TrendingDown } from 'lucide-react';
-import { DemoLiability } from '@/data/demoData';
 
 function DemoLiabilityCard({ liability }: { liability: DemoLiability }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -285,14 +285,17 @@ const DemoLiabilitiesPage = () => {
   return (
     <AppLayout isDemo>
       <div className="p-8 lg:p-12 max-w-5xl">
-        <header className="mb-8">
-          <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-xs font-medium">
-            Demo Mode
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-xs font-medium">
+              Demo Mode
+            </div>
+            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Liabilities</h1>
+            <p className="text-muted-foreground">
+              Manage your loans, mortgages, and payment schedules.
+            </p>
           </div>
-          <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Liabilities</h1>
-          <p className="text-muted-foreground">
-            Manage your loans, mortgages, and payment schedules.
-          </p>
+          <LoanComparisonTool />
         </header>
         
         {/* Monthly Payment Summary Widget */}
