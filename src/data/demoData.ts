@@ -103,6 +103,31 @@ export interface DemoEntity {
   updated_at: string;
 }
 
+export interface DemoProfile {
+  id: string;
+  email: string;
+  full_name: string;
+  base_currency: string;
+  secondary_currency_1: string;
+  secondary_currency_2: string;
+  dark_mode: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// Demo Profile
+export const demoProfile: DemoProfile = {
+  id: 'demo-user-lucas-soleil',
+  email: 'lucas.soleil@example.com',
+  full_name: 'Lucas Soleil',
+  base_currency: 'EUR',
+  secondary_currency_1: 'USD',
+  secondary_currency_2: 'AED',
+  dark_mode: true,
+  created_at: '2019-01-01T10:00:00Z',
+  updated_at: '2024-12-01T10:00:00Z',
+};
+
 const DEMO_USER_ID = 'demo-user-lucas-soleil';
 const DEMO_ENTITY_PERSONAL = 'demo-entity-personal';
 const DEMO_ENTITY_COMPANY = 'demo-entity-company';
@@ -1172,10 +1197,3 @@ export const demoNetWorthHistory = [
   { snapshot_date: '2024-11-01', net_worth_eur: 3150000 },
   { snapshot_date: '2024-12-01', net_worth_eur: 3180000 },
 ];
-
-// Demo user profile
-export const demoProfile = {
-  name: 'Lucas Soleil',
-  baseCurrency: 'EUR',
-  darkMode: true,
-};
