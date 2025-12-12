@@ -21,6 +21,7 @@ export type Database = {
           currency: string
           current_value: number
           id: string
+          image_url: string | null
           institution: string | null
           name: string
           notes: string | null
@@ -40,6 +41,7 @@ export type Database = {
           currency: string
           current_value: number
           id?: string
+          image_url?: string | null
           institution?: string | null
           name: string
           notes?: string | null
@@ -59,6 +61,7 @@ export type Database = {
           currency?: string
           current_value?: number
           id?: string
+          image_url?: string | null
           institution?: string | null
           name?: string
           notes?: string | null
@@ -95,6 +98,7 @@ export type Database = {
           distribution_status: string | null
           fund_name: string | null
           id: string
+          image_url: string | null
           model: string | null
           name: string
           notes: string | null
@@ -117,6 +121,7 @@ export type Database = {
           distribution_status?: string | null
           fund_name?: string | null
           id?: string
+          image_url?: string | null
           model?: string | null
           name: string
           notes?: string | null
@@ -139,6 +144,7 @@ export type Database = {
           distribution_status?: string | null
           fund_name?: string | null
           id?: string
+          image_url?: string | null
           model?: string | null
           name?: string
           notes?: string | null

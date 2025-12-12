@@ -41,14 +41,24 @@ export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete 
     ? ((collection.current_value - collection.purchase_value) / collection.purchase_value) * 100 
     : 0;
 
+  const hasImage = !!collection.image_url;
+
   return (
     <div 
       className="collection-card animate-fade-in group"
       style={{ animationDelay: `${delay}ms` }}
     >
-      {/* Photo placeholder */}
-      <div className="aspect-[4/3] bg-muted flex items-center justify-center relative">
-        <Icon size={48} strokeWidth={1} className="text-muted-foreground/50" />
+      {/* Photo area */}
+      <div className="aspect-[4/3] bg-muted flex items-center justify-center relative overflow-hidden">
+        {hasImage ? (
+          <img 
+            src={collection.image_url!} 
+            alt={collection.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <Icon size={48} strokeWidth={1} className="text-muted-foreground/50" />
+        )}
         
         {/* Action buttons overlay */}
         {(onEdit || onDelete) && (
