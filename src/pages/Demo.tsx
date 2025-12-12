@@ -91,6 +91,11 @@ const Demo = () => {
   );
   const filteredCollections = showCollections ? collections : [];
 
+  // Helper to check if certainty is confirmed (certain or likely)
+  const isConfirmedCertainty = (certainty: string | null | undefined): boolean => {
+    return certainty === 'certain' || certainty === 'likely' || !certainty;
+  };
+
   // Calculate totals using rates (in EUR)
   const totalAssetsEUR = filteredAssets.reduce((sum, asset) => {
     const value = getAssetValue(asset);
@@ -109,9 +114,31 @@ const Demo = () => {
   }, 0);
 
   const netWorthEUR = totalAssetsEUR + totalCollectionsEUR - totalLiabilitiesEUR;
+
+  // Calculate confirmed vs projected values
+  const confirmedAssetsEUR = filteredAssets.reduce((sum, asset) => {
+    if (!isConfirmedCertainty((asset as any).certainty)) return sum;
+    const value = getAssetValue(asset);
+    return sum + convertToEUR(value, asset.currency, rates);
+  }, 0);
+
+  const confirmedCollectionsEUR = filteredCollections.reduce((sum, item) => {
+    if (!isConfirmedCertainty((item as any).certainty)) return sum;
+    return sum + convertToEUR(item.current_value, item.currency, rates);
+  }, 0);
+
+  const confirmedLiabilitiesEUR = liabilities.reduce((sum, item) => {
+    if (!isConfirmedCertainty((item as any).certainty)) return sum;
+    return sum + convertToEUR(item.current_balance, item.currency, rates);
+  }, 0);
+
+  const confirmedNetWorthEUR = confirmedAssetsEUR + confirmedCollectionsEUR - confirmedLiabilitiesEUR;
+  const projectedNetWorthEUR = netWorthEUR - confirmedNetWorthEUR;
   
   // Convert to display currency
   const netWorth = convertFromEUR(netWorthEUR, displayCurrency, rates);
+  const confirmedNetWorth = convertFromEUR(confirmedNetWorthEUR, displayCurrency, rates);
+  const projectedNetWorth = convertFromEUR(projectedNetWorthEUR, displayCurrency, rates);
 
   // Calculate breakdowns
   const typeBreakdownEUR: Record<string, number> = { 
@@ -231,7 +258,13 @@ const Demo = () => {
         {/* Header */}
         <header className="mb-12">
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-            <NetWorthCard totalValue={netWorth} change={change} currency={displayCurrency} />
+            <NetWorthCard 
+              totalValue={netWorth} 
+              confirmedValue={confirmedNetWorth}
+              projectedValue={projectedNetWorth}
+              change={change} 
+              currency={displayCurrency} 
+            />
             <div className="flex items-center gap-2">
               <ViewToggle config={viewConfig} onChange={setViewConfig} />
               
