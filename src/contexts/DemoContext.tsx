@@ -2,14 +2,16 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 import { Asset } from '@/hooks/useAssets';
 import { Collection } from '@/hooks/useCollections';
 import { Liability } from '@/hooks/useLiabilities';
-import { demoAssets, demoCollections, demoLiabilities, demoNetWorthHistory, demoEntities, DemoEntity } from '@/data/demoData';
+import { demoAssets, demoCollections, demoLiabilities, demoNetWorthHistory, demoEntities, demoProfile, DemoEntity, DemoProfile } from '@/data/demoData';
 
 interface DemoContextType {
   assets: Asset[];
   collections: Collection[];
   liabilities: Liability[];
   entities: DemoEntity[];
+  profile: DemoProfile;
   netWorthHistory: typeof demoNetWorthHistory;
+  updateProfile: (updates: Partial<DemoProfile>) => void;
   addAsset: (asset: Omit<Asset, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
   updateAsset: (id: string, updates: Partial<Asset>) => void;
   deleteAsset: (id: string) => void;
@@ -28,6 +30,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [collections, setCollections] = useState<Collection[]>(demoCollections);
   const [liabilities, setLiabilities] = useState<Liability[]>(demoLiabilities);
   const [entities] = useState<DemoEntity[]>(demoEntities);
+  const [profile, setProfile] = useState<DemoProfile>(demoProfile);
+
+  const updateProfile = (updates: Partial<DemoProfile>) => {
+    setProfile(prev => ({ ...prev, ...updates, updated_at: new Date().toISOString() }));
+  };
 
   const generateId = () => `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   const now = () => new Date().toISOString();
@@ -101,7 +108,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       collections,
       liabilities,
       entities,
+      profile,
       netWorthHistory: demoNetWorthHistory,
+      updateProfile,
       addAsset,
       updateAsset,
       deleteAsset,

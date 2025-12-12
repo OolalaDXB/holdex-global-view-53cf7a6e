@@ -19,17 +19,28 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { getCountryFlag } from '@/hooks/useCountries';
 
-const DEMO_CURRENCIES = ['EUR', 'USD', 'AED'] as const;
-type DemoCurrency = typeof DEMO_CURRENCIES[number];
-
 const FINANCIAL_TYPES = ['real-estate', 'bank', 'investment', 'crypto', 'business'];
+
+const currencySymbols: Record<string, string> = {
+  EUR: '€',
+  USD: '$',
+  AED: 'AED',
+  GBP: '£',
+  CHF: 'Fr.',
+  RUB: '₽',
+};
 
 const Demo = () => {
   const { toast } = useToast();
-  const { assets, collections, liabilities, netWorthHistory } = useDemo();
+  const { assets, collections, liabilities, netWorthHistory, profile } = useDemo();
+  
+  // Get currencies from demo profile
+  const currencies = [profile.base_currency, profile.secondary_currency_1, profile.secondary_currency_2].filter(
+    (c, i, arr) => arr.indexOf(c) === i
+  );
   
   // Demo-specific state for currency and view
-  const [displayCurrency, setDisplayCurrency] = useState<DemoCurrency>('EUR');
+  const [displayCurrency, setDisplayCurrency] = useState<string>(profile.base_currency);
   const [viewConfig, setViewConfig] = useState<ViewConfig>({
     mode: 'all',
     customTypes: ['real-estate', 'bank', 'investment', 'crypto', 'business', 'collections'],
@@ -217,7 +228,7 @@ const Demo = () => {
               
               {/* Demo Currency Switcher */}
               <div className="flex items-center rounded-md bg-secondary/50 p-1">
-                {DEMO_CURRENCIES.map((currency) => (
+                {currencies.map((currency) => (
                   <button
                     key={currency}
                     onClick={() => setDisplayCurrency(currency)}
@@ -228,7 +239,7 @@ const Demo = () => {
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {currency === 'EUR' ? '€' : currency === 'USD' ? '$' : 'AED'}
+                    {currencySymbols[currency] || currency}
                   </button>
                 ))}
               </div>
