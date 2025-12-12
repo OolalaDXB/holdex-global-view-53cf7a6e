@@ -275,7 +275,8 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
               <CertaintyBadge certainty={asset.certainty} />
             </div>
             <p className="text-sm text-muted-foreground">
-              {!isOffPlan && countryFlag} {!isOffPlan && asset.country} {!isOffPlan && '·'} {typeLabels[asset.type] || asset.type}
+              {/* Hide country for crypto/digital assets - they are borderless */}
+              {!isOffPlan && asset.type !== 'crypto' && countryFlag} {!isOffPlan && asset.type !== 'crypto' && asset.country} {!isOffPlan && asset.type !== 'crypto' && '·'} {typeLabels[asset.type] || asset.type}
               {asset.type === 'real-estate' && (asset as any).property_type && (
                 <span className="text-muted-foreground"> · {propertyTypeLabels[(asset as any).property_type] || (asset as any).property_type}</span>
               )}

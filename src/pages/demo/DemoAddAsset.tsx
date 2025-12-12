@@ -11,6 +11,7 @@ import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { CertaintySelect } from '@/components/ui/certainty-select';
 import { useToast } from '@/hooks/use-toast';
 import { useDemo } from '@/contexts/DemoContext';
 import { getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
@@ -71,6 +72,7 @@ const DemoAddAssetPage = () => {
     institution: '',
     image_url: null as string | null,
     entityId: undefined as string | null | undefined, // Will be set to default on mount
+    certainty: 'certain',
     // Real estate address
     address: '',
     // Shariah compliance (for investments)
@@ -129,6 +131,7 @@ const DemoAddAssetPage = () => {
           monthly_rental: formData.monthlyRental ? parseFloat(formData.monthlyRental) : null,
           residual_value: formData.residualValue ? parseFloat(formData.residualValue) : null,
           bank_ownership_percentage: formData.bankOwnershipPercentage ? parseFloat(formData.bankOwnershipPercentage) : null,
+          certainty: formData.certainty,
         });
       } else if (category === 'collections') {
         addCollection({
@@ -152,6 +155,7 @@ const DemoAddAssetPage = () => {
           entity_id: formData.entityId === undefined ? defaultEntityId : formData.entityId,
           acquisition_type: 'purchase',
           acquisition_from: null,
+          certainty: formData.certainty,
         });
       } else {
         addAsset({
@@ -185,6 +189,7 @@ const DemoAddAssetPage = () => {
           is_shariah_compliant: selectedType === 'investment' ? formData.isShariahCompliant : false,
           shariah_certification: formData.shariahCertification || null,
           address: formData.address || null,
+          certainty: formData.certainty,
         } as any);
       }
 
@@ -379,6 +384,14 @@ const DemoAddAssetPage = () => {
                     value={formData.entityId === undefined ? defaultEntityId : formData.entityId}
                     onChange={(value) => setFormData({ ...formData, entityId: value })}
                     placeholder="Select owner"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Certainty</Label>
+                  <CertaintySelect
+                    value={formData.certainty}
+                    onValueChange={(value) => setFormData({ ...formData, certainty: value })}
                   />
                 </div>
 

@@ -12,6 +12,7 @@ import { CountrySelect } from '@/components/ui/country-select';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { DemoEntitySelect } from '@/components/demo/DemoEntitySelect';
+import { CertaintySelect } from '@/components/ui/certainty-select';
 import { Asset } from '@/hooks/useAssets';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
@@ -51,6 +52,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
     property_type: '',
     rooms: '',
     size_sqm: '',
+    certainty: 'certain',
   });
 
   useEffect(() => {
@@ -74,6 +76,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         property_type: (asset as any).property_type || '',
         rooms: (asset as any).rooms?.toString() || '',
         size_sqm: (asset as any).size_sqm?.toString() || '',
+        certainty: asset.certainty || 'certain',
       });
     }
   }, [asset]);
@@ -103,6 +106,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         property_type: asset.type === 'real-estate' ? (formData.property_type || null) : null,
         rooms: asset.type === 'real-estate' && formData.rooms ? parseInt(formData.rooms) : null,
         size_sqm: asset.type === 'real-estate' && formData.size_sqm ? parseFloat(formData.size_sqm) : null,
+        certainty: formData.certainty,
       } as any);
 
       toast({
@@ -147,6 +151,14 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
             <DemoEntitySelect
               value={formData.entity_id || ''}
               onChange={(value) => setFormData({ ...formData, entity_id: value || null })}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Certainty</Label>
+            <CertaintySelect
+              value={formData.certainty}
+              onValueChange={(value) => setFormData({ ...formData, certainty: value })}
             />
           </div>
 
