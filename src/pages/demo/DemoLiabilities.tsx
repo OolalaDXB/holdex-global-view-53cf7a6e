@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useDemo } from '@/contexts/DemoContext';
 import { demoLoanSchedules, demoLoanPayments, DemoLoanSchedule } from '@/data/demoData';
-import { LoanScheduleSection } from '@/components/liabilities/LoanScheduleSection';
+import { DemoMonthlyPaymentSummary } from '@/components/liabilities/DemoMonthlyPaymentSummary';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
@@ -282,8 +282,6 @@ function DemoLoanScheduleDisplay({ schedule, payments, currency }: {
 const DemoLiabilitiesPage = () => {
   const { liabilities } = useDemo();
   
-  const totalLiabilities = liabilities.reduce((sum, l) => sum + l.current_balance, 0);
-  
   return (
     <AppLayout isDemo>
       <div className="p-8 lg:p-12 max-w-5xl">
@@ -295,15 +293,10 @@ const DemoLiabilitiesPage = () => {
           <p className="text-muted-foreground">
             Manage your loans, mortgages, and payment schedules.
           </p>
-          {liabilities.length > 0 && (
-            <div className="mt-4 p-4 bg-secondary/50 rounded-lg">
-              <p className="text-sm text-muted-foreground">Total Outstanding</p>
-              <p className="text-2xl font-semibold text-dusty-rose">
-                -{formatCurrency(totalLiabilities, 'EUR')}
-              </p>
-            </div>
-          )}
         </header>
+        
+        {/* Monthly Payment Summary Widget */}
+        <DemoMonthlyPaymentSummary />
         
         <div className="space-y-4">
           {liabilities.map((liability) => (

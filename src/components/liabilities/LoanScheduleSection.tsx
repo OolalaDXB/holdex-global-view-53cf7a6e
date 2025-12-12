@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { format, isPast, isSameMonth, parseISO } from 'date-fns';
-import { CalendarDays, Check, ChevronDown, ChevronUp, Clock, AlertCircle, Plus, Upload } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, ChevronUp, Clock, AlertCircle, Plus, Upload, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatCurrency } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { LoanSchedule, LoanPayment, useLoanPayments, useMarkPaymentPaid } from '@/hooks/useLoanSchedules';
 import { LoanScheduleDialog } from './LoanScheduleDialog';
 import { ImportScheduleDialog } from './ImportScheduleDialog';
+import { DeleteScheduleDialog } from './DeleteScheduleDialog';
 import { MarkPaymentDialog } from './MarkPaymentDialog';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,7 +35,9 @@ export function LoanScheduleSection({
   startDate,
 }: LoanScheduleSectionProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showTable, setShowTable] = useState(false);
   const [markingPayment, setMarkingPayment] = useState<LoanPayment | null>(null);
   
@@ -92,11 +96,33 @@ export function LoanScheduleSection({
       <div className="bg-secondary/50 rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="font-medium text-foreground">Payment Schedule</h4>
-          <Badge variant="outline" className="text-xs">
-            {schedule.loan_type === 'amortizing' ? 'Amortizing' : 
-             schedule.loan_type === 'bullet' ? 'Bullet' :
-             schedule.loan_type === 'balloon' ? 'Balloon' : 'Interest Only'}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {schedule.loan_type === 'amortizing' ? 'Amortizing' : 
+               schedule.loan_type === 'bullet' ? 'Bullet' :
+               schedule.loan_type === 'balloon' ? 'Balloon' : 'Interest Only'}
+            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit Schedule
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Schedule
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -252,6 +278,26 @@ export function LoanScheduleSection({
           currency={currency}
         />
       )}
+      
+      {/* Edit Dialog */}
+      <LoanScheduleDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        liabilityId={liabilityId}
+        liabilityName={liabilityName}
+        defaultPrincipal={schedule.principal_amount}
+        defaultRate={schedule.interest_rate || 0}
+        defaultStartDate={schedule.start_date}
+        existingSchedule={schedule}
+      />
+      
+      {/* Delete Dialog */}
+      <DeleteScheduleDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        scheduleId={schedule.id}
+        liabilityName={liabilityName}
+      />
     </div>
   );
 }
