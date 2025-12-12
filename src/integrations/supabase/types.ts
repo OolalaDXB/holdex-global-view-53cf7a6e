@@ -706,10 +706,14 @@ export type Database = {
       profiles: {
         Row: {
           base_currency: string | null
+          blur_amounts: boolean | null
           compliance_mode: string | null
           created_at: string | null
           dark_mode: boolean | null
+          dashboard_widgets: Json | null
           email: string
+          favorite_cities: Json | null
+          fiscal_year_start: string | null
           full_name: string | null
           id: string
           secondary_currency_1: string | null
@@ -718,10 +722,14 @@ export type Database = {
         }
         Insert: {
           base_currency?: string | null
+          blur_amounts?: boolean | null
           compliance_mode?: string | null
           created_at?: string | null
           dark_mode?: boolean | null
+          dashboard_widgets?: Json | null
           email: string
+          favorite_cities?: Json | null
+          fiscal_year_start?: string | null
           full_name?: string | null
           id: string
           secondary_currency_1?: string | null
@@ -730,10 +738,14 @@ export type Database = {
         }
         Update: {
           base_currency?: string | null
+          blur_amounts?: boolean | null
           compliance_mode?: string | null
           created_at?: string | null
           dark_mode?: boolean | null
+          dashboard_widgets?: Json | null
           email?: string
+          favorite_cities?: Json | null
+          fiscal_year_start?: string | null
           full_name?: string | null
           id?: string
           secondary_currency_1?: string | null

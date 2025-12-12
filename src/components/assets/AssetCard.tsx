@@ -27,6 +27,7 @@ interface AssetCardProps {
   delay?: number;
   onEdit?: (asset: Asset) => void;
   onDelete?: (asset: Asset) => void;
+  isBlurred?: boolean;
 }
 
 const typeIcons: Record<string, typeof Building2> = {
@@ -53,7 +54,7 @@ const propertyStatusLabels: Record<string, string> = {
   'owned': 'Owned',
 };
 
-export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete }: AssetCardProps) {
+export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete, isBlurred = false }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
   const { showIslamic } = useComplianceMode();
@@ -265,11 +266,11 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
         ) : (
           <div className="flex items-baseline justify-between">
             <span className="text-xl font-semibold tabular-nums text-foreground">
-              {formatCurrency(displayCurrencyValue, displayCurrency)}
+              {isBlurred ? '•••••' : formatCurrency(displayCurrencyValue, displayCurrency)}
             </span>
             {asset.currency !== displayCurrency && (
               <span className="text-sm text-muted-foreground tabular-nums">
-                {formatCurrency(displayValue, asset.currency)}
+                {isBlurred ? '•••••' : formatCurrency(displayValue, asset.currency)}
               </span>
             )}
           </div>

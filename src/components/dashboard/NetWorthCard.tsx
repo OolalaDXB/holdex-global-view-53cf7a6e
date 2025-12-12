@@ -5,6 +5,7 @@ interface NetWorthCardProps {
   totalValue: number;
   change: number;
   currency?: string;
+  isBlurred?: boolean;
 }
 
 const currencySymbols: Record<string, string> = {
@@ -16,11 +17,12 @@ const currencySymbols: Record<string, string> = {
   RUB: '₽',
 };
 
-export function NetWorthCard({ totalValue, change, currency = 'EUR' }: NetWorthCardProps) {
+export function NetWorthCard({ totalValue, change, currency = 'EUR', isBlurred = false }: NetWorthCardProps) {
   const isPositive = change >= 0;
   const symbol = currencySymbols[currency] || `${currency} `;
   
   const formatValue = (value: number) => {
+    if (isBlurred) return '•••••';
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
@@ -32,7 +34,7 @@ export function NetWorthCard({ totalValue, change, currency = 'EUR' }: NetWorthC
       <p className="wealth-label mb-2">Net Worth</p>
       <div className="flex items-baseline gap-4">
         <h2 className="wealth-value text-foreground">
-          {totalValue < 0 ? '-' : ''}{symbol}{formatValue(totalValue)}
+          {isBlurred ? '•••••' : `${totalValue < 0 ? '-' : ''}${symbol}${formatValue(totalValue)}`}
         </h2>
         <div className={cn(
           "flex items-center gap-1 text-sm font-medium",

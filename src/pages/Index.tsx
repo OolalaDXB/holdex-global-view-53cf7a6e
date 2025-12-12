@@ -8,6 +8,8 @@ import { ViewToggle, useViewConfig } from '@/components/dashboard/ViewToggle';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
 import { ExpiringDocumentsWidget } from '@/components/dashboard/ExpiringDocumentsWidget';
 import { LeaseholdRemindersWidget } from '@/components/dashboard/LeaseholdRemindersWidget';
+import { WorldClocksWidget } from '@/components/dashboard/WorldClocksWidget';
+import { BlurToggle } from '@/components/dashboard/BlurToggle';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
@@ -17,15 +19,23 @@ import { useNetWorthHistory } from '@/hooks/useNetWorthHistory';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { useSaveSnapshot } from '@/hooks/useNetWorthSnapshot';
+import { useProfile } from '@/hooks/useProfile';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { useBlur } from '@/contexts/BlurContext';
 import { convertToEUR, convertFromEUR, fallbackRates, formatCurrency } from '@/lib/currency';
 import { RefreshCw, Camera, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getCountryFlag } from '@/hooks/useCountries';
 
+interface City {
+  name: string;
+  timezone: string;
+}
+
 const Dashboard = () => {
   const { toast } = useToast();
+  const { data: profile } = useProfile();
   const { data: assets = [], isLoading: assetsLoading } = useAssets();
   const { data: collections = [], isLoading: collectionsLoading } = useCollections();
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
@@ -35,6 +45,14 @@ const Dashboard = () => {
   const saveSnapshot = useSaveSnapshot();
   const { displayCurrency, convertToDisplay, formatInDisplayCurrency } = useCurrency();
   const { config: viewConfig, setConfig: setViewConfig, getIncludedTypes, includesCollections, shouldIncludeAsset } = useViewConfig();
+  const { isBlurred, formatBlurred } = useBlur();
+
+  // Get user preferences
+  const favoriteCities: City[] = (profile as any)?.favorite_cities || [];
+  const dashboardWidgets: string[] = (profile as any)?.dashboard_widgets || [
+    'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
+    'leasehold_reminders', 'expiring_documents'
+  ];
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
   const rates = exchangeRates?.rates || fallbackRates;
@@ -205,6 +223,9 @@ const Dashboard = () => {
     }
   };
 
+  // Helper functions to check widget visibility
+  const showWidget = (widgetId: string) => dashboardWidgets.includes(widgetId);
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -218,18 +239,33 @@ const Dashboard = () => {
   const hasData = assets.length > 0 || collections.length > 0;
   const hasCrypto = assets.some(a => a.type === 'crypto');
 
+  // Format value with blur support
+  const formatValue = (value: number, currency: string) => {
+    if (isBlurred) return '•••••';
+    return formatCurrency(value, currency);
+  };
+
   return (
     <AppLayout>
       <div className="p-8 lg:p-12 max-w-7xl">
+        {/* World Clocks Widget */}
+        {showWidget('world_clocks') && favoriteCities.length > 0 && (
+          <WorldClocksWidget cities={favoriteCities} />
+        )}
+
         {/* Header */}
         <header className="mb-12">
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-            <NetWorthCard 
-              totalValue={netWorth} 
-              change={change} 
-              currency={displayCurrency}
-            />
+            {showWidget('net_worth') && (
+              <NetWorthCard 
+                totalValue={netWorth} 
+                change={change} 
+                currency={displayCurrency}
+                isBlurred={isBlurred}
+              />
+            )}
             <div className="flex items-center gap-2">
+              <BlurToggle />
               <ViewToggle config={viewConfig} onChange={setViewConfig} />
               <CurrencySwitcher />
               <Tooltip>
@@ -270,49 +306,57 @@ const Dashboard = () => {
         {hasData ? (
           <>
             {/* Chart */}
-            <section className="mb-12">
-              {chartData.length > 0 ? (
-                <NetWorthChart data={chartData} />
-              ) : (
-                <div className="p-8 rounded-lg border border-border bg-secondary/20 text-center">
-                  <Info size={24} className="mx-auto mb-3 text-muted-foreground" />
-                  <p className="text-muted-foreground mb-2">No historical data yet</p>
-                  <p className="text-sm text-muted-foreground">
-                    Save your first snapshot to start tracking your wealth over time.
-                  </p>
-                </div>
-              )}
-            </section>
+            {showWidget('chart') && (
+              <section className="mb-12">
+                {chartData.length > 0 ? (
+                  <NetWorthChart data={chartData} isBlurred={isBlurred} />
+                ) : (
+                  <div className="p-8 rounded-lg border border-border bg-secondary/20 text-center">
+                    <Info size={24} className="mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-muted-foreground mb-2">No historical data yet</p>
+                    <p className="text-sm text-muted-foreground">
+                      Save your first snapshot to start tracking your wealth over time.
+                    </p>
+                  </div>
+                )}
+              </section>
+            )}
 
             {/* Breakdowns */}
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-              <BreakdownBar 
-                title="By Asset Type" 
-                items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
-                delay={200}
-              />
-              <BreakdownBar 
-                title="By Country" 
-                items={assetsByCountry} 
-                delay={300}
-              />
+              {showWidget('breakdown_type') && (
+                <BreakdownBar 
+                  title="By Asset Type" 
+                  items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
+                  delay={200}
+                  isBlurred={isBlurred}
+                />
+              )}
+              {showWidget('breakdown_country') && (
+                <BreakdownBar 
+                  title="By Country" 
+                  items={assetsByCountry} 
+                  delay={300}
+                  isBlurred={isBlurred}
+                />
+              )}
             </section>
 
             {/* Currency */}
-            {currencyBreakdown.length > 0 && (
+            {showWidget('breakdown_currency') && currencyBreakdown.length > 0 && (
               <section className="mb-12 pb-12 border-b border-border">
-                <CurrencyBreakdown items={currencyBreakdown} delay={400} />
+                <CurrencyBreakdown items={currencyBreakdown} delay={400} isBlurred={isBlurred} />
               </section>
             )}
 
             {/* Expiring Documents Widget */}
-            <ExpiringDocumentsWidget />
+            {showWidget('expiring_documents') && <ExpiringDocumentsWidget />}
 
             {/* Leasehold Reminders Widget */}
-            <LeaseholdRemindersWidget assets={assets} />
+            {showWidget('leasehold_reminders') && <LeaseholdRemindersWidget assets={assets} />}
 
             {/* Collections Gallery - only show if collections are included */}
-            {showCollections && <CollectionsGallery collections={collections} />}
+            {showCollections && <CollectionsGallery collections={collections} isBlurred={isBlurred} />}
 
             {/* Recent Updates */}
             {recentAssets.length > 0 && (
@@ -326,7 +370,8 @@ const Dashboard = () => {
                       rates={rates}
                       cryptoPrices={prices}
                       displayCurrency={displayCurrency}
-                      delay={500 + (index * 100)} 
+                      delay={500 + (index * 100)}
+                      isBlurred={isBlurred}
                     />
                   ))}
                 </div>

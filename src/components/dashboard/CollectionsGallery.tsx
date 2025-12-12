@@ -5,6 +5,7 @@ import { Watch, Car, Palette, Gem, Wine, BarChart3, Sparkles } from 'lucide-reac
 
 interface CollectionsGalleryProps {
   collections: Collection[];
+  isBlurred?: boolean;
 }
 
 const categoryIcons: Record<string, typeof Watch> = {
@@ -17,7 +18,7 @@ const categoryIcons: Record<string, typeof Watch> = {
   'other': Sparkles,
 };
 
-export function CollectionsGallery({ collections }: CollectionsGalleryProps) {
+export function CollectionsGallery({ collections, isBlurred = false }: CollectionsGalleryProps) {
   // Only show collections with images
   const collectionsWithImages = collections.filter(c => c.image_url);
   
@@ -61,7 +62,7 @@ export function CollectionsGallery({ collections }: CollectionsGalleryProps) {
                   </div>
                   <p className="text-sm font-medium text-foreground truncate">{collection.name}</p>
                   <p className="text-xs text-muted-foreground tabular-nums">
-                    {formatCurrency(collection.current_value, collection.currency)}
+                    {isBlurred ? '•••••' : formatCurrency(collection.current_value, collection.currency)}
                   </p>
                 </div>
               </div>
