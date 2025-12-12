@@ -16,6 +16,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { CountrySelect } from '@/components/ui/country-select';
+import { CertaintySelect } from '@/components/ui/certainty-select';
 import { EntitySelect } from '@/components/entities/EntitySelect';
 import { useCreateLiability, useUpdateLiability, Liability, getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
 import { useAssets } from '@/hooks/useAssets';
@@ -69,6 +70,7 @@ export function LiabilityDialog({ open, onOpenChange, liability }: LiabilityDial
     linked_asset_id: null as string | null,
     entity_id: null as string | null,
     notes: '',
+    certainty: 'certain',
   });
 
   useEffect(() => {
@@ -91,6 +93,7 @@ export function LiabilityDialog({ open, onOpenChange, liability }: LiabilityDial
         linked_asset_id: liability.linked_asset_id,
         entity_id: liability.entity_id,
         notes: liability.notes || '',
+        certainty: (liability as any).certainty || 'certain',
       });
     } else {
       setFormData({
@@ -111,6 +114,7 @@ export function LiabilityDialog({ open, onOpenChange, liability }: LiabilityDial
         linked_asset_id: null,
         entity_id: null,
         notes: '',
+        certainty: 'certain',
       });
     }
   }, [liability, open]);
@@ -138,6 +142,7 @@ export function LiabilityDialog({ open, onOpenChange, liability }: LiabilityDial
       linked_asset_id: formData.linked_asset_id,
       entity_id: formData.entity_id,
       notes: formData.notes || null,
+      certainty: formData.certainty,
     };
 
     try {
@@ -185,6 +190,14 @@ export function LiabilityDialog({ open, onOpenChange, liability }: LiabilityDial
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Certainty</Label>
+              <CertaintySelect
+                value={formData.certainty}
+                onValueChange={(v) => setFormData({ ...formData, certainty: v })}
+              />
             </div>
 
             <div className="space-y-2">

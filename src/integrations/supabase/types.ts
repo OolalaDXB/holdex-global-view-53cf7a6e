@@ -20,6 +20,7 @@ export type Database = {
           acquisition_type: string | null
           address: string | null
           amount_paid: number | null
+          certainty: string | null
           country: string
           created_at: string | null
           currency: string
@@ -64,6 +65,7 @@ export type Database = {
           acquisition_type?: string | null
           address?: string | null
           amount_paid?: number | null
+          certainty?: string | null
           country: string
           created_at?: string | null
           currency: string
@@ -108,6 +110,7 @@ export type Database = {
           acquisition_type?: string | null
           address?: string | null
           amount_paid?: number | null
+          certainty?: string | null
           country?: string
           created_at?: string | null
           currency?: string
@@ -491,6 +494,7 @@ export type Database = {
       liabilities: {
         Row: {
           bank_ownership_percentage: number | null
+          certainty: string | null
           cost_price: number | null
           country: string
           created_at: string | null
@@ -519,6 +523,7 @@ export type Database = {
         }
         Insert: {
           bank_ownership_percentage?: number | null
+          certainty?: string | null
           cost_price?: number | null
           country: string
           created_at?: string | null
@@ -547,6 +552,7 @@ export type Database = {
         }
         Update: {
           bank_ownership_percentage?: number | null
+          certainty?: string | null
           cost_price?: number | null
           country?: string
           created_at?: string | null
@@ -969,6 +975,7 @@ export type Database = {
       }
       receivables: {
         Row: {
+          certainty: string | null
           created_at: string | null
           currency: string
           current_balance: number
@@ -997,6 +1004,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          certainty?: string | null
           created_at?: string | null
           currency: string
           current_balance: number
@@ -1025,6 +1033,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          certainty?: string | null
           created_at?: string | null
           currency?: string
           current_balance?: number
