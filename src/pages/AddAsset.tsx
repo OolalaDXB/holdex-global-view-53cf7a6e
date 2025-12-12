@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountrySelect } from '@/components/ui/country-select';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateAsset } from '@/hooks/useAssets';
 import { useCreateCollection } from '@/hooks/useCollections';
@@ -60,6 +61,9 @@ const AddAssetPage = () => {
     institution: '',
   });
 
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [tempAssetId] = useState<string>(() => crypto.randomUUID());
+
   const handleCategorySelect = (cat: Category) => {
     setCategory(cat);
     setStep('type');
@@ -91,6 +95,7 @@ const AddAssetPage = () => {
         });
       } else if (category === 'collections') {
         await createCollection.mutateAsync({
+          id: tempAssetId,
           name: formData.name,
           type: selectedType,
           country: formData.country,
@@ -98,10 +103,11 @@ const AddAssetPage = () => {
           current_value: parseFloat(formData.currentValue) || 0,
           purchase_value: formData.purchasePrice ? parseFloat(formData.purchasePrice) : null,
           notes: formData.notes || null,
-          image_url: null,
+          image_url: imageUrl,
         });
       } else {
         await createAsset.mutateAsync({
+          id: tempAssetId,
           name: formData.name,
           type: selectedType,
           country: formData.country,
@@ -113,7 +119,7 @@ const AddAssetPage = () => {
           quantity: formData.cryptoQuantity ? parseFloat(formData.cryptoQuantity) : null,
           institution: formData.institution || null,
           notes: formData.notes || null,
-          image_url: null,
+          image_url: imageUrl,
         });
       }
 
@@ -227,6 +233,18 @@ const AddAssetPage = () => {
             </button>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Image Upload for physical assets / collections */}
+              {category === 'collections' && selectedType !== 'liability' && (
+                <div className="space-y-2">
+                  <Label>Image (optional)</Label>
+                  <ImageUpload
+                    value={imageUrl}
+                    onChange={setImageUrl}
+                    assetId={tempAssetId}
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
