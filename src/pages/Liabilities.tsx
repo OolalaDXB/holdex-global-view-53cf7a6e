@@ -8,6 +8,7 @@ import { MonthlyPaymentSummary } from '@/components/liabilities/MonthlyPaymentSu
 import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool';
 import { LiabilityDialog } from '@/components/liabilities/LiabilityDialog';
 import { DeleteLiabilityDialog } from '@/components/liabilities/DeleteLiabilityDialog';
+import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
@@ -146,6 +147,11 @@ function LiabilityCard({
                 <p className="text-sm text-muted-foreground">{liability.notes}</p>
               </div>
             )}
+
+            {/* Documents Section */}
+            <div className="border-t border-border pt-4">
+              <DocumentsSection linkType="liability" linkId={liability.id} />
+            </div>
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

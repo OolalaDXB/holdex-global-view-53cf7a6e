@@ -16,6 +16,7 @@ import Receivables from "./pages/Receivables";
 import Liabilities from "./pages/Liabilities";
 import Documents from "./pages/Documents";
 import AddAsset from "./pages/AddAsset";
+import AddLiability from "./pages/AddLiability";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
 import Demo from "./pages/Demo";
@@ -58,6 +59,7 @@ const App = () => (
                   <Route path="/liabilities" element={<ProtectedRoute><Liabilities /></ProtectedRoute>} />
                   <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
                   <Route path="/add" element={<ProtectedRoute><AddAsset /></ProtectedRoute>} />
+                  <Route path="/add-liability" element={<ProtectedRoute><AddLiability /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
