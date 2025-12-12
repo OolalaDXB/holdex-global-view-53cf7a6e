@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Assets from "./pages/Assets";
 import Collections from "./pages/Collections";
+import Entities from "./pages/Entities";
 import AddAsset from "./pages/AddAsset";
 import Settings from "./pages/Settings";
 import Auth from "./pages/Auth";
@@ -17,6 +18,7 @@ import Demo from "./pages/Demo";
 import DemoAssets from "./pages/demo/DemoAssets";
 import DemoCollections from "./pages/demo/DemoCollections";
 import DemoAddAsset from "./pages/demo/DemoAddAsset";
+import DemoEntities from "./pages/demo/DemoEntities";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,9 +38,11 @@ const App = () => (
                 <Route path="/demo/assets" element={<DemoAssets />} />
                 <Route path="/demo/collections" element={<DemoCollections />} />
                 <Route path="/demo/add" element={<DemoAddAsset />} />
+                <Route path="/demo/entities" element={<DemoEntities />} />
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                 <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
                 <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
+                <Route path="/entities" element={<ProtectedRoute><Entities /></ProtectedRoute>} />
                 <Route path="/add" element={<ProtectedRoute><AddAsset /></ProtectedRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />

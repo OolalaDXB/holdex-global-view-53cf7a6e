@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { CountrySelect } from '@/components/ui/country-select';
+import { EntitySelect } from '@/components/entities/EntitySelect';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { useUpdateAsset, Asset } from '@/hooks/useAssets';
+import { useEntities } from '@/hooks/useEntities';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -26,6 +28,7 @@ const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
 export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogProps) {
   const { toast } = useToast();
   const updateAsset = useUpdateAsset();
+  const { data: entities } = useEntities();
   const [showAIDialog, setShowAIDialog] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -43,6 +46,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
     image_url: null as string | null,
     reference_balance: '',
     reference_date: null as Date | null,
+    entity_id: null as string | null,
   });
 
   useEffect(() => {
@@ -62,6 +66,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         image_url: asset.image_url || null,
         reference_balance: asset.reference_balance?.toString() || '',
         reference_date: asset.reference_date ? new Date(asset.reference_date) : null,
+        entity_id: asset.entity_id || null,
       });
     }
   }, [asset]);
@@ -87,6 +92,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         image_url: formData.image_url,
         reference_balance: formData.reference_balance ? parseFloat(formData.reference_balance) : null,
         reference_date: formData.reference_date ? format(formData.reference_date, 'yyyy-MM-dd') : null,
+        entity_id: formData.entity_id,
       });
 
       toast({
@@ -169,6 +175,15 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                   value={formData.current_value}
                   onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
                   required
+                />
+              </div>
+
+              <div className="space-y-2 col-span-2">
+                <Label>Owner</Label>
+                <EntitySelect
+                  value={formData.entity_id}
+                  onChange={(value) => setFormData({ ...formData, entity_id: value })}
+                  placeholder="Select owner"
                 />
               </div>
 
