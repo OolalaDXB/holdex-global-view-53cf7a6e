@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format, isPast, isSameMonth, parseISO } from 'date-fns';
-import { CalendarDays, Check, ChevronDown, ChevronUp, Clock, AlertCircle, Plus } from 'lucide-react';
+import { CalendarDays, Check, ChevronDown, ChevronUp, Clock, AlertCircle, Plus, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { LoanSchedule, LoanPayment, useLoanPayments, useMarkPaymentPaid } from '@/hooks/useLoanSchedules';
 import { LoanScheduleDialog } from './LoanScheduleDialog';
+import { ImportScheduleDialog } from './ImportScheduleDialog';
 import { MarkPaymentDialog } from './MarkPaymentDialog';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,6 +33,7 @@ export function LoanScheduleSection({
   startDate,
 }: LoanScheduleSectionProps) {
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [showTable, setShowTable] = useState(false);
   const [markingPayment, setMarkingPayment] = useState<LoanPayment | null>(null);
   
@@ -45,10 +47,16 @@ export function LoanScheduleSection({
         <p className="text-sm text-muted-foreground mb-4">
           Add a payment schedule to track amortization
         </p>
-        <Button variant="outline" size="sm" onClick={() => setShowAddDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Payment Schedule
-        </Button>
+        <div className="flex gap-2 justify-center">
+          <Button variant="outline" size="sm" onClick={() => setShowAddDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Schedule
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setShowImportDialog(true)}>
+            <Upload className="h-4 w-4 mr-2" />
+            Import from CSV
+          </Button>
+        </div>
         
         <LoanScheduleDialog
           open={showAddDialog}
@@ -58,6 +66,14 @@ export function LoanScheduleSection({
           defaultPrincipal={originalAmount}
           defaultRate={interestRate}
           defaultStartDate={startDate}
+        />
+        
+        <ImportScheduleDialog
+          open={showImportDialog}
+          onOpenChange={setShowImportDialog}
+          liabilityId={liabilityId}
+          liabilityName={liabilityName}
+          currency={currency}
         />
       </div>
     );

@@ -174,7 +174,7 @@ export const demoProfile: DemoProfile = {
   ],
   dashboard_widgets: [
     'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
-    'leasehold_reminders', 'expiring_documents', 'world_clocks', 'weather_with_clocks', 'pending_receivables'
+    'leasehold_reminders', 'expiring_documents', 'world_clocks', 'weather_with_clocks', 'pending_receivables', 'upcoming_loan_payments'
   ],
   blur_amounts: false,
   fiscal_year_start: '01-01',
@@ -1354,6 +1354,88 @@ export const demoLiabilities: DemoLiability[] = [
     updated_at: '2024-12-01T10:00:00Z',
   },
 ];
+
+// Demo Loan Schedules
+export interface DemoLoanPayment {
+  id: string;
+  loan_schedule_id: string;
+  user_id: string;
+  payment_number: number;
+  payment_date: string;
+  principal_amount: number;
+  interest_amount: number;
+  total_amount: number;
+  remaining_principal: number;
+  status: 'scheduled' | 'paid' | 'late' | 'missed';
+  actual_payment_date: string | null;
+  actual_amount: number | null;
+}
+
+// Generate demo loan payments for Dubai Apartment Mortgage
+const generateDemoLoanPayments = (): DemoLoanPayment[] => {
+  const payments: DemoLoanPayment[] = [];
+  const startDate = new Date('2021-03-15');
+  const principal = 2400000;
+  const rate = 4.5 / 100 / 12;
+  const term = 180;
+  const monthlyPayment = 18358; // Calculated using amortization formula
+  
+  let remainingPrincipal = principal;
+  
+  for (let i = 1; i <= term; i++) {
+    const interestAmount = remainingPrincipal * rate;
+    const principalAmount = monthlyPayment - interestAmount;
+    remainingPrincipal -= principalAmount;
+    if (remainingPrincipal < 0) remainingPrincipal = 0;
+    
+    const paymentDate = new Date(startDate);
+    paymentDate.setMonth(paymentDate.getMonth() + i);
+    
+    // First 45 payments are paid (March 2021 to November 2024)
+    const isPaid = i <= 45;
+    
+    payments.push({
+      id: `demo-payment-${i}`,
+      loan_schedule_id: 'demo-loan-schedule-1',
+      user_id: DEMO_USER_ID,
+      payment_number: i,
+      payment_date: paymentDate.toISOString().split('T')[0],
+      principal_amount: Math.round(principalAmount * 100) / 100,
+      interest_amount: Math.round(interestAmount * 100) / 100,
+      total_amount: Math.round(monthlyPayment * 100) / 100,
+      remaining_principal: Math.round(remainingPrincipal * 100) / 100,
+      status: isPaid ? 'paid' : 'scheduled',
+      actual_payment_date: isPaid ? paymentDate.toISOString().split('T')[0] : null,
+      actual_amount: isPaid ? monthlyPayment : null,
+    });
+  }
+  
+  return payments;
+};
+
+export const demoLoanSchedules: DemoLoanSchedule[] = [
+  {
+    id: 'demo-loan-schedule-1',
+    liability_id: 'liability-1',
+    user_id: DEMO_USER_ID,
+    loan_type: 'amortizing',
+    principal_amount: 2400000,
+    interest_rate: 4.5,
+    rate_type: 'fixed',
+    start_date: '2021-03-15',
+    end_date: '2036-03-15',
+    term_months: 180,
+    payment_frequency: 'monthly',
+    monthly_payment: 18358,
+    total_interest: 904440,
+    total_cost: 3304440,
+    payments_made: 45,
+    next_payment_date: '2024-12-15',
+    remaining_principal: 1800000,
+  }
+];
+
+export const demoLoanPayments: DemoLoanPayment[] = generateDemoLoanPayments();
 
 // Net worth history for the chart (12 months)
 export const demoNetWorthHistory = [
