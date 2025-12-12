@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CountrySelect } from '@/components/ui/country-select';
 import { useEntities, useCreateEntity, ENTITY_TYPES } from '@/hooks/useEntities';
-import { Loader2, User, Plus } from 'lucide-react';
+import { Loader2, User, Plus, Users } from 'lucide-react';
+import { SharedOwnershipSelect, formatOwnershipAllocation } from './SharedOwnershipSelect';
 
 const QUICK_ENTITY_TYPES = [
   { value: 'partner', label: 'Partner', color: '#9B6B6B' },
@@ -16,9 +17,16 @@ const QUICK_ENTITY_TYPES = [
   { value: 'trust', label: 'Trust', color: '#6B8B7B' },
 ];
 
+interface OwnershipAllocation {
+  entity_id: string;
+  percentage: number;
+}
+
 interface EntitySelectProps {
   value?: string | null;
   onChange: (value: string | null) => void;
+  ownershipAllocation?: OwnershipAllocation[] | null;
+  onOwnershipAllocationChange?: (allocation: OwnershipAllocation[] | null) => void;
   className?: string;
   placeholder?: string;
   disabled?: boolean;
@@ -27,6 +35,8 @@ interface EntitySelectProps {
 export const EntitySelect = ({
   value,
   onChange,
+  ownershipAllocation,
+  onOwnershipAllocationChange,
   className,
   placeholder = 'Select owner',
   disabled,
@@ -34,6 +44,7 @@ export const EntitySelect = ({
   const { data: entities, isLoading } = useEntities();
   const createEntity = useCreateEntity();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showSharedDialog, setShowSharedDialog] = useState(false);
   const [newEntity, setNewEntity] = useState({ name: '', type: 'partner', country: '' });
   const [isCreating, setIsCreating] = useState(false);
 
@@ -73,6 +84,31 @@ export const EntitySelect = ({
     }
   };
 
+  const handleCreateEntityForShared = async (entity: { name: string; type: string; country: string }): Promise<string> => {
+    const typeInfo = QUICK_ENTITY_TYPES.find(t => t.value === entity.type);
+    const result = await createEntity.mutateAsync({
+      name: entity.name,
+      type: entity.type,
+      country: entity.country || null,
+      color: typeInfo?.color || '#9B6B6B',
+      icon: '👤',
+      owned_by_entity_id: personalEntity?.id || null,
+      ownership_percentage: 100,
+    });
+    return result.id;
+  };
+
+  const handleSharedSave = (allocation: OwnershipAllocation[]) => {
+    // Set entity_id to personal entity
+    if (personalEntity) {
+      onChange(personalEntity.id);
+    }
+    // Set ownership allocation
+    if (onOwnershipAllocationChange) {
+      onOwnershipAllocationChange(allocation);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 h-10 px-3 border rounded-md text-muted-foreground">
@@ -82,8 +118,27 @@ export const EntitySelect = ({
     );
   }
 
+  // Check if currently showing shared ownership
+  const isSharedOwnership = ownershipAllocation && ownershipAllocation.length >= 2;
+  const sharedDisplay = isSharedOwnership 
+    ? formatOwnershipAllocation(ownershipAllocation, entities || [])
+    : null;
+
   // Get display name for selected value
   const getSelectedDisplay = () => {
+    // If shared ownership is set, show the allocation
+    if (isSharedOwnership && sharedDisplay) {
+      const partnerAlloc = ownershipAllocation?.find(a => a.entity_id !== personalEntity?.id);
+      const partner = entities?.find(e => e.id === partnerAlloc?.entity_id);
+      return (
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-positive" />
+          <span>Shared {sharedDisplay}</span>
+          {partner && <span className="text-muted-foreground text-xs">with {partner.name}</span>}
+        </div>
+      );
+    }
+
     if (!value || value === 'none') return placeholder;
     
     const entity = entities?.find(e => e.id === value);
@@ -117,15 +172,21 @@ export const EntitySelect = ({
   const handleValueChange = (v: string) => {
     if (v === 'create-new') {
       setShowCreateDialog(true);
+    } else if (v === 'shared') {
+      setShowSharedDialog(true);
     } else {
       onChange(v === 'none' ? null : v);
+      // Clear ownership allocation when selecting a single entity
+      if (onOwnershipAllocationChange && v !== 'shared') {
+        onOwnershipAllocationChange(null);
+      }
     }
   };
 
   return (
     <>
       <Select
-        value={value || 'none'}
+        value={isSharedOwnership ? 'shared' : (value || 'none')}
         onValueChange={handleValueChange}
         disabled={disabled}
       >
@@ -171,8 +232,16 @@ export const EntitySelect = ({
             );
           })}
           
-          {/* Create new option */}
+          {/* Shared ownership option */}
           <div className="h-px bg-border my-1" />
+          <SelectItem value="shared">
+            <div className="flex items-center gap-2 text-positive">
+              <Users className="h-4 w-4" />
+              <span>Shared...</span>
+            </div>
+          </SelectItem>
+          
+          {/* Create new option */}
           <SelectItem value="create-new">
             <div className="flex items-center gap-2 text-primary">
               <Plus className="h-4 w-4" />
@@ -186,6 +255,17 @@ export const EntitySelect = ({
           </SelectItem>
         </SelectContent>
       </Select>
+
+      {/* Shared Ownership Dialog */}
+      <SharedOwnershipSelect
+        open={showSharedDialog}
+        onOpenChange={setShowSharedDialog}
+        entities={entities || []}
+        personalEntity={personalEntity}
+        onSave={handleSharedSave}
+        onCreateEntity={handleCreateEntityForShared}
+        currentAllocation={ownershipAllocation || undefined}
+      />
 
       {/* Quick Entity Creation Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

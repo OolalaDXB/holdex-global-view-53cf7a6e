@@ -146,8 +146,28 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
     return `Q${quarter} ${date.getFullYear()}`;
   };
 
+  // Parse ownership_allocation JSONB
+  const ownershipAllocation = (asset as any).ownership_allocation as { entity_id: string; percentage: number }[] | null;
+
   // Get entity info for ownership display
-  const getOwnershipDisplay = () => {
+  const getOwnershipDisplay = (): { text: string; badge?: string } | null => {
+    // First check for ownership_allocation (shared ownership)
+    if (ownershipAllocation && ownershipAllocation.length >= 2) {
+      // Find personal entity
+      const personalEntity = entities.find(e => e.type === 'personal');
+      const partnerAlloc = ownershipAllocation.find(a => a.entity_id !== personalEntity?.id);
+      const myAlloc = ownershipAllocation.find(a => a.entity_id === personalEntity?.id);
+      
+      if (partnerAlloc && myAlloc) {
+        const partner = entities.find(e => e.id === partnerAlloc.entity_id);
+        const badge = `${myAlloc.percentage}/${partnerAlloc.percentage}`;
+        return {
+          text: partner ? `with ${partner.name}` : 'Shared',
+          badge,
+        };
+      }
+    }
+
     if (!asset.entity_id) return null;
     
     const entity = entities.find(e => e.id === asset.entity_id);
@@ -160,19 +180,22 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
     
     // For companies, trusts, etc., show the entity name
     if (['company', 'holding', 'spv', 'trust'].includes(entity.type)) {
-      return entity.name;
+      return { text: entity.name };
     }
     
     // For partner/couple (or legacy spouse), show shared ownership
     if (['partner', 'spouse', 'couple'].includes(entity.type)) {
       const myShare = asset.ownership_percentage || 50;
       const theirShare = 100 - myShare;
-      return `${myShare}/${theirShare} with ${entity.name}`;
+      return { 
+        text: `with ${entity.name}`,
+        badge: `${myShare}/${theirShare}`,
+      };
     }
     
     // For other entities with less than 100%, show percentage
     if (asset.ownership_percentage && asset.ownership_percentage < 100) {
-      return `${asset.ownership_percentage}% via ${entity.name}`;
+      return { text: `${asset.ownership_percentage}% via ${entity.name}` };
     }
     
     return null;
@@ -447,9 +470,14 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
 
         {/* Ownership display - only show if not 100% personal */}
         {ownershipDisplay && (
-          <div className="pt-2 border-t border-border">
+          <div className="pt-2 border-t border-border flex items-center gap-2">
+            {ownershipDisplay.badge && (
+              <Badge variant="secondary" className="text-xs bg-positive/10 text-positive border-positive/20">
+                {ownershipDisplay.badge}
+              </Badge>
+            )}
             <span className="text-sm text-muted-foreground">
-              {ownershipDisplay}
+              {ownershipDisplay.text}
             </span>
           </div>
         )}
