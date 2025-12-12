@@ -384,9 +384,18 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           </div>
         )}
 
+        {/* Address and Google Maps link for real estate */}
+        {asset.type === 'real-estate' && (asset as any).address && (
+          <div className="pt-2 border-t border-border">
+            <p className="text-sm text-muted-foreground truncate" title={(asset as any).address}>
+              📍 {(asset as any).address}
+            </p>
+          </div>
+        )}
+
         {/* Google Maps link for real estate with coordinates */}
         {asset.type === 'real-estate' && (asset as any).latitude && (asset as any).longitude && (
-          <div className="pt-2 border-t border-border">
+          <div className={cn(!((asset as any).address) && "pt-2 border-t border-border")}>
             <a
               href={`https://www.google.com/maps?q=${(asset as any).latitude},${(asset as any).longitude}`}
               target="_blank"
