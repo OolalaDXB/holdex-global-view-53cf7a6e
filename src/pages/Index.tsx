@@ -6,6 +6,7 @@ import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
 import { ViewToggle, useViewConfig } from '@/components/dashboard/ViewToggle';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
+import { CollapsibleSection } from '@/components/dashboard/CollapsibleSection';
 import { ExpiringDocumentsWidget } from '@/components/dashboard/ExpiringDocumentsWidget';
 import { LeaseholdRemindersWidget } from '@/components/dashboard/LeaseholdRemindersWidget';
 import { WorldClocksWidget } from '@/components/dashboard/WorldClocksWidget';
@@ -56,12 +57,9 @@ const Dashboard = () => {
   const { config: viewConfig, setConfig: setViewConfig, getIncludedTypes, includesCollections, shouldIncludeAsset } = useViewConfig();
   const { isBlurred, formatBlurred } = useBlur();
 
-  // Get user preferences
+  // Get user preferences - default to minimal dashboard
   const favoriteCities: City[] = (profile as any)?.favorite_cities || [];
-  const dashboardWidgets: string[] = (profile as any)?.dashboard_widgets || [
-    'net_worth', 'chart', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
-    'leasehold_reminders', 'expiring_documents', 'world_clocks', 'weather_with_clocks'
-  ];
+  const dashboardWidgets: string[] = (profile as any)?.dashboard_widgets || [];
   const newsSources: string[] = (profile as any)?.news_sources || ['bloomberg', 'reuters'];
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
@@ -287,19 +285,17 @@ const Dashboard = () => {
         {/* News Ticker */}
         {showWidget('news_ticker') && <NewsTicker enabledSources={newsSources} />}
 
-        {/* Header */}
+        {/* Net Worth Card - Always visible */}
         <header className="mb-12">
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-            {showWidget('net_worth') && (
-              <NetWorthCard 
-                totalValue={netWorth} 
-                confirmedValue={confirmedNetWorth}
-                projectedValue={projectedNetWorth}
-                change={change} 
-                currency={displayCurrency}
-                isBlurred={isBlurred}
-              />
-            )}
+            <NetWorthCard 
+              totalValue={netWorth} 
+              confirmedValue={confirmedNetWorth}
+              projectedValue={projectedNetWorth}
+              change={change} 
+              currency={displayCurrency}
+              isBlurred={isBlurred}
+            />
             <div className="flex items-center gap-2">
               <BlurToggle />
               <ViewToggle config={viewConfig} onChange={setViewConfig} />
@@ -341,24 +337,51 @@ const Dashboard = () => {
 
         {hasData ? (
           <>
-            {/* Chart */}
-            {showWidget('chart') && (
-              <section className="mb-12">
-                {chartData.length > 0 ? (
-                  <NetWorthChart data={chartData} isBlurred={isBlurred} />
-                ) : (
-                  <div className="p-8 rounded-lg border border-border bg-secondary/20 text-center">
-                    <Info size={24} className="mx-auto mb-3 text-muted-foreground" />
-                    <p className="text-muted-foreground mb-2">No historical data yet</p>
-                    <p className="text-sm text-muted-foreground">
-                      Save your first snapshot to start tracking your wealth over time.
-                    </p>
-                  </div>
-                )}
-              </section>
-            )}
+            {/* Chart - Always visible */}
+            <section className="mb-12">
+              {chartData.length > 0 ? (
+                <NetWorthChart data={chartData} isBlurred={isBlurred} />
+              ) : (
+                <div className="p-8 rounded-lg border border-border bg-secondary/20 text-center">
+                  <Info size={24} className="mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground mb-2">No historical data yet</p>
+                  <p className="text-sm text-muted-foreground">
+                    Save your first snapshot to start tracking your wealth over time.
+                  </p>
+                </div>
+              )}
+            </section>
 
-            {/* Certainty Breakdown */}
+            {/* Collapsible Breakdowns - Always shown but collapsed by default */}
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+              <CollapsibleSection id="breakdown_type" title="By Asset Type">
+                <BreakdownBar 
+                  items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
+                  delay={0}
+                  isBlurred={isBlurred}
+                />
+              </CollapsibleSection>
+              
+              <CollapsibleSection id="breakdown_country" title="By Country">
+                <BreakdownBar 
+                  items={assetsByCountry} 
+                  delay={0}
+                  isBlurred={isBlurred}
+                />
+              </CollapsibleSection>
+              
+              {currencyBreakdown.length > 0 && (
+                <CollapsibleSection id="breakdown_currency" title="By Currency">
+                  <CurrencyBreakdown items={currencyBreakdown} delay={0} isBlurred={isBlurred} />
+                </CollapsibleSection>
+              )}
+              
+              <CollapsibleSection id="breakdown_entity" title="By Entity">
+                <EntityBreakdown delay={0} isBlurred={isBlurred} />
+              </CollapsibleSection>
+            </section>
+
+            {/* Optional Widgets - Hidden by default, enable in Settings */}
             {showWidget('certainty_breakdown') && (
               <CertaintyBreakdownWidget
                 confirmedValue={confirmedNetWorth}
@@ -369,12 +392,10 @@ const Dashboard = () => {
               />
             )}
 
-            {/* Debt-to-Income Ratio Widget */}
             {showWidget('debt_to_income') && (
               <DebtToIncomeWidget isBlurred={isBlurred} delay={175} />
             )}
 
-            {/* Net Worth Projection Widget */}
             {showWidget('net_worth_projection') && (
               <NetWorthProjectionWidget 
                 currentNetWorth={netWorth}
@@ -385,50 +406,12 @@ const Dashboard = () => {
               />
             )}
 
-            {/* Breakdowns */}
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-              {showWidget('breakdown_type') && (
-                <BreakdownBar 
-                  title="By Asset Type" 
-                  items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
-                  delay={200}
-                  isBlurred={isBlurred}
-                />
-              )}
-              {showWidget('breakdown_country') && (
-                <BreakdownBar 
-                  title="By Country" 
-                  items={assetsByCountry} 
-                  delay={300}
-                  isBlurred={isBlurred}
-                />
-              )}
-            </section>
-
-            {/* Currency */}
-            {showWidget('breakdown_currency') && currencyBreakdown.length > 0 && (
-              <section className="mb-12">
-                <CurrencyBreakdown items={currencyBreakdown} delay={400} isBlurred={isBlurred} />
-              </section>
-            )}
-
-            {/* Entity Breakdown */}
-            {showWidget('breakdown_entity') && (
-              <section className="mb-12 pb-12 border-b border-border">
-                <EntityBreakdown delay={500} isBlurred={isBlurred} />
-              </section>
-            )}
-
-            {/* Expiring Documents Widget */}
             {showWidget('expiring_documents') && <ExpiringDocumentsWidget />}
 
-            {/* Leasehold Reminders Widget */}
             {showWidget('leasehold_reminders') && <LeaseholdRemindersWidget assets={assets} />}
 
-            {/* Pending Receivables Widget */}
             {showWidget('pending_receivables') && <PendingReceivablesWidget isBlurred={isBlurred} />}
 
-            {/* Upcoming Loan Payments Widget */}
             {showWidget('upcoming_loan_payments') && <UpcomingLoanPaymentsWidget isBlurred={isBlurred} />}
 
             {/* Collections Gallery - only show if collections are included */}
