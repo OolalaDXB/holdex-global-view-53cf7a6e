@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,10 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CountrySelect } from '@/components/ui/country-select';
 import { EntitySelect } from '@/components/entities/EntitySelect';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
+import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { useUpdateAsset, Asset } from '@/hooks/useAssets';
 import { useEntities } from '@/hooks/useEntities';
 import { useToast } from '@/hooks/use-toast';
@@ -114,218 +116,234 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-serif">Edit Asset</DialogTitle>
           </DialogHeader>
           
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            {/* Image Upload */}
-            <div className="space-y-2">
-              <Label>Photo</Label>
-              <ImageUpload
-                value={formData.image_url}
-                onChange={(url) => setFormData({ ...formData, image_url: url })}
-                assetId={asset.id}
-                onGenerateAI={() => setShowAIDialog(true)}
-              />
-            </div>
+          <Tabs defaultValue="details" className="mt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="documents" className="flex items-center gap-2">
+                <FileText size={14} />
+                Documents
+              </TabsTrigger>
+            </TabsList>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Name</Label>
-                <Input
-                  id="edit-name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-              </div>
+            <TabsContent value="details" className="space-y-4 mt-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Image Upload */}
+                <div className="space-y-2">
+                  <Label>Photo</Label>
+                  <ImageUpload
+                    value={formData.image_url}
+                    onChange={(url) => setFormData({ ...formData, image_url: url })}
+                    assetId={asset.id}
+                    onGenerateAI={() => setShowAIDialog(true)}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="edit-country">Country</Label>
-                <CountrySelect
-                  value={formData.country}
-                  onValueChange={(value) => setFormData({ ...formData, country: value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-currency">Currency</Label>
-                <Select 
-                  value={formData.currency} 
-                  onValueChange={(value) => setFormData({ ...formData, currency: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency} value={currency}>{currency}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-current-value">Current Value</Label>
-                <Input
-                  id="edit-current-value"
-                  type="number"
-                  value={formData.current_value}
-                  onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2 col-span-2">
-                <Label>Owner</Label>
-                <EntitySelect
-                  value={formData.entity_id}
-                  onChange={(value) => setFormData({ ...formData, entity_id: value })}
-                  placeholder="Select owner"
-                />
-              </div>
-
-            {asset.type === 'crypto' && (
-                <>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-ticker">Token</Label>
+                    <Label htmlFor="edit-name">Name</Label>
                     <Input
-                      id="edit-ticker"
-                      value={formData.ticker}
-                      onChange={(e) => setFormData({ ...formData, ticker: e.target.value })}
+                      id="edit-name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="edit-quantity">Quantity</Label>
-                    <Input
-                      id="edit-quantity"
-                      type="number"
-                      step="0.0001"
-                      value={formData.quantity}
-                      onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    <Label htmlFor="edit-country">Country</Label>
+                    <CountrySelect
+                      value={formData.country}
+                      onValueChange={(value) => setFormData({ ...formData, country: value })}
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="edit-platform">Platform</Label>
+                    <Label htmlFor="edit-currency">Currency</Label>
                     <Select 
-                      value={formData.platform} 
-                      onValueChange={(value) => setFormData({ ...formData, platform: value })}
+                      value={formData.currency} 
+                      onValueChange={(value) => setFormData({ ...formData, currency: value })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select platform" />
+                        <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {['Ledger', 'Binance', 'Coinbase', 'Kraken', 'Crypto.com', 'MetaMask', 'Trust Wallet', 'Other'].map((platform) => (
-                          <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                        {currencies.map((currency) => (
+                          <SelectItem key={currency} value={currency}>{currency}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                </>
-              )}
 
-              {asset.type === 'business' && (
-                <div className="space-y-2">
-                  <Label htmlFor="edit-ownership">Ownership %</Label>
-                  <Input
-                    id="edit-ownership"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formData.ownership_percentage}
-                    onChange={(e) => setFormData({ ...formData, ownership_percentage: e.target.value })}
-                  />
-                </div>
-              )}
-
-              {asset.type === 'real-estate' && (
-                <div className="space-y-2">
-                  <Label htmlFor="edit-rental">Annual Rental Income</Label>
-                  <Input
-                    id="edit-rental"
-                    type="number"
-                    value={formData.rental_income}
-                    onChange={(e) => setFormData({ ...formData, rental_income: e.target.value })}
-                  />
-                </div>
-              )}
-
-              {(asset.type === 'bank' || asset.type === 'investment') && (
-                <div className="space-y-2">
-                  <Label htmlFor="edit-institution">Institution</Label>
-                  <Input
-                    id="edit-institution"
-                    value={formData.institution}
-                    onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
-                  />
-                </div>
-              )}
-
-              {asset.type === 'bank' && (
-                <>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-reference-balance">Solde de référence</Label>
+                    <Label htmlFor="edit-current-value">Current Value</Label>
                     <Input
-                      id="edit-reference-balance"
+                      id="edit-current-value"
                       type="number"
-                      value={formData.reference_balance}
-                      onChange={(e) => setFormData({ ...formData, reference_balance: e.target.value })}
-                      placeholder="Solde à comparer"
+                      value={formData.current_value}
+                      onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
+                      required
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label>Date de référence</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !formData.reference_date && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formData.reference_date ? format(formData.reference_date, 'dd/MM/yyyy') : 'Sélectionner une date'}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={formData.reference_date || undefined}
-                          onSelect={(date) => setFormData({ ...formData, reference_date: date || null })}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
+
+                  <div className="space-y-2 col-span-2">
+                    <Label>Owner</Label>
+                    <EntitySelect
+                      value={formData.entity_id}
+                      onChange={(value) => setFormData({ ...formData, entity_id: value })}
+                      placeholder="Select owner"
+                    />
                   </div>
-                </>
-              )}
 
-              {asset.type !== 'bank' && (
-                <div className="space-y-2">
-                  <Label htmlFor="edit-purchase">Purchase Price</Label>
-                  <Input
-                    id="edit-purchase"
-                    type="number"
-                    value={formData.purchase_value}
-                    onChange={(e) => setFormData({ ...formData, purchase_value: e.target.value })}
-                  />
+                  {asset.type === 'crypto' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-ticker">Token</Label>
+                        <Input
+                          id="edit-ticker"
+                          value={formData.ticker}
+                          onChange={(e) => setFormData({ ...formData, ticker: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-quantity">Quantity</Label>
+                        <Input
+                          id="edit-quantity"
+                          type="number"
+                          step="0.0001"
+                          value={formData.quantity}
+                          onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-platform">Platform</Label>
+                        <Select 
+                          value={formData.platform} 
+                          onValueChange={(value) => setFormData({ ...formData, platform: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select platform" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {['Ledger', 'Binance', 'Coinbase', 'Kraken', 'Crypto.com', 'MetaMask', 'Trust Wallet', 'Other'].map((platform) => (
+                              <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+
+                  {asset.type === 'business' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-ownership">Ownership %</Label>
+                      <Input
+                        id="edit-ownership"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={formData.ownership_percentage}
+                        onChange={(e) => setFormData({ ...formData, ownership_percentage: e.target.value })}
+                      />
+                    </div>
+                  )}
+
+                  {asset.type === 'real-estate' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-rental">Annual Rental Income</Label>
+                      <Input
+                        id="edit-rental"
+                        type="number"
+                        value={formData.rental_income}
+                        onChange={(e) => setFormData({ ...formData, rental_income: e.target.value })}
+                      />
+                    </div>
+                  )}
+
+                  {(asset.type === 'bank' || asset.type === 'investment') && (
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-institution">Institution</Label>
+                      <Input
+                        id="edit-institution"
+                        value={formData.institution}
+                        onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+                      />
+                    </div>
+                  )}
+
+                  {asset.type === 'bank' && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-reference-balance">Solde de référence</Label>
+                        <Input
+                          id="edit-reference-balance"
+                          type="number"
+                          value={formData.reference_balance}
+                          onChange={(e) => setFormData({ ...formData, reference_balance: e.target.value })}
+                          placeholder="Solde à comparer"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Date de référence</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !formData.reference_date && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {formData.reference_date ? format(formData.reference_date, 'dd/MM/yyyy') : 'Sélectionner une date'}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={formData.reference_date || undefined}
+                              onSelect={(date) => setFormData({ ...formData, reference_date: date || null })}
+                              initialFocus
+                              className="pointer-events-auto"
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </>
+                  )}
+
+                  {asset.type !== 'bank' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-purchase">Purchase Price</Label>
+                      <Input
+                        id="edit-purchase"
+                        type="number"
+                        value={formData.purchase_value}
+                        onChange={(e) => setFormData({ ...formData, purchase_value: e.target.value })}
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1" disabled={updateAsset.isPending}>
-                {updateAsset.isPending ? 'Saving...' : 'Save Changes'}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-            </div>
-          </form>
+                <div className="flex gap-3 pt-4">
+                  <Button type="submit" className="flex-1" disabled={updateAsset.isPending}>
+                    {updateAsset.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="documents" className="mt-4">
+              <DocumentsSection linkType="asset" linkId={asset.id} />
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 
