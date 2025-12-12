@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
-import { Mail, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -466,6 +467,17 @@ const AuthPage = () => {
                   Already have an account? Sign in
                 </button>
               )}
+            </div>
+
+            {/* Demo Link */}
+            <div className="mt-6 pt-6 border-t border-border text-center">
+              <Link
+                to="/demo"
+                className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+                Voir la démo
+              </Link>
             </div>
           </>
         )}
