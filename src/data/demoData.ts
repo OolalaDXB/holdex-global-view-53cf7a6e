@@ -74,6 +74,7 @@ export interface DemoCollection {
   entity_id: string | null;
   acquisition_type: string | null;
   acquisition_from: string | null;
+  certainty?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -1111,6 +1112,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_PERSONAL,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'certain', // Physical asset with known value
     created_at: '2019-05-10T10:00:00Z',
     updated_at: '2024-11-15T10:00:00Z',
   },
@@ -1137,6 +1139,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_PERSONAL,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'likely', // Secondary market value estimate
     created_at: '2021-08-20T10:00:00Z',
     updated_at: '2024-10-20T10:00:00Z',
   },
@@ -1163,6 +1166,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_PERSONAL,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'certain',
     created_at: '2020-07-15T10:00:00Z',
     updated_at: '2024-09-10T10:00:00Z',
   },
@@ -1191,6 +1195,7 @@ export const demoCollections: DemoCollection[] = [
     entity_id: DEMO_ENTITY_PERSONAL,
     acquisition_type: 'purchase',
     acquisition_from: null,
+    certainty: 'likely', // Depreciation estimated
     created_at: '2022-04-01T10:00:00Z',
     updated_at: '2024-11-01T10:00:00Z',
   },
