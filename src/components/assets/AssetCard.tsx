@@ -152,6 +152,30 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           </div>
         )}
 
+        {/* Bank account reference balance evolution */}
+        {asset.type === 'bank' && asset.reference_balance !== null && asset.reference_balance !== undefined && (
+          (() => {
+            const diff = asset.current_value - asset.reference_balance;
+            const percentChange = asset.reference_balance !== 0 
+              ? ((diff / asset.reference_balance) * 100) 
+              : 0;
+            const isPositive = diff >= 0;
+            return (
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <span className="text-sm text-muted-foreground">
+                  vs {asset.reference_date ? new Date(asset.reference_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : 'ref'}
+                </span>
+                <span className={cn(
+                  "text-sm font-medium",
+                  isPositive ? "text-positive" : "text-negative"
+                )}>
+                  {isPositive ? '↑' : '↓'} {formatCurrency(Math.abs(diff), asset.currency)} ({isPositive ? '+' : ''}{percentChange.toFixed(1)}%)
+                </span>
+              </div>
+            );
+          })()
+        )}
+
         {asset.rental_income && (
           <div className="pt-2 border-t border-border">
             <span className="text-sm text-muted-foreground">
