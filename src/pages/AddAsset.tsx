@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, TrendingDown, Watch, Car, Palette, Gem, Wine, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,10 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CountrySelect } from '@/components/ui/country-select';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import { useCreateAsset } from '@/hooks/useAssets';
 import { useCreateCollection } from '@/hooks/useCollections';
 import { useCreateLiability } from '@/hooks/useLiabilities';
+import { cn } from '@/lib/utils';
 
 type Step = 'category' | 'type' | 'form';
 type Category = 'wealth' | 'collections';
@@ -61,6 +66,8 @@ const AddAssetPage = () => {
     cryptoPlatform: '',
     notes: '',
     institution: '',
+    referenceBalance: '',
+    referenceDate: null as Date | null,
   });
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -125,6 +132,8 @@ const AddAssetPage = () => {
           quantity: formData.cryptoQuantity ? parseFloat(formData.cryptoQuantity) : null,
           institution: formData.institution || null,
           platform: formData.cryptoPlatform || null,
+          reference_balance: formData.referenceBalance ? parseFloat(formData.referenceBalance) : null,
+          reference_date: formData.referenceDate ? format(formData.referenceDate, 'yyyy-MM-dd') : null,
           notes: formData.notes || null,
           image_url: imageUrl,
         });
@@ -392,6 +401,47 @@ const AddAssetPage = () => {
                       placeholder="0"
                     />
                   </div>
+                )}
+
+                {selectedType === 'bank' && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="referenceBalance">Solde de référence (optionnel)</Label>
+                      <Input
+                        id="referenceBalance"
+                        type="number"
+                        value={formData.referenceBalance}
+                        onChange={(e) => setFormData({ ...formData, referenceBalance: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Date de référence</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !formData.referenceDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {formData.referenceDate ? format(formData.referenceDate, "PPP") : "Sélectionner une date"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={formData.referenceDate || undefined}
+                            onSelect={(date) => setFormData({ ...formData, referenceDate: date || null })}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </>
                 )}
               </div>
 

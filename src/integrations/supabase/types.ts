@@ -30,6 +30,8 @@ export type Database = {
           purchase_date: string | null
           purchase_value: number | null
           quantity: number | null
+          reference_balance: number | null
+          reference_date: string | null
           rental_income: number | null
           ticker: string | null
           type: string
@@ -51,6 +53,8 @@ export type Database = {
           purchase_date?: string | null
           purchase_value?: number | null
           quantity?: number | null
+          reference_balance?: number | null
+          reference_date?: string | null
           rental_income?: number | null
           ticker?: string | null
           type: string
@@ -72,6 +76,8 @@ export type Database = {
           purchase_date?: string | null
           purchase_value?: number | null
           quantity?: number | null
+          reference_balance?: number | null
+          reference_date?: string | null
           rental_income?: number | null
           ticker?: string | null
           type?: string
