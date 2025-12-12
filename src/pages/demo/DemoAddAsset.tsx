@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountrySelect } from '@/components/ui/country-select';
+import { ImageUpload } from '@/components/ui/image-upload';
+import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useDemo } from '@/contexts/DemoContext';
@@ -43,6 +45,8 @@ const DemoAddAssetPage = () => {
   const [category, setCategory] = useState<Category | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [tempAssetId] = useState(() => `temp-${Date.now()}`);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -55,6 +59,7 @@ const DemoAddAssetPage = () => {
     cryptoQuantity: '',
     notes: '',
     institution: '',
+    image_url: null as string | null,
   });
 
   const handleCategorySelect = (cat: Category) => {
@@ -109,7 +114,7 @@ const DemoAddAssetPage = () => {
           commitment_amount: null,
           called_amount: null,
           distribution_status: null,
-          image_url: null,
+          image_url: formData.image_url,
         });
       } else {
         addAsset({
@@ -126,7 +131,7 @@ const DemoAddAssetPage = () => {
           institution: formData.institution || null,
           notes: formData.notes || null,
           rental_income: null,
-          image_url: null,
+          image_url: formData.image_url,
         });
       }
 
@@ -249,6 +254,19 @@ const DemoAddAssetPage = () => {
             </button>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Image Upload */}
+              {selectedType !== 'liability' && (
+                <div className="space-y-2">
+                  <Label>Image (optional)</Label>
+                  <ImageUpload
+                    value={formData.image_url}
+                    onChange={(url) => setFormData({ ...formData, image_url: url })}
+                    assetId={tempAssetId}
+                    onGenerateAI={() => setShowAIDialog(true)}
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
@@ -382,6 +400,16 @@ const DemoAddAssetPage = () => {
                 </Button>
               </div>
             </form>
+
+            <AIImageDialog
+              open={showAIDialog}
+              onOpenChange={setShowAIDialog}
+              assetType={selectedType || ''}
+              name={formData.name}
+              brand={formData.institution}
+              country={formData.country}
+              onImageGenerated={(url) => setFormData({ ...formData, image_url: url })}
+            />
           </div>
         )}
       </div>
