@@ -10,6 +10,7 @@ import { LiabilityDialog } from '@/components/liabilities/LiabilityDialog';
 import { DeleteLiabilityDialog } from '@/components/liabilities/DeleteLiabilityDialog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { LiabilityIcon } from '@/components/liabilities/LiabilityIcon';
+import { LiabilityBreakdownChart } from '@/components/liabilities/LiabilityBreakdownChart';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
+type TypeFilter = 'all' | string;
 
 function LiabilityCard({ 
   liability, 
@@ -171,11 +173,16 @@ const LiabilitiesPage = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
 
   const filteredLiabilities = liabilities.filter(l => {
     // Search filter
     if (searchQuery && !l.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !l.institution?.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    // Type filter
+    if (typeFilter !== 'all' && l.type !== typeFilter) {
       return false;
     }
     // Certainty filter
@@ -216,6 +223,17 @@ const LiabilitiesPage = () => {
               className="pl-9"
             />
           </div>
+          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TypeFilter)}>
+            <SelectTrigger className="w-40 h-9 text-sm">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {LIABILITY_TYPES.map(t => (
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
             <SelectTrigger className="w-40 h-9 text-sm">
               <SelectValue />
@@ -227,6 +245,11 @@ const LiabilitiesPage = () => {
             </SelectContent>
           </Select>
         </div>
+        
+        {/* Liability Breakdown Chart */}
+        {liabilities.length > 0 && (
+          <LiabilityBreakdownChart liabilities={liabilities} />
+        )}
         
         {/* Monthly Payment Summary Widget */}
         <MonthlyPaymentSummary />
