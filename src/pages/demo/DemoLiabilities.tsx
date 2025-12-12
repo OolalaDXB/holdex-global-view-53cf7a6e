@@ -8,6 +8,7 @@ import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool'
 import { DemoLiabilityDialog } from '@/components/liabilities/DemoLiabilityDialog';
 import { DemoDeleteLiabilityDialog } from '@/components/liabilities/DemoDeleteLiabilityDialog';
 import { LiabilityIcon } from '@/components/liabilities/LiabilityIcon';
+import { LiabilityBreakdownChart } from '@/components/liabilities/LiabilityBreakdownChart';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { ChevronDown, ChevronUp, Pencil, Trash2, Plus, Search, TrendingDown } from 'lucide-react';
 
 type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
+type TypeFilter = 'all' | string;
 
 function DemoLiabilityCard({ 
   liability,
@@ -330,11 +332,16 @@ const DemoLiabilitiesPage = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
 
   const filteredLiabilities = liabilities.filter(l => {
     // Search filter
     if (searchQuery && !l.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !l.institution?.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
+    // Type filter
+    if (typeFilter !== 'all' && l.type !== typeFilter) {
       return false;
     }
     // Certainty filter
@@ -378,6 +385,17 @@ const DemoLiabilitiesPage = () => {
               className="pl-9"
             />
           </div>
+          <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TypeFilter)}>
+            <SelectTrigger className="w-40 h-9 text-sm">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {LIABILITY_TYPES.map(t => (
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
             <SelectTrigger className="w-40 h-9 text-sm">
               <SelectValue />
@@ -389,6 +407,11 @@ const DemoLiabilitiesPage = () => {
             </SelectContent>
           </Select>
         </div>
+        
+        {/* Liability Breakdown Chart */}
+        {liabilities.length > 0 && (
+          <LiabilityBreakdownChart liabilities={liabilities} />
+        )}
         
         {/* Monthly Payment Summary Widget */}
         <DemoMonthlyPaymentSummary />
