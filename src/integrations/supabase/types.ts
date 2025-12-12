@@ -227,6 +227,121 @@ export type Database = {
           },
         ]
       }
+      documents: {
+        Row: {
+          asset_id: string | null
+          collection_id: string | null
+          created_at: string | null
+          document_date: string | null
+          entity_id: string | null
+          expiry_date: string | null
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id: string
+          is_verified: boolean | null
+          liability_id: string | null
+          name: string
+          notes: string | null
+          receivable_id: string | null
+          tags: string[] | null
+          type: string
+          updated_at: string | null
+          user_id: string
+          verification_date: string | null
+        }
+        Insert: {
+          asset_id?: string | null
+          collection_id?: string | null
+          created_at?: string | null
+          document_date?: string | null
+          entity_id?: string | null
+          expiry_date?: string | null
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id?: string
+          is_verified?: boolean | null
+          liability_id?: string | null
+          name: string
+          notes?: string | null
+          receivable_id?: string | null
+          tags?: string[] | null
+          type: string
+          updated_at?: string | null
+          user_id: string
+          verification_date?: string | null
+        }
+        Update: {
+          asset_id?: string | null
+          collection_id?: string | null
+          created_at?: string | null
+          document_date?: string | null
+          entity_id?: string | null
+          expiry_date?: string | null
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          id?: string
+          is_verified?: boolean | null
+          liability_id?: string | null
+          name?: string
+          notes?: string | null
+          receivable_id?: string | null
+          tags?: string[] | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+          verification_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_entity_id_fkey"
+            columns: ["entity_id"]
+            isOneToOne: false
+            referencedRelation: "entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_liability_id_fkey"
+            columns: ["liability_id"]
+            isOneToOne: false
+            referencedRelation: "liabilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_receivable_id_fkey"
+            columns: ["receivable_id"]
+            isOneToOne: false
+            referencedRelation: "receivables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entities: {
         Row: {
           color: string | null
