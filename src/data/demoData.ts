@@ -98,6 +98,26 @@ export interface DemoLiability {
   updated_at: string;
 }
 
+export interface DemoLoanSchedule {
+  id: string;
+  liability_id: string;
+  user_id: string;
+  loan_type: 'amortizing' | 'bullet' | 'balloon' | 'interest_only';
+  principal_amount: number;
+  interest_rate: number | null;
+  rate_type: 'fixed' | 'variable' | 'capped';
+  start_date: string;
+  end_date: string | null;
+  term_months: number | null;
+  payment_frequency: 'monthly' | 'quarterly' | 'semi_annual' | 'annual';
+  monthly_payment: number | null;
+  total_interest: number | null;
+  total_cost: number | null;
+  payments_made: number;
+  next_payment_date: string | null;
+  remaining_principal: number | null;
+}
+
 export interface DemoEntity {
   id: string;
   user_id: string;

@@ -12,6 +12,7 @@ import { WorldClocksWidget } from '@/components/dashboard/WorldClocksWidget';
 import { NewsTicker } from '@/components/dashboard/NewsTicker';
 import { BlurToggle } from '@/components/dashboard/BlurToggle';
 import { PendingReceivablesWidget } from '@/components/dashboard/PendingReceivablesWidget';
+import { UpcomingLoanPaymentsWidget } from '@/components/dashboard/UpcomingLoanPaymentsWidget';
 import { EntityBreakdown } from '@/components/dashboard/EntityBreakdown';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
