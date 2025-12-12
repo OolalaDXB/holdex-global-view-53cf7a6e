@@ -18,6 +18,7 @@ interface DemoContextType {
   addLiability: (liability: Omit<DemoLiability, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
   updateLiability: (id: string, updates: Partial<DemoLiability>) => void;
   deleteLiability: (id: string) => void;
+  addEntity: (entity: Omit<DemoEntity, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => string;
 }
 
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
@@ -26,7 +27,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   const [assets, setAssets] = useState<DemoAsset[]>(demoAssets);
   const [collections, setCollections] = useState<DemoCollection[]>(demoCollections);
   const [liabilities, setLiabilities] = useState<DemoLiability[]>(demoLiabilities);
-  const [entities] = useState<DemoEntity[]>(demoEntities);
+  const [entities, setEntities] = useState<DemoEntity[]>(demoEntities);
   const [profile, setProfile] = useState<DemoProfile>(demoProfile);
 
   const updateProfile = (updates: Partial<DemoProfile>) => {
@@ -99,6 +100,19 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setLiabilities(prev => prev.filter(l => l.id !== id));
   };
 
+  const addEntity = (entity: Omit<DemoEntity, 'id' | 'user_id' | 'created_at' | 'updated_at'>): string => {
+    const newId = generateId();
+    const newEntity: DemoEntity = {
+      ...entity,
+      id: newId,
+      user_id: 'demo-user-lucas-soleil',
+      created_at: now(),
+      updated_at: now(),
+    };
+    setEntities(prev => [...prev, newEntity]);
+    return newId;
+  };
+
   return (
     <DemoContext.Provider value={{
       assets,
@@ -117,6 +131,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       addLiability,
       updateLiability,
       deleteLiability,
+      addEntity,
     }}>
       {children}
     </DemoContext.Provider>

@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDemo } from '@/contexts/DemoContext';
 import { getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
 import { useDemoComplianceMode } from '@/hooks/useComplianceMode';
+import { DemoEntitySelect, useDemoDefaultEntity } from '@/components/demo/DemoEntitySelect';
 
 type Step = 'category' | 'type' | 'form';
 type Category = 'wealth' | 'collections';
@@ -43,6 +44,7 @@ const DemoAddAssetPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { addAsset, addCollection, addLiability } = useDemo();
+  const defaultEntityId = useDemoDefaultEntity();
   const { showIslamic, showJewish } = useDemoComplianceMode();
   
   // Get filtered financing types based on compliance mode
@@ -68,6 +70,7 @@ const DemoAddAssetPage = () => {
     notes: '',
     institution: '',
     image_url: null as string | null,
+    entityId: undefined as string | null | undefined, // Will be set to default on mount
     // Shariah compliance (for investments)
     isShariahCompliant: false,
     shariahCertification: '',
@@ -115,7 +118,7 @@ const DemoAddAssetPage = () => {
           start_date: null,
           end_date: null,
           linked_asset_id: null,
-          entity_id: null,
+          entity_id: formData.entityId === undefined ? defaultEntityId : formData.entityId,
           financing_type: formData.financingType,
           is_shariah_compliant: isIslamic,
           shariah_advisor: formData.shariahAdvisor || null,
@@ -144,7 +147,7 @@ const DemoAddAssetPage = () => {
           called_amount: null,
           distribution_status: null,
           image_url: formData.image_url,
-          entity_id: null,
+          entity_id: formData.entityId === undefined ? defaultEntityId : formData.entityId,
           acquisition_type: 'purchase',
           acquisition_from: null,
         });
@@ -167,7 +170,7 @@ const DemoAddAssetPage = () => {
           notes: formData.notes || null,
           rental_income: null,
           image_url: formData.image_url,
-          entity_id: null,
+          entity_id: formData.entityId === undefined ? defaultEntityId : formData.entityId,
           acquisition_type: 'purchase',
           acquisition_from: null,
           property_status: null,
@@ -363,6 +366,15 @@ const DemoAddAssetPage = () => {
                     onChange={(e) => setFormData({ ...formData, currentValue: e.target.value })}
                     placeholder="0"
                     required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Owner</Label>
+                  <DemoEntitySelect
+                    value={formData.entityId === undefined ? defaultEntityId : formData.entityId}
+                    onChange={(value) => setFormData({ ...formData, entityId: value })}
+                    placeholder="Select owner"
                   />
                 </div>
 
