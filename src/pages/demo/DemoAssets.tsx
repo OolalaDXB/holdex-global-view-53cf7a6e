@@ -29,9 +29,10 @@ const DemoAssetsPage = () => {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   
-  const { assets, entities } = useDemo();
+  const { assets, entities, profile } = useDemo();
   const rates = fallbackRates;
   const prices = fallbackCryptoPrices;
+  const areaUnit = profile?.area_unit || 'sqm';
 
   const filteredAssets = assets
     .filter(a => filter === 'all' || a.type === filter)
@@ -105,6 +106,7 @@ const DemoAssetsPage = () => {
               onEdit={setEditingAsset as any}
               onDelete={setDeletingAsset as any}
               entities={entities as any}
+              areaUnit={areaUnit}
             />
           ))}
         </div>

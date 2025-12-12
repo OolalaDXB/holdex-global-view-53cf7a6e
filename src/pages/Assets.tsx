@@ -8,6 +8,7 @@ import { useAssets, Asset } from '@/hooks/useAssets';
 import { useEntities } from '@/hooks/useEntities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
+import { useProfile } from '@/hooks/useProfile';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { RefreshCw, Search, X } from 'lucide-react';
@@ -38,9 +39,11 @@ const AssetsPage = () => {
   const { data: entities = [] } = useEntities();
   const { data: exchangeRates } = useExchangeRates();
   const { data: cryptoPrices, isLoading: cryptoLoading, dataUpdatedAt } = useCryptoPrices();
+  const { data: profile } = useProfile();
   
   const rates = exchangeRates?.rates || fallbackRates;
   const prices = cryptoPrices || fallbackCryptoPrices;
+  const areaUnit = (profile as any)?.area_unit || 'sqm';
 
   const clearEntityFilter = () => {
     setSearchParams({});
@@ -151,6 +154,7 @@ const AssetsPage = () => {
                   onEdit={setEditingAsset}
                   onDelete={setDeletingAsset}
                   entities={entities}
+                  areaUnit={areaUnit}
                 />
               ))}
             </div>

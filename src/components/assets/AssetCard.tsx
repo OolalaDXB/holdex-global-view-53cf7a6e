@@ -36,6 +36,7 @@ interface AssetCardProps {
   onDelete?: (asset: Asset) => void;
   isBlurred?: boolean;
   entities?: Entity[];
+  areaUnit?: 'sqm' | 'sqft';
 }
 
 const typeIcons: Record<string, typeof Building2> = {
@@ -73,10 +74,19 @@ const propertyTypeLabels: Record<string, string> = {
   'penthouse': 'Penthouse',
 };
 
-export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete, isBlurred = false, entities = [] }: AssetCardProps) {
+export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete, isBlurred = false, entities = [], areaUnit = 'sqm' }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
   const { showIslamic } = useComplianceMode();
+
+  // Helper to format size based on area unit preference
+  const formatSize = (sizeSqm: number) => {
+    if (areaUnit === 'sqft') {
+      const sqft = sizeSqm * 10.7639;
+      return `${Math.round(sqft).toLocaleString()} sq ft`;
+    }
+    return `${sizeSqm} m²`;
+  };
   
   // Check if this is an off-plan property
   const isOffPlan = asset.type === 'real-estate' && ['off_plan', 'under_construction'].includes(asset.property_status || '');
@@ -281,7 +291,7 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
               <p className="text-xs text-muted-foreground mt-0.5">
                 {(asset as any).rooms && `${(asset as any).rooms} ${(asset as any).rooms === 1 ? 'room' : 'rooms'}`}
                 {(asset as any).rooms && (asset as any).size_sqm && ' · '}
-                {(asset as any).size_sqm && `${(asset as any).size_sqm} m²`}
+                {(asset as any).size_sqm && formatSize((asset as any).size_sqm)}
               </p>
             )}
           </div>
