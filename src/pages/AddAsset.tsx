@@ -379,18 +379,20 @@ const AddAssetPage = () => {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="purchasePrice">
-                    {selectedType === 'liability' ? 'Original Amount (optional)' : 'Purchase Price (optional)'}
-                  </Label>
-                  <Input
-                    id="purchasePrice"
-                    type="number"
-                    value={formData.purchasePrice}
-                    onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
-                    placeholder="0"
-                  />
-                </div>
+                {selectedType !== 'bank' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="purchasePrice">
+                      {selectedType === 'liability' ? 'Original Amount (optional)' : 'Purchase Price (optional)'}
+                    </Label>
+                    <Input
+                      id="purchasePrice"
+                      type="number"
+                      value={formData.purchasePrice}
+                      onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
+                      placeholder="0"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4 pt-4">

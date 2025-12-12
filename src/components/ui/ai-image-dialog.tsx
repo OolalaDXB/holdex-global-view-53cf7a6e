@@ -77,12 +77,15 @@ export function AIImageDialog({
               className="w-full rounded-lg"
             />
           ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                Generate a professional image for:
-              </p>
-              <p className="font-medium">
-                {brand ? `${brand} ${model || name}` : name}
+            <div className="text-center py-6">
+              <div className="bg-secondary/50 rounded-lg p-4 mb-4">
+                <p className="text-sm text-muted-foreground mb-2">Prompt automatique:</p>
+                <p className="text-sm font-medium text-foreground">
+                  {getAutoPrompt(assetType, name, brand, model, country)}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                L'image sera générée automatiquement basée sur les informations de l'actif.
               </p>
               {error && (
                 <p className="text-destructive text-sm mt-4">{error}</p>
@@ -147,4 +150,30 @@ function mapAssetType(type: string): 'watch' | 'vehicle' | 'art' | 'wine' | 'jew
     'Crypto': 'crypto',
   };
   return typeMap[type] || 'other';
+}
+
+function getAutoPrompt(type: string, name: string, brand?: string, model?: string, country?: string): string {
+  const mappedType = mapAssetType(type);
+  const location = country ? `in ${country}` : '';
+  
+  switch (mappedType) {
+    case 'watch':
+      return `${brand || 'Luxury'} ${model || name} watch, professional studio photography`;
+    case 'vehicle':
+      return `${brand || ''} ${model || name}, professional automotive photography`;
+    case 'art':
+      return `${name}, fine art piece, gallery presentation`;
+    case 'wine':
+      return `${name} wine bottle, premium photography`;
+    case 'jewelry':
+      return `${brand || 'Fine'} ${name} jewelry, professional product photography`;
+    case 'real-estate':
+      return `${name} ${location}, luxury property exterior, architectural photography`;
+    case 'business':
+      return `${name} corporate headquarters, professional business imagery`;
+    case 'crypto':
+      return `${name} cryptocurrency concept, digital asset visualization`;
+    default:
+      return `${name}, premium professional photography`;
+  }
 }

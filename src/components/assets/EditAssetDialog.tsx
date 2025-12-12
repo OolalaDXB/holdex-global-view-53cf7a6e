@@ -237,15 +237,17 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="edit-purchase">Purchase Price</Label>
-                <Input
-                  id="edit-purchase"
-                  type="number"
-                  value={formData.purchase_value}
-                  onChange={(e) => setFormData({ ...formData, purchase_value: e.target.value })}
-                />
-              </div>
+              {asset.type !== 'bank' && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-purchase">Purchase Price</Label>
+                  <Input
+                    id="edit-purchase"
+                    type="number"
+                    value={formData.purchase_value}
+                    onChange={(e) => setFormData({ ...formData, purchase_value: e.target.value })}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">
