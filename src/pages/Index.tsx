@@ -10,6 +10,7 @@ import { ExpiringDocumentsWidget } from '@/components/dashboard/ExpiringDocument
 import { LeaseholdRemindersWidget } from '@/components/dashboard/LeaseholdRemindersWidget';
 import { WorldClocksWidget } from '@/components/dashboard/WorldClocksWidget';
 import { BlurToggle } from '@/components/dashboard/BlurToggle';
+import { PendingReceivablesWidget } from '@/components/dashboard/PendingReceivablesWidget';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
@@ -354,6 +355,9 @@ const Dashboard = () => {
 
             {/* Leasehold Reminders Widget */}
             {showWidget('leasehold_reminders') && <LeaseholdRemindersWidget assets={assets} />}
+
+            {/* Pending Receivables Widget */}
+            {showWidget('pending_receivables') && <PendingReceivablesWidget isBlurred={isBlurred} />}
 
             {/* Collections Gallery - only show if collections are included */}
             {showCollections && <CollectionsGallery collections={collections} isBlurred={isBlurred} />}
