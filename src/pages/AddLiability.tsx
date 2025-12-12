@@ -17,15 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
 
-const LIABILITY_TYPES = [
-  { value: 'mortgage', label: 'Mortgage' },
-  { value: 'car_loan', label: 'Car Loan' },
-  { value: 'personal_loan', label: 'Personal Loan' },
-  { value: 'credit_card', label: 'Credit Card' },
-  { value: 'student_loan', label: 'Student Loan' },
-  { value: 'business_loan', label: 'Business Loan' },
-  { value: 'other', label: 'Other' },
-];
+// Use centralized LIABILITY_TYPES from useLiabilities hook
+import { LIABILITY_TYPES } from '@/hooks/useLiabilities';
 
 const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'AED', 'SAR', 'QAR', 'BHD', 'KWD', 'OMR'];
 

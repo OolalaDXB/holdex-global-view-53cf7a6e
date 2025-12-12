@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useDemo } from '@/contexts/DemoContext';
 import { demoLoanSchedules, demoLoanPayments, DemoLoanSchedule, DemoLiability } from '@/data/demoData';
+import { LIABILITY_TYPES, getLiabilityTypeInfo } from '@/hooks/useLiabilities';
 import { DemoMonthlyPaymentSummary } from '@/components/liabilities/DemoMonthlyPaymentSummary';
 import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool';
 import { DemoLiabilityDialog } from '@/components/liabilities/DemoLiabilityDialog';
 import { DemoDeleteLiabilityDialog } from '@/components/liabilities/DemoDeleteLiabilityDialog';
+import { LiabilityIcon } from '@/components/liabilities/LiabilityIcon';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +17,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { CertaintyBadge } from '@/components/ui/certainty-badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { ChevronDown, ChevronUp, Landmark, TrendingDown, Pencil, Trash2, Plus, CreditCard, Car, Search } from 'lucide-react';
+import { ChevronDown, ChevronUp, Pencil, Trash2, Plus, Search, TrendingDown } from 'lucide-react';
 
 type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
@@ -33,16 +35,7 @@ function DemoLiabilityCard({
   // Find matching loan schedule
   const schedule = demoLoanSchedules.find(s => s.liability_id === liability.id);
   const payments = schedule ? demoLoanPayments.filter(p => p.loan_schedule_id === schedule.id) : [];
-  
-  const getIcon = () => {
-    switch (liability.type) {
-      case 'mortgage': return Landmark;
-      case 'car_loan': return Car;
-      case 'credit_card': return CreditCard;
-      default: return TrendingDown;
-    }
-  };
-  const Icon = getIcon();
+  const typeInfo = getLiabilityTypeInfo(liability.type);
   
   // Convert demo schedule to LoanSchedule format for the component
   const scheduleData = schedule ? {
@@ -77,9 +70,7 @@ function DemoLiabilityCard({
           <CardHeader className="cursor-pointer hover:bg-secondary/50 transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-secondary">
-                  <Icon className="h-5 w-5 text-muted-foreground" />
-                </div>
+                <LiabilityIcon type={liability.type} />
                 <div>
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-base font-medium">{liability.name}</CardTitle>
