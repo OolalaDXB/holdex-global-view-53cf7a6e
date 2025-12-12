@@ -3,23 +3,33 @@ import { NetWorthCard } from '@/components/dashboard/NetWorthCard';
 import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
+import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
 import { AssetCard } from '@/components/assets/AssetCard';
+import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useNetWorthHistory } from '@/hooks/useNetWorthHistory';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
-import { convertToEUR, fallbackRates } from '@/lib/currency';
-import { RefreshCw } from 'lucide-react';
+import { useSaveSnapshot } from '@/hooks/useNetWorthSnapshot';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { convertToEUR, convertFromEUR, fallbackRates, formatCurrency } from '@/lib/currency';
+import { RefreshCw, Camera, Info } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { getCountryFlag } from '@/hooks/useCountries';
 
 const Dashboard = () => {
+  const { toast } = useToast();
   const { data: assets = [], isLoading: assetsLoading } = useAssets();
   const { data: collections = [], isLoading: collectionsLoading } = useCollections();
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: netWorthHistoryData = [] } = useNetWorthHistory();
   const { data: exchangeRates, isLoading: ratesLoading, dataUpdatedAt: fxUpdatedAt } = useExchangeRates();
   const { data: cryptoPrices, dataUpdatedAt: cryptoUpdatedAt } = useCryptoPrices();
+  const saveSnapshot = useSaveSnapshot();
+  const { displayCurrency, convertToDisplay, formatInDisplayCurrency } = useCurrency();
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
   const rates = exchangeRates?.rates || fallbackRates;
@@ -36,101 +46,114 @@ const Dashboard = () => {
     return asset.current_value;
   };
 
-  // Calculate totals using live rates and crypto prices
-  const totalAssets = assets.reduce((sum, asset) => {
+  // Calculate totals using live rates and crypto prices (in EUR for storage)
+  const totalAssetsEUR = assets.reduce((sum, asset) => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
     return sum + eurValue;
   }, 0);
 
-  const totalCollections = collections.reduce((sum, item) => {
+  const totalCollectionsEUR = collections.reduce((sum, item) => {
     const eurValue = convertToEUR(item.current_value, item.currency, rates);
     return sum + eurValue;
   }, 0);
 
-  const totalLiabilities = liabilities.reduce((sum, item) => {
+  const totalLiabilitiesEUR = liabilities.reduce((sum, item) => {
     const eurValue = convertToEUR(item.current_balance, item.currency, rates);
     return sum + eurValue;
   }, 0);
 
-  const netWorth = totalAssets + totalCollections - totalLiabilities;
+  const netWorthEUR = totalAssetsEUR + totalCollectionsEUR - totalLiabilitiesEUR;
+  
+  // Convert to display currency
+  const netWorth = convertFromEUR(netWorthEUR, displayCurrency, rates);
 
-  // Calculate breakdowns
+  // Calculate breakdowns (in display currency)
   const assetsByType = [
     { label: 'Real Estate', value: 0, percentage: 0 },
     { label: 'Investments', value: 0, percentage: 0 },
     { label: 'Business', value: 0, percentage: 0 },
-    { label: 'Collections', value: totalCollections, percentage: 0 },
+    { label: 'Collections', value: convertFromEUR(totalCollectionsEUR, displayCurrency, rates), percentage: 0 },
     { label: 'Cash', value: 0, percentage: 0 },
   ];
 
+  // Breakdown by type (in EUR for percentage calc)
+  const typeBreakdownEUR: Record<string, number> = { 'Real Estate': 0, 'Investments': 0, 'Business': 0, 'Collections': totalCollectionsEUR, 'Cash': 0 };
+  
   assets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    if (asset.type === 'real-estate') assetsByType[0].value += eurValue;
-    else if (asset.type === 'investment' || asset.type === 'crypto') assetsByType[1].value += eurValue;
-    else if (asset.type === 'business') assetsByType[2].value += eurValue;
-    else if (asset.type === 'bank') assetsByType[4].value += eurValue;
+    if (asset.type === 'real-estate') typeBreakdownEUR['Real Estate'] += eurValue;
+    else if (asset.type === 'investment' || asset.type === 'crypto') typeBreakdownEUR['Investments'] += eurValue;
+    else if (asset.type === 'business') typeBreakdownEUR['Business'] += eurValue;
+    else if (asset.type === 'bank') typeBreakdownEUR['Cash'] += eurValue;
   });
 
-  const totalGross = totalAssets + totalCollections;
+  const totalGrossEUR = totalAssetsEUR + totalCollectionsEUR;
+  
+  assetsByType[0].value = convertFromEUR(typeBreakdownEUR['Real Estate'], displayCurrency, rates);
+  assetsByType[1].value = convertFromEUR(typeBreakdownEUR['Investments'], displayCurrency, rates);
+  assetsByType[2].value = convertFromEUR(typeBreakdownEUR['Business'], displayCurrency, rates);
+  assetsByType[4].value = convertFromEUR(typeBreakdownEUR['Cash'], displayCurrency, rates);
+  
   assetsByType.forEach(item => {
-    item.percentage = totalGross > 0 ? (item.value / totalGross) * 100 : 0;
+    const eurValue = typeBreakdownEUR[item.label] || 0;
+    item.percentage = totalGrossEUR > 0 ? (eurValue / totalGrossEUR) * 100 : 0;
   });
 
   // By country
-  const countryMap: Record<string, number> = {};
+  const countryMapEUR: Record<string, number> = {};
   assets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    countryMap[asset.country] = (countryMap[asset.country] || 0) + eurValue;
+    countryMapEUR[asset.country] = (countryMapEUR[asset.country] || 0) + eurValue;
   });
   collections.forEach(item => {
     const eurValue = convertToEUR(item.current_value, item.currency, rates);
-    countryMap[item.country] = (countryMap[item.country] || 0) + eurValue;
+    countryMapEUR[item.country] = (countryMapEUR[item.country] || 0) + eurValue;
   });
 
-  const assetsByCountry = Object.entries(countryMap)
-    .map(([label, value]) => ({
-      label,
-      value,
-      percentage: totalGross > 0 ? (value / totalGross) * 100 : 0,
+  const assetsByCountry = Object.entries(countryMapEUR)
+    .map(([label, eurValue]) => ({
+      label: `${getCountryFlag(label)} ${label}`,
+      value: convertFromEUR(eurValue, displayCurrency, rates),
+      percentage: totalGrossEUR > 0 ? (eurValue / totalGrossEUR) * 100 : 0,
     }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
   // By currency
-  const currencyMap: Record<string, number> = {};
+  const currencyMapEUR: Record<string, number> = {};
   assets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    currencyMap[asset.currency] = (currencyMap[asset.currency] || 0) + eurValue;
+    currencyMapEUR[asset.currency] = (currencyMapEUR[asset.currency] || 0) + eurValue;
   });
 
-  const currencyBreakdown = Object.entries(currencyMap)
-    .map(([currency, value]) => ({
+  const currencyBreakdown = Object.entries(currencyMapEUR)
+    .map(([currency, eurValue]) => ({
       currency,
-      percentage: totalGross > 0 ? (value / totalGross) * 100 : 0,
+      percentage: totalGrossEUR > 0 ? (eurValue / totalGrossEUR) * 100 : 0,
     }))
     .sort((a, b) => b.percentage - a.percentage);
 
   // Recent assets (last 5)
   const recentAssets = assets.slice(0, 5);
 
-  // Chart data
+  // Chart data - use ONLY snapshot data
   const chartData = netWorthHistoryData.length > 0 
     ? netWorthHistoryData.map(item => ({
-        month: new Date(item.snapshot_date).toLocaleDateString('en-US', { month: 'short' }),
-        value: item.net_worth_eur,
+        month: new Date(item.snapshot_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        value: convertFromEUR(item.net_worth_eur, displayCurrency, rates),
       }))
-    : [{ month: 'Now', value: netWorth }];
+    : [];
 
   // Calculate MTD change
   const previousValue = netWorthHistoryData.length > 1 
     ? netWorthHistoryData[netWorthHistoryData.length - 2]?.net_worth_eur 
-    : netWorth;
+    : netWorthEUR;
   const change = previousValue > 0 
-    ? ((netWorth - previousValue) / previousValue) * 100 
+    ? ((netWorthEUR - previousValue) / previousValue) * 100 
     : 0;
 
   // Format last updated times
@@ -140,6 +163,32 @@ const Dashboard = () => {
   const cryptoLastUpdated = cryptoUpdatedAt
     ? new Date(cryptoUpdatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     : null;
+
+  const handleSaveSnapshot = async () => {
+    try {
+      await saveSnapshot.mutateAsync({
+        total_assets_eur: totalAssetsEUR,
+        total_collections_eur: totalCollectionsEUR,
+        total_liabilities_eur: totalLiabilitiesEUR,
+        net_worth_eur: netWorthEUR,
+        breakdown_by_type: typeBreakdownEUR,
+        breakdown_by_country: countryMapEUR,
+        breakdown_by_currency: currencyMapEUR,
+        exchange_rates_snapshot: rates,
+        crypto_prices_snapshot: prices,
+      });
+      toast({
+        title: "Snapshot saved",
+        description: "Your portfolio value has been recorded for historical tracking.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save snapshot. Please try again.",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -159,7 +208,33 @@ const Dashboard = () => {
       <div className="p-8 lg:p-12 max-w-7xl">
         {/* Header */}
         <header className="mb-12">
-          <NetWorthCard totalValue={netWorth} change={change} />
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+            <NetWorthCard 
+              totalValue={netWorth} 
+              change={change} 
+              currency={displayCurrency}
+            />
+            <div className="flex items-center gap-3">
+              <CurrencySwitcher />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleSaveSnapshot}
+                    disabled={saveSnapshot.isPending}
+                    className="gap-2"
+                  >
+                    <Camera size={14} />
+                    {saveSnapshot.isPending ? 'Saving...' : 'Snapshot'}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Save your current portfolio value for accurate historical tracking</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
           <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
             {fxLastUpdated && (
               <div className="flex items-center gap-1">
@@ -180,7 +255,17 @@ const Dashboard = () => {
           <>
             {/* Chart */}
             <section className="mb-12">
-              <NetWorthChart data={chartData} />
+              {chartData.length > 0 ? (
+                <NetWorthChart data={chartData} />
+              ) : (
+                <div className="p-8 rounded-lg border border-border bg-secondary/20 text-center">
+                  <Info size={24} className="mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground mb-2">No historical data yet</p>
+                  <p className="text-sm text-muted-foreground">
+                    Save your first snapshot to start tracking your wealth over time.
+                  </p>
+                </div>
+              )}
             </section>
 
             {/* Breakdowns */}
@@ -215,6 +300,7 @@ const Dashboard = () => {
                       asset={asset} 
                       rates={rates}
                       cryptoPrices={prices}
+                      displayCurrency={displayCurrency}
                       delay={500 + (index * 100)} 
                     />
                   ))}

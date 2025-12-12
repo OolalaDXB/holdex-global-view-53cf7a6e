@@ -240,6 +240,8 @@ export type Database = {
           breakdown_by_currency: Json | null
           breakdown_by_type: Json | null
           created_at: string | null
+          crypto_prices_snapshot: Json | null
+          exchange_rates_snapshot: Json | null
           id: string
           net_worth_eur: number
           snapshot_date: string
@@ -253,6 +255,8 @@ export type Database = {
           breakdown_by_currency?: Json | null
           breakdown_by_type?: Json | null
           created_at?: string | null
+          crypto_prices_snapshot?: Json | null
+          exchange_rates_snapshot?: Json | null
           id?: string
           net_worth_eur: number
           snapshot_date: string
@@ -266,6 +270,8 @@ export type Database = {
           breakdown_by_currency?: Json | null
           breakdown_by_type?: Json | null
           created_at?: string | null
+          crypto_prices_snapshot?: Json | null
+          exchange_rates_snapshot?: Json | null
           id?: string
           net_worth_eur?: number
           snapshot_date?: string
@@ -292,6 +298,8 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          secondary_currency_1: string | null
+          secondary_currency_2: string | null
           updated_at: string | null
         }
         Insert: {
@@ -301,6 +309,8 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          secondary_currency_1?: string | null
+          secondary_currency_2?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -310,6 +320,8 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          secondary_currency_1?: string | null
+          secondary_currency_2?: string | null
           updated_at?: string | null
         }
         Relationships: []
