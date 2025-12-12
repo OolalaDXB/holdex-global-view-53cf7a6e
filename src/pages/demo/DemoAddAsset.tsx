@@ -109,6 +109,7 @@ const DemoAddAssetPage = () => {
           commitment_amount: null,
           called_amount: null,
           distribution_status: null,
+          image_url: null,
         });
       } else {
         addAsset({

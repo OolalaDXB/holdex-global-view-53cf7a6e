@@ -3,6 +3,7 @@ import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/l
 import { Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
 import { getCountryFlag } from '@/hooks/useCountries';
+import { InstitutionLogo } from '@/components/ui/institution-logo';
 
 interface CryptoPrice {
   price: number;
@@ -59,6 +60,10 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
   // Get country flag
   const countryFlag = getCountryFlag(asset.country);
 
+  // Determine what to show in the icon area
+  const showInstitutionLogo = asset.institution && ['bank', 'investment', 'crypto'].includes(asset.type);
+  const showAssetImage = asset.image_url;
+
   return (
     <div 
       className="asset-card animate-fade-in group"
@@ -66,13 +71,24 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-md flex items-center justify-center bg-primary/10">
-            <Icon 
-              size={20} 
-              strokeWidth={1.5} 
-              className="text-primary" 
+          {/* Icon/Logo/Image area */}
+          {showAssetImage ? (
+            <img 
+              src={asset.image_url!} 
+              alt={asset.name}
+              className="w-10 h-10 rounded-md object-cover"
             />
-          </div>
+          ) : showInstitutionLogo ? (
+            <InstitutionLogo institution={asset.institution!} size="md" />
+          ) : (
+            <div className="w-10 h-10 rounded-md flex items-center justify-center bg-primary/10">
+              <Icon 
+                size={20} 
+                strokeWidth={1.5} 
+                className="text-primary" 
+              />
+            </div>
+          )}
           <div>
             <h4 className="font-medium text-foreground">{asset.name}</h4>
             <p className="text-sm text-muted-foreground">
@@ -149,7 +165,7 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
           </div>
         )}
 
-        {asset.institution && (
+        {asset.institution && !showInstitutionLogo && (
           <div className="pt-2 border-t border-border">
             <span className="text-sm text-muted-foreground">
               {asset.institution}
