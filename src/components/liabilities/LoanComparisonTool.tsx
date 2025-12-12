@@ -17,6 +17,7 @@ interface LoanScenario {
   interestRate: number;
   termMonths: number;
   currency: string;
+  closingCosts?: number;
 }
 
 interface CalculatedScenario extends LoanScenario {
@@ -36,15 +37,15 @@ const PRESET_SCENARIOS = [
 export function LoanComparisonTool() {
   const [open, setOpen] = useState(false);
   const [scenarios, setScenarios] = useState<LoanScenario[]>([
-    { id: '1', name: 'Scenario 1', principal: 500000, interestRate: 4.5, termMonths: 240, currency: 'EUR' },
-    { id: '2', name: 'Scenario 2', principal: 500000, interestRate: 3.5, termMonths: 240, currency: 'EUR' },
+    { id: '1', name: 'Current Loan', principal: 500000, interestRate: 4.5, termMonths: 240, currency: 'EUR', closingCosts: 0 },
+    { id: '2', name: 'Refinance', principal: 500000, interestRate: 3.5, termMonths: 240, currency: 'EUR', closingCosts: 5000 },
   ]);
 
   const addScenario = () => {
     const newId = String(Date.now());
     setScenarios([
       ...scenarios,
-      { id: newId, name: `Scenario ${scenarios.length + 1}`, principal: 500000, interestRate: 4.0, termMonths: 240, currency: 'EUR' }
+      { id: newId, name: `Scenario ${scenarios.length + 1}`, principal: 500000, interestRate: 4.0, termMonths: 240, currency: 'EUR', closingCosts: 0 }
     ]);
   };
 
@@ -174,6 +175,14 @@ export function LoanComparisonTool() {
                     />
                   </div>
                   <div>
+                    <Label className="text-xs">Closing Costs</Label>
+                    <Input
+                      type="number"
+                      value={scenario.closingCosts || 0}
+                      onChange={(e) => updateScenario(scenario.id, 'closingCosts', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div>
                     <Label className="text-xs">Currency</Label>
                     <Select
                       value={scenario.currency}
@@ -259,32 +268,117 @@ export function LoanComparisonTool() {
                 </TableBody>
               </Table>
 
-              {/* Savings Summary */}
-              {calculatedScenarios.length > 1 && (
-                <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                  <h4 className="font-medium mb-2">Potential Savings</h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Monthly payment difference:</span>
-                      <span className="ml-2 font-medium">
-                        {formatCurrency(
-                          Math.max(...calculatedScenarios.map(s => s.monthlyPayment)) - bestMonthlyPayment,
-                          calculatedScenarios[0].currency
-                        )}
-                      </span>
+              {/* Savings Summary & Break-Even Analysis */}
+              {calculatedScenarios.length > 1 && (() => {
+                const baseScenario = calculatedScenarios[0];
+                const refinanceScenarios = calculatedScenarios.slice(1);
+                
+                return (
+                  <div className="mt-4 space-y-4">
+                    <div className="p-4 bg-muted/50 rounded-lg">
+                      <h4 className="font-medium mb-2">Potential Savings</h4>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Monthly payment difference:</span>
+                          <span className="ml-2 font-medium">
+                            {formatCurrency(
+                              Math.max(...calculatedScenarios.map(s => s.monthlyPayment)) - bestMonthlyPayment,
+                              calculatedScenarios[0].currency
+                            )}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Total interest savings:</span>
+                          <span className="ml-2 font-medium text-green-500">
+                            {formatCurrency(
+                              Math.max(...calculatedScenarios.map(s => s.totalInterest)) - bestTotalInterest,
+                              calculatedScenarios[0].currency
+                            )}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-muted-foreground">Total interest savings:</span>
-                      <span className="ml-2 font-medium text-green-500">
-                        {formatCurrency(
-                          Math.max(...calculatedScenarios.map(s => s.totalInterest)) - bestTotalInterest,
-                          calculatedScenarios[0].currency
-                        )}
-                      </span>
+
+                    {/* Refinancing Break-Even Analysis */}
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                      <h4 className="font-medium mb-3 flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-primary" />
+                        Refinancing Break-Even Analysis
+                      </h4>
+                      <div className="space-y-3">
+                        {refinanceScenarios.map((refinance) => {
+                          const monthlySavings = baseScenario.monthlyPayment - refinance.monthlyPayment;
+                          const closingCosts = refinance.closingCosts || 0;
+                          const breakEvenMonths = monthlySavings > 0 && closingCosts > 0 
+                            ? Math.ceil(closingCosts / monthlySavings)
+                            : 0;
+                          const breakEvenYears = Math.floor(breakEvenMonths / 12);
+                          const breakEvenRemainingMonths = breakEvenMonths % 12;
+                          const totalSavingsAfterBreakEven = monthlySavings > 0 
+                            ? (monthlySavings * refinance.termMonths) - closingCosts
+                            : 0;
+
+                          return (
+                            <div key={refinance.id} className="p-3 bg-background rounded border border-border">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="font-medium text-sm">{refinance.name}</span>
+                                {closingCosts > 0 && (
+                                  <span className="text-xs text-muted-foreground">
+                                    Closing costs: {formatCurrency(closingCosts, refinance.currency)}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                <div>
+                                  <div className="text-muted-foreground text-xs">Monthly Savings</div>
+                                  <div className={monthlySavings > 0 ? 'text-green-500 font-medium' : 'text-destructive font-medium'}>
+                                    {monthlySavings > 0 ? '+' : ''}{formatCurrency(monthlySavings, refinance.currency)}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-muted-foreground text-xs">Break-Even Point</div>
+                                  <div className="font-medium">
+                                    {closingCosts === 0 ? (
+                                      <span className="text-green-500">Immediate</span>
+                                    ) : monthlySavings <= 0 ? (
+                                      <span className="text-destructive">Never</span>
+                                    ) : (
+                                      <span>
+                                        {breakEvenYears > 0 && `${breakEvenYears}y `}
+                                        {breakEvenRemainingMonths}m
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-muted-foreground text-xs">Net Savings (Lifetime)</div>
+                                  <div className={totalSavingsAfterBreakEven > 0 ? 'text-green-500 font-medium' : 'text-destructive font-medium'}>
+                                    {totalSavingsAfterBreakEven > 0 ? '+' : ''}{formatCurrency(totalSavingsAfterBreakEven, refinance.currency)}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-muted-foreground text-xs">Recommendation</div>
+                                  <div className="font-medium">
+                                    {closingCosts === 0 && monthlySavings > 0 ? (
+                                      <span className="text-green-500">✓ Refinance</span>
+                                    ) : breakEvenMonths > 0 && breakEvenMonths < refinance.termMonths / 2 ? (
+                                      <span className="text-green-500">✓ Worth it</span>
+                                    ) : breakEvenMonths > 0 && breakEvenMonths < refinance.termMonths ? (
+                                      <span className="text-yellow-500">⚠ Consider</span>
+                                    ) : (
+                                      <span className="text-destructive">✗ Not recommended</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </CardContent>
           </Card>
         </div>
