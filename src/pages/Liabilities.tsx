@@ -4,6 +4,7 @@ import { useLiabilities, Liability } from '@/hooks/useLiabilities';
 import { useLoanSchedule } from '@/hooks/useLoanSchedules';
 import { LoanScheduleSection } from '@/components/liabilities/LoanScheduleSection';
 import { MonthlyPaymentSummary } from '@/components/liabilities/MonthlyPaymentSummary';
+import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool';
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { Badge } from '@/components/ui/badge';
@@ -119,11 +120,14 @@ const LiabilitiesPage = () => {
   return (
     <AppLayout>
       <div className="p-8 lg:p-12 max-w-5xl">
-        <header className="mb-8">
-          <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Liabilities</h1>
-          <p className="text-muted-foreground">
-            Manage your loans, mortgages, and payment schedules.
-          </p>
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Liabilities</h1>
+            <p className="text-muted-foreground">
+              Manage your loans, mortgages, and payment schedules.
+            </p>
+          </div>
+          <LoanComparisonTool />
         </header>
         
         {/* Monthly Payment Summary Widget */}
