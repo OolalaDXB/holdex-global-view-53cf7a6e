@@ -96,6 +96,9 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
               {asset.institution && (
                 <span className="text-muted-foreground"> · {asset.institution}</span>
               )}
+              {asset.type === 'crypto' && asset.platform && (
+                <span className="text-muted-foreground"> · {asset.platform}</span>
+              )}
             </p>
           </div>
         </div>
