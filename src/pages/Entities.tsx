@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
-import { Plus, Building2 } from 'lucide-react';
-import { useEntities, useCreateEntity, useUpdateEntity, useDeleteEntity, Entity, EntityInsert } from '@/hooks/useEntities';
+import { Input } from '@/components/ui/input';
+import { Plus, Building2, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useEntities, useCreateEntity, useUpdateEntity, useDeleteEntity, Entity, EntityInsert, ENTITY_TYPES } from '@/hooks/useEntities';
 import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
@@ -14,7 +16,16 @@ import { DeleteEntityDialog } from '@/components/entities/DeleteEntityDialog';
 import { convertToEUR } from '@/lib/currency';
 import { toast } from '@/hooks/use-toast';
 
+type FilterType = 'all' | string;
+
+const filterOptions: { value: FilterType; label: string }[] = [
+  { value: 'all', label: 'All Entities' },
+  ...ENTITY_TYPES.map(type => ({ value: type.value, label: type.label })),
+];
+
 const Entities = () => {
+  const [filter, setFilter] = useState<FilterType>('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const { displayCurrency } = useCurrency();
   const { data: entities, isLoading: entitiesLoading } = useEntities();
   const { data: assets } = useAssets();
@@ -66,6 +77,20 @@ const Entities = () => {
 
     return stats;
   }, [entities, assets, collections, liabilities, exchangeRates]);
+
+  const filteredEntities = useMemo(() => {
+    return (entities || [])
+      .filter(e => filter === 'all' || e.type === filter)
+      .filter(e => {
+        if (!searchQuery.trim()) return true;
+        const query = searchQuery.toLowerCase();
+        return (
+          e.name.toLowerCase().includes(query) ||
+          e.legal_name?.toLowerCase().includes(query) ||
+          e.country?.toLowerCase().includes(query)
+        );
+      });
+  }, [entities, filter, searchQuery]);
 
   const handleCreate = async (data: Omit<EntityInsert, 'user_id'>) => {
     try {
@@ -119,55 +144,93 @@ const Entities = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-serif text-foreground">Entities</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Manage ownership structures for your assets
-            </p>
-          </div>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Entity
-          </Button>
-        </div>
-
-        {entitiesLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-40 bg-muted/50 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        ) : entities?.length === 0 ? (
-          <div className="text-center py-12 border border-dashed rounded-lg">
-            <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">No entities yet</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Create your first entity to organize asset ownership
-            </p>
+      <div className="p-8 lg:p-12 max-w-7xl">
+        <header className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Entities</h1>
+              <p className="text-muted-foreground">Manage ownership structures for your assets.</p>
+            </div>
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Entity
             </Button>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {entities?.map((entity) => {
-              const stats = entityStats[entity.id] || { assetCount: 0, totalValue: 0 };
-              return (
-                <EntityCard
-                  key={entity.id}
-                  entity={entity}
-                  assetCount={stats.assetCount}
-                  totalValue={stats.totalValue}
-                  currency={displayCurrency}
-                  onEdit={() => setEditingEntity(entity)}
-                  onDelete={() => setDeletingEntity(entity)}
-                />
-              );
-            })}
+        </header>
+
+        {/* Search and Filters */}
+        <div className="space-y-4 mb-8">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search entities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-secondary border-border"
+            />
           </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {filterOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setFilter(option.value)}
+                className={cn(
+                  "px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200",
+                  filter === option.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground hover:bg-accent"
+                )}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {entitiesLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <p className="text-muted-foreground">Loading entities...</p>
+          </div>
+        ) : (
+          <>
+            {/* Entities Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredEntities.map((entity) => {
+                const stats = entityStats[entity.id] || { assetCount: 0, totalValue: 0 };
+                return (
+                  <EntityCard
+                    key={entity.id}
+                    entity={entity}
+                    assetCount={stats.assetCount}
+                    totalValue={stats.totalValue}
+                    currency={displayCurrency}
+                    onEdit={() => setEditingEntity(entity)}
+                    onDelete={() => setDeletingEntity(entity)}
+                  />
+                );
+              })}
+            </div>
+
+            {filteredEntities.length === 0 && (
+              <div className="text-center py-16">
+                <Building2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground mb-4">
+                  {(entities?.length || 0) === 0
+                    ? 'No entities yet. Create your first entity to organize asset ownership.'
+                    : searchQuery
+                      ? `No entities found matching "${searchQuery}".`
+                      : 'No entities found in this category.'}
+                </p>
+                {(entities?.length || 0) === 0 && (
+                  <Button onClick={() => setIsDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Entity
+                  </Button>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 

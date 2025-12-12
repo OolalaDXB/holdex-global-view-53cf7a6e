@@ -5,9 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CountrySelect } from '@/components/ui/country-select';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
+import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { useUpdateCollection, Collection } from '@/hooks/useCollections';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,6 +34,7 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
   const { toast } = useToast();
   const updateCollection = useUpdateCollection();
   const [showAIDialog, setShowAIDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState('details');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -62,6 +65,7 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
         notes: collection.notes || '',
         image_url: collection.image_url || null,
       });
+      setActiveTab('details');
     }
   }, [collection]);
 
@@ -109,144 +113,157 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
             <DialogTitle className="font-serif">Edit Collection</DialogTitle>
           </DialogHeader>
           
-          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-            {/* Image Upload */}
-            <div className="space-y-2">
-              <Label>Photo</Label>
-              <ImageUpload
-                value={formData.image_url}
-                onChange={(url) => setFormData({ ...formData, image_url: url })}
-                assetId={collection.id}
-                onGenerateAI={() => setShowAIDialog(true)}
-              />
-            </div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="documents">Documents</TabsTrigger>
+            </TabsList>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-name">Name</Label>
-                <Input
-                  id="edit-name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-              </div>
+            <TabsContent value="details">
+              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                {/* Image Upload */}
+                <div className="space-y-2">
+                  <Label>Photo</Label>
+                  <ImageUpload
+                    value={formData.image_url}
+                    onChange={(url) => setFormData({ ...formData, image_url: url })}
+                    assetId={collection.id}
+                    onGenerateAI={() => setShowAIDialog(true)}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="edit-type">Category</Label>
-                <Select 
-                  value={formData.type} 
-                  onValueChange={(value) => setFormData({ ...formData, type: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-country">Country</Label>
-                <CountrySelect
-                  value={formData.country}
-                  onValueChange={(value) => setFormData({ ...formData, country: value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-currency">Currency</Label>
-                <Select 
-                  value={formData.currency} 
-                  onValueChange={(value) => setFormData({ ...formData, currency: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency} value={currency}>{currency}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-current-value">Current Value</Label>
-                <Input
-                  id="edit-current-value"
-                  type="number"
-                  value={formData.current_value}
-                  onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="edit-purchase">Purchase Price</Label>
-                <Input
-                  id="edit-purchase"
-                  type="number"
-                  value={formData.purchase_value}
-                  onChange={(e) => setFormData({ ...formData, purchase_value: e.target.value })}
-                />
-              </div>
-
-              {(collection.type === 'watch' || collection.type === 'vehicle') && (
-                <>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-brand">Brand</Label>
+                    <Label htmlFor="edit-name">Name</Label>
                     <Input
-                      id="edit-brand"
-                      value={formData.brand}
-                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                      id="edit-name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="edit-model">Model</Label>
-                    <Input
-                      id="edit-model"
-                      value={formData.model}
-                      onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                    <Label htmlFor="edit-type">Category</Label>
+                    <Select 
+                      value={formData.type} 
+                      onValueChange={(value) => setFormData({ ...formData, type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-country">Country</Label>
+                    <CountrySelect
+                      value={formData.country}
+                      onValueChange={(value) => setFormData({ ...formData, country: value })}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="edit-year">Year</Label>
+                    <Label htmlFor="edit-currency">Currency</Label>
+                    <Select 
+                      value={formData.currency} 
+                      onValueChange={(value) => setFormData({ ...formData, currency: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {currencies.map((currency) => (
+                          <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-current-value">Current Value</Label>
                     <Input
-                      id="edit-year"
+                      id="edit-current-value"
                       type="number"
-                      value={formData.year}
-                      onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                      value={formData.current_value}
+                      onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
+                      required
                     />
                   </div>
-                </>
-              )}
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="edit-notes">Notes</Label>
-              <Textarea
-                id="edit-notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                rows={2}
-              />
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-purchase">Purchase Price</Label>
+                    <Input
+                      id="edit-purchase"
+                      type="number"
+                      value={formData.purchase_value}
+                      onChange={(e) => setFormData({ ...formData, purchase_value: e.target.value })}
+                    />
+                  </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button type="submit" className="flex-1" disabled={updateCollection.isPending}>
-                {updateCollection.isPending ? 'Saving...' : 'Save Changes'}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancel
-              </Button>
-            </div>
-          </form>
+                  {(collection.type === 'watch' || collection.type === 'vehicle') && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-brand">Brand</Label>
+                        <Input
+                          id="edit-brand"
+                          value={formData.brand}
+                          onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-model">Model</Label>
+                        <Input
+                          id="edit-model"
+                          value={formData.model}
+                          onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-year">Year</Label>
+                        <Input
+                          id="edit-year"
+                          type="number"
+                          value={formData.year}
+                          onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-notes">Notes</Label>
+                  <Textarea
+                    id="edit-notes"
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    rows={2}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button type="submit" className="flex-1" disabled={updateCollection.isPending}>
+                    {updateCollection.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="documents" className="mt-4">
+              <DocumentsSection linkType="collection" linkId={collection.id} />
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 
