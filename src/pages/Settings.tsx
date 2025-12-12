@@ -53,6 +53,10 @@ const SettingsPage = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   
+  // Income fields for DTI
+  const [monthlyIncome, setMonthlyIncome] = useState<string>('');
+  const [monthlyIncomeCurrency, setMonthlyIncomeCurrency] = useState('EUR');
+  
   // New preference states
   const [favoriteCities, setFavoriteCities] = useState<City[]>([]);
   const [dashboardWidgets, setDashboardWidgets] = useState<string[]>([
@@ -78,6 +82,10 @@ const SettingsPage = () => {
       setDarkMode(profile.dark_mode ?? true);
       setComplianceMode(profile.compliance_mode || 'none');
       
+      // Income fields
+      setMonthlyIncome((profile as any).monthly_income?.toString() || '');
+      setMonthlyIncomeCurrency((profile as any).monthly_income_currency || 'EUR');
+      
       // New preferences
       setFavoriteCities((profile as any).favorite_cities || []);
       setDashboardWidgets((profile as any).dashboard_widgets || [
@@ -101,6 +109,8 @@ const SettingsPage = () => {
         secondary_currency_2: secondaryCurrency2,
         dark_mode: darkMode,
         compliance_mode: complianceMode,
+        monthly_income: monthlyIncome ? parseFloat(monthlyIncome) : null,
+        monthly_income_currency: monthlyIncomeCurrency,
         favorite_cities: favoriteCities,
         dashboard_widgets: dashboardWidgets,
         blur_amounts: blurAmounts,
@@ -243,7 +253,42 @@ const SettingsPage = () => {
 
           <Separator />
 
-          {/* Currency Preferences Section */}
+          {/* Monthly Income Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Monthly Income</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Enter your total monthly income for debt-to-income ratio calculation. Rental income from properties is added automatically.
+            </p>
+            <div className="flex gap-4">
+              <div className="flex-1 max-w-xs space-y-2">
+                <Label htmlFor="monthlyIncome">Monthly Income</Label>
+                <Input
+                  id="monthlyIncome"
+                  type="number"
+                  value={monthlyIncome}
+                  onChange={(e) => setMonthlyIncome(e.target.value)}
+                  placeholder="0"
+                  min="0"
+                  step="100"
+                />
+              </div>
+              <div className="w-32 space-y-2">
+                <Label htmlFor="incomeCurrency">Currency</Label>
+                <Select value={monthlyIncomeCurrency} onValueChange={setMonthlyIncomeCurrency}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {availableCurrencies.map((currency) => (
+                      <SelectItem key={currency} value={currency}>{currency}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </section>
+
+          <Separator />
           <section>
             <h2 className="font-serif text-xl font-medium text-foreground mb-4">Currency Preferences</h2>
             <p className="text-sm text-muted-foreground mb-4">
