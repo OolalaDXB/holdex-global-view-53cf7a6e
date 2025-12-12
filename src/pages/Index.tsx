@@ -6,7 +6,7 @@ import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
 import { ViewToggle, useViewConfig } from '@/components/dashboard/ViewToggle';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
-import { CollapsibleSection } from '@/components/dashboard/CollapsibleSection';
+import { CollapsibleSection, CollapsibleProvider, ExpandCollapseAllButton } from '@/components/dashboard/CollapsibleSection';
 import { ExpiringDocumentsWidget } from '@/components/dashboard/ExpiringDocumentsWidget';
 import { LeaseholdRemindersWidget } from '@/components/dashboard/LeaseholdRemindersWidget';
 import { WorldClocksWidget } from '@/components/dashboard/WorldClocksWidget';
@@ -353,7 +353,12 @@ const Dashboard = () => {
             </section>
 
             {/* Collapsible Breakdowns - Always shown but collapsed by default */}
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+            <CollapsibleProvider>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-serif text-sm font-medium text-muted-foreground uppercase tracking-wide">Breakdowns</h3>
+                <ExpandCollapseAllButton />
+              </div>
+              <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
               <CollapsibleSection id="breakdown_type" title="By Asset Type">
                 <BreakdownBar 
                   items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
@@ -380,6 +385,7 @@ const Dashboard = () => {
                 <EntityBreakdown delay={0} isBlurred={isBlurred} />
               </CollapsibleSection>
             </section>
+            </CollapsibleProvider>
 
             {/* Optional Widgets - Hidden by default, enable in Settings */}
             {showWidget('certainty_breakdown') && (

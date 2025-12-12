@@ -1,14 +1,7 @@
-import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
+import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-interface CollapsibleSectionProps {
-  id: string;
-  title: string;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-  className?: string;
-}
+import { Button } from '@/components/ui/button';
 
 const COLLAPSED_STORAGE_KEY = 'dashboard-collapsed-sections';
 
@@ -29,6 +22,116 @@ const saveCollapsedState = (collapsed: string[]) => {
   }
 };
 
+// Context for coordinating expand/collapse all
+interface CollapsibleContextType {
+  registerSection: (id: string) => void;
+  unregisterSection: (id: string) => void;
+  expandAll: () => void;
+  collapseAll: () => void;
+  allExpanded: boolean;
+  allCollapsed: boolean;
+  sectionStates: Record<string, boolean>;
+  setSectionState: (id: string, isOpen: boolean) => void;
+}
+
+const CollapsibleContext = createContext<CollapsibleContextType | null>(null);
+
+export function CollapsibleProvider({ children }: { children: React.ReactNode }) {
+  const [registeredSections, setRegisteredSections] = useState<string[]>([]);
+  const [sectionStates, setSectionStates] = useState<Record<string, boolean>>(() => {
+    const collapsed = getCollapsedState();
+    const states: Record<string, boolean> = {};
+    collapsed.forEach(id => { states[id] = false; });
+    return states;
+  });
+
+  const registerSection = useCallback((id: string) => {
+    setRegisteredSections(prev => prev.includes(id) ? prev : [...prev, id]);
+  }, []);
+
+  const unregisterSection = useCallback((id: string) => {
+    setRegisteredSections(prev => prev.filter(s => s !== id));
+  }, []);
+
+  const setSectionState = useCallback((id: string, isOpen: boolean) => {
+    setSectionStates(prev => {
+      const newStates = { ...prev, [id]: isOpen };
+      // Save to localStorage
+      const collapsed = Object.entries(newStates)
+        .filter(([_, open]) => !open)
+        .map(([id]) => id);
+      saveCollapsedState(collapsed);
+      return newStates;
+    });
+  }, []);
+
+  const expandAll = useCallback(() => {
+    const newStates: Record<string, boolean> = {};
+    registeredSections.forEach(id => { newStates[id] = true; });
+    setSectionStates(newStates);
+    saveCollapsedState([]);
+  }, [registeredSections]);
+
+  const collapseAll = useCallback(() => {
+    const newStates: Record<string, boolean> = {};
+    registeredSections.forEach(id => { newStates[id] = false; });
+    setSectionStates(newStates);
+    saveCollapsedState(registeredSections);
+  }, [registeredSections]);
+
+  const allExpanded = registeredSections.length > 0 && 
+    registeredSections.every(id => sectionStates[id] === true);
+  const allCollapsed = registeredSections.length > 0 && 
+    registeredSections.every(id => sectionStates[id] === false || sectionStates[id] === undefined);
+
+  return (
+    <CollapsibleContext.Provider value={{
+      registerSection,
+      unregisterSection,
+      expandAll,
+      collapseAll,
+      allExpanded,
+      allCollapsed,
+      sectionStates,
+      setSectionState,
+    }}>
+      {children}
+    </CollapsibleContext.Provider>
+  );
+}
+
+export function useCollapsibleContext() {
+  return useContext(CollapsibleContext);
+}
+
+export function ExpandCollapseAllButton() {
+  const context = useCollapsibleContext();
+  
+  if (!context) return null;
+
+  const { allExpanded, expandAll, collapseAll } = context;
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={allExpanded ? collapseAll : expandAll}
+      className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+    >
+      <ChevronsUpDown size={14} />
+      {allExpanded ? 'Collapse All' : 'Expand All'}
+    </Button>
+  );
+}
+
+interface CollapsibleSectionProps {
+  id: string;
+  title: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+  className?: string;
+}
+
 export function CollapsibleSection({
   id,
   title,
@@ -36,35 +139,53 @@ export function CollapsibleSection({
   children,
   className,
 }: CollapsibleSectionProps) {
-  const [isOpen, setIsOpen] = useState(() => {
+  const context = useCollapsibleContext();
+  
+  // Get initial state from context or localStorage
+  const getInitialState = () => {
+    if (context?.sectionStates[id] !== undefined) {
+      return context.sectionStates[id];
+    }
     const collapsed = getCollapsedState();
-    // If explicitly collapsed in storage, honor that
     if (collapsed.includes(id)) return false;
-    // If explicitly NOT in collapsed list but we have storage, it was expanded
     if (localStorage.getItem(COLLAPSED_STORAGE_KEY) && !collapsed.includes(id)) {
       return true;
     }
-    // Otherwise use default
     return defaultOpen;
-  });
+  };
+
+  const [localIsOpen, setLocalIsOpen] = useState(getInitialState);
+  
+  // Use context state if available, otherwise use local state
+  const isOpen = context?.sectionStates[id] ?? localIsOpen;
 
   useEffect(() => {
-    const collapsed = getCollapsedState();
-    if (isOpen) {
-      // Remove from collapsed list
-      saveCollapsedState(collapsed.filter(s => s !== id));
+    context?.registerSection(id);
+    return () => context?.unregisterSection(id);
+  }, [id, context]);
+
+  const toggleOpen = () => {
+    const newState = !isOpen;
+    if (context) {
+      context.setSectionState(id, newState);
     } else {
-      // Add to collapsed list
-      if (!collapsed.includes(id)) {
-        saveCollapsedState([...collapsed, id]);
+      setLocalIsOpen(newState);
+      // Save to localStorage for standalone usage
+      const collapsed = getCollapsedState();
+      if (newState) {
+        saveCollapsedState(collapsed.filter(s => s !== id));
+      } else {
+        if (!collapsed.includes(id)) {
+          saveCollapsedState([...collapsed, id]);
+        }
       }
     }
-  }, [isOpen, id]);
+  };
 
   return (
     <div className={cn('animate-fade-in', className)}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={toggleOpen}
         className="w-full flex items-center justify-between py-3 px-1 text-left group hover:bg-secondary/30 rounded-md transition-colors -mx-1"
       >
         <h3 className="font-serif text-lg font-medium text-foreground group-hover:text-primary transition-colors">

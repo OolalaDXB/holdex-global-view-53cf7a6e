@@ -4,7 +4,7 @@ import { NetWorthCard } from '@/components/dashboard/NetWorthCard';
 import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
-import { CollapsibleSection } from '@/components/dashboard/CollapsibleSection';
+import { CollapsibleSection, CollapsibleProvider, ExpandCollapseAllButton } from '@/components/dashboard/CollapsibleSection';
 import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { DemoDebtToIncomeWidget } from '@/components/dashboard/DemoDebtToIncomeWidget';
 import { DemoNetWorthProjectionWidget } from '@/components/dashboard/DemoNetWorthProjectionWidget';
@@ -336,27 +336,33 @@ const Demo = () => {
         </section>
 
         {/* Collapsible Breakdowns */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-          <CollapsibleSection id="demo_breakdown_type" title="By Asset Type">
-            <BreakdownBar 
-              items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
-              delay={0}
-            />
-          </CollapsibleSection>
-          
-          <CollapsibleSection id="demo_breakdown_country" title="By Country">
-            <BreakdownBar 
-              items={assetsByCountry} 
-              delay={0}
-            />
-          </CollapsibleSection>
-          
-          {currencyBreakdown.length > 0 && (
-            <CollapsibleSection id="demo_breakdown_currency" title="By Currency">
-              <CurrencyBreakdown items={currencyBreakdown} delay={0} />
+        <CollapsibleProvider>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-serif text-sm font-medium text-muted-foreground uppercase tracking-wide">Breakdowns</h3>
+            <ExpandCollapseAllButton />
+          </div>
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+            <CollapsibleSection id="demo_breakdown_type" title="By Asset Type">
+              <BreakdownBar 
+                items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
+                delay={0}
+              />
             </CollapsibleSection>
-          )}
-        </section>
+            
+            <CollapsibleSection id="demo_breakdown_country" title="By Country">
+              <BreakdownBar 
+                items={assetsByCountry} 
+                delay={0}
+              />
+            </CollapsibleSection>
+            
+            {currencyBreakdown.length > 0 && (
+              <CollapsibleSection id="demo_breakdown_currency" title="By Currency">
+                <CurrencyBreakdown items={currencyBreakdown} delay={0} />
+              </CollapsibleSection>
+            )}
+          </section>
+        </CollapsibleProvider>
 
         {/* Optional widgets shown in demo to showcase features */}
         {projectedNetWorth > 0 && (
