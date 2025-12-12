@@ -44,6 +44,7 @@ const Demo = () => {
   const [viewConfig, setViewConfig] = useState<ViewConfig>({
     mode: 'all',
     customTypes: ['real-estate', 'bank', 'investment', 'crypto', 'business', 'collections'],
+    includeFrozenBlocked: true,
   });
 
   // Use fallback rates for demo (realistic static rates)
@@ -78,8 +79,16 @@ const Demo = () => {
     return asset.current_value;
   };
 
-  // Filter assets based on view config
-  const filteredAssets = assets.filter(asset => includedTypes.includes(asset.type));
+  // Filter assets based on view config and liquidity status
+  const shouldIncludeAsset = (liquidityStatus: string | null | undefined): boolean => {
+    if (viewConfig.includeFrozenBlocked) return true;
+    const status = liquidityStatus || 'liquid';
+    return status === 'liquid' || status === 'restricted';
+  };
+
+  const filteredAssets = assets.filter(asset => 
+    includedTypes.includes(asset.type) && shouldIncludeAsset((asset as any).liquidity_status)
+  );
   const filteredCollections = showCollections ? collections : [];
 
   // Calculate totals using rates (in EUR)

@@ -33,6 +33,10 @@ export interface DemoAsset {
   // Islamic finance (optional - defaults to false/null)
   is_shariah_compliant?: boolean;
   shariah_certification?: string | null;
+  // UK/International fields
+  tenure_type?: string | null;
+  lease_end_date?: string | null;
+  liquidity_status?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -378,6 +382,80 @@ export const demoAssets: DemoAsset[] = [
     project_name: null,
     created_at: '2023-02-01T10:00:00Z',
     updated_at: '2024-08-10T10:00:00Z',
+  },
+  // UK Leasehold property
+  {
+    id: 'asset-real-estate-uk-leasehold',
+    user_id: DEMO_USER_ID,
+    name: 'Chelsea Mansion Flat',
+    type: 'real-estate',
+    country: 'GB',
+    currency: 'GBP',
+    current_value: 1250000,
+    rental_income: 48000,
+    purchase_value: 980000,
+    purchase_date: '2019-05-15',
+    ownership_percentage: 100,
+    institution: null,
+    ticker: null,
+    quantity: null,
+    platform: null,
+    reference_balance: null,
+    reference_date: null,
+    notes: 'Period conversion flat, share of freehold being negotiated',
+    image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: 'purchase',
+    acquisition_from: null,
+    property_status: 'rented_out',
+    total_price: null,
+    amount_paid: null,
+    expected_delivery: null,
+    developer: null,
+    unit_number: null,
+    project_name: null,
+    tenure_type: 'leasehold',
+    lease_end_date: '2089-03-25', // ~65 years remaining - warning
+    liquidity_status: 'liquid',
+    created_at: '2019-05-15T10:00:00Z',
+    updated_at: '2024-11-15T10:00:00Z',
+  },
+  // Frozen Russian asset
+  {
+    id: 'asset-bank-frozen-ru',
+    user_id: DEMO_USER_ID,
+    name: 'Sberbank RUB Account',
+    type: 'bank',
+    country: 'RU',
+    currency: 'RUB',
+    current_value: 8500000,
+    rental_income: null,
+    purchase_value: null,
+    purchase_date: null,
+    ownership_percentage: null,
+    institution: 'Sberbank',
+    ticker: null,
+    quantity: null,
+    platform: null,
+    reference_balance: 8500000,
+    reference_date: '2022-02-20',
+    notes: 'Account frozen due to sanctions',
+    image_url: null,
+    entity_id: DEMO_ENTITY_PERSONAL,
+    acquisition_type: null,
+    acquisition_from: null,
+    property_status: null,
+    total_price: null,
+    amount_paid: null,
+    expected_delivery: null,
+    developer: null,
+    unit_number: null,
+    project_name: null,
+    tenure_type: null,
+    lease_end_date: null,
+    liquidity_status: 'frozen',
+    created_at: '2018-06-01T10:00:00Z',
+    updated_at: '2022-02-28T10:00:00Z',
   },
 
   // Bank Accounts (5 accounts)
