@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -42,6 +42,12 @@ const actionNavigation = [
 export function Sidebar({ isDemo = false }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   const displayName = isDemo 
     ? 'Lucas Soleil' 
@@ -193,7 +199,7 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
             </Link>
           ) : (
             <button
-              onClick={signOut}
+              onClick={handleSignOut}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200 w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 collapsed && "justify-center"
