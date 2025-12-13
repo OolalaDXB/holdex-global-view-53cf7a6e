@@ -165,23 +165,21 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
 
         {/* Bottom section */}
         <div className="border-t border-sidebar-border p-3 space-y-1">
-          {!isDemo && (
-            <NavLink
-              to="/settings"
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
-                  isActive 
-                    ? "bg-sidebar-accent text-sidebar-primary" 
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  collapsed && "justify-center"
-                )
-              }
-            >
-              <Settings size={20} strokeWidth={1.5} />
-              {!collapsed && <span>Settings</span>}
-            </NavLink>
-          )}
+          <NavLink
+            to={isDemo ? "/demo/settings" : "/settings"}
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
+                isActive 
+                  ? "bg-sidebar-accent text-sidebar-primary" 
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                collapsed && "justify-center"
+              )
+            }
+          >
+            <Settings size={20} strokeWidth={1.5} />
+            {!collapsed && <span>Settings</span>}
+          </NavLink>
           
           <div className={cn(
             "flex items-center gap-3 px-3 py-2.5 text-sidebar-foreground",
