@@ -34,10 +34,14 @@ export const useUpdateProfile = () => {
     mutationFn: async (updates: Partial<Omit<Profile, 'id' | 'created_at'>>) => {
       if (!user) throw new Error('Not authenticated');
       
+      // Use upsert to create profile if it doesn't exist
       const { data, error } = await supabase
         .from('profiles')
-        .update(updates)
-        .eq('id', user.id)
+        .upsert({
+          id: user.id,
+          email: user.email || '',
+          ...updates,
+        })
         .select()
         .single();
 

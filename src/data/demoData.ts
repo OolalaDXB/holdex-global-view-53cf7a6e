@@ -216,8 +216,7 @@ export const demoProfile: DemoProfile = {
   favorite_cities: [
     { name: 'Dubai', timezone: 'Asia/Dubai' },
     { name: 'Paris', timezone: 'Europe/Paris' },
-    { name: 'Cascais', timezone: 'Europe/Lisbon' },
-    { name: 'Gaborone', timezone: 'Africa/Gaborone' },
+    { name: 'Singapore', timezone: 'Asia/Singapore' },
   ],
   dashboard_widgets: [
     'net_worth', 'chart', 'certainty_breakdown', 'debt_to_income', 'breakdown_type', 'breakdown_country', 'breakdown_currency',
