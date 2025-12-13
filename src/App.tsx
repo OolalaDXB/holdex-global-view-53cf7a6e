@@ -30,6 +30,7 @@ import DemoDocuments from "./pages/demo/DemoDocuments";
 import DemoLiabilities from "./pages/demo/DemoLiabilities";
 import DemoAddLiability from "./pages/demo/DemoAddLiability";
 import DemoBalanceSheet from "./pages/demo/DemoBalanceSheet";
+import DemoSettings from "./pages/demo/DemoSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ const App = () => (
                   <Route path="/demo/liabilities" element={<DemoLiabilities />} />
                   <Route path="/demo/add-liability" element={<DemoAddLiability />} />
                   <Route path="/demo/balance-sheet" element={<DemoBalanceSheet />} />
+                  <Route path="/demo/settings" element={<DemoSettings />} />
                   <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
                   <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheet /></ProtectedRoute>} />
                   <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
