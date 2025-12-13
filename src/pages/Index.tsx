@@ -19,7 +19,7 @@ import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakd
 import { DebtToIncomeWidget } from '@/components/dashboard/DebtToIncomeWidget';
 import { NetWorthProjectionWidget } from '@/components/dashboard/NetWorthProjectionWidget';
 import { AssetCard } from '@/components/assets/AssetCard';
-import { WelcomeScreen } from '@/components/dashboard/WelcomeScreen';
+import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard';
 import { Button } from '@/components/ui/button';
 import { useAssets } from '@/hooks/useAssets';
 import { useEntities } from '@/hooks/useEntities';
@@ -277,7 +277,7 @@ const Dashboard = () => {
     const userName = (profile as any)?.full_name?.split(' ')[0] || undefined;
     return (
       <AppLayout>
-        <WelcomeScreen userName={userName} />
+        <OnboardingWizard userName={userName} />
       </AppLayout>
     );
   }
