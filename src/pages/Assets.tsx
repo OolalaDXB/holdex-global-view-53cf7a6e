@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { EditAssetDialog } from '@/components/assets/EditAssetDialog';
@@ -11,7 +11,7 @@ import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { useProfile } from '@/hooks/useProfile';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Search, X, LayoutGrid, List, ArrowUpDown } from 'lucide-react';
+import { RefreshCw, Search, X, LayoutGrid, List, ArrowUpDown, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -158,30 +158,40 @@ const AssetsPage = () => {
   return (
     <AppLayout>
       <div className="p-8 lg:p-12 max-w-7xl">
-        <header className="mb-8">
-          <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>
-          <p className="text-muted-foreground">Your wealth portfolio across all categories.</p>
-          {entityFilter && (
-            <div className="flex items-center gap-2 mt-3">
-              <span className="text-sm text-muted-foreground">Filtered by:</span>
-              <div className="inline-flex items-center gap-1 px-2 py-1 bg-secondary rounded-md text-sm">
-                <span>{getEntityName(entityFilter)}</span>
-                <button
-                  onClick={clearEntityFilter}
-                  className="ml-1 p-0.5 hover:bg-muted rounded transition-colors"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            </div>
-          )}
-          {hasCryptoAssets && lastCryptoUpdate && (
-            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-              <RefreshCw size={12} className={cryptoLoading ? 'animate-spin' : ''} />
-              <span>Digital asset prices updated at {lastCryptoUpdate}</span>
-            </div>
-          )}
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>
+            <p className="text-muted-foreground">Your wealth portfolio across all categories.</p>
+          </div>
+          <Button asChild size="sm" variant="outline">
+            <Link to="/add">
+              <Plus className="h-4 w-4 mr-1" />
+              Add Asset
+            </Link>
+          </Button>
         </header>
+        
+        {entityFilter && (
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-sm text-muted-foreground">Filtered by:</span>
+            <div className="inline-flex items-center gap-1 px-2 py-1 bg-secondary rounded-md text-sm">
+              <span>{getEntityName(entityFilter)}</span>
+              <button
+                onClick={clearEntityFilter}
+                className="ml-1 p-0.5 hover:bg-muted rounded transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {hasCryptoAssets && lastCryptoUpdate && (
+          <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
+            <RefreshCw size={12} className={cryptoLoading ? 'animate-spin' : ''} />
+            <span>Digital asset prices updated at {lastCryptoUpdate}</span>
+          </div>
+        )}
 
         {/* Search and Filters */}
         <div className="space-y-4 mb-8">

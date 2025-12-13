@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { useDemo } from '@/contexts/DemoContext';
 import { fallbackRates } from '@/lib/currency';
 import { fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { cn } from '@/lib/utils';
-import { Search, Info, Ruler, LayoutGrid, List, ArrowUpDown } from 'lucide-react';
+import { Search, Info, Ruler, LayoutGrid, List, ArrowUpDown, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -141,9 +142,12 @@ const DemoAssetsPage = () => {
           <Badge variant="outline" className="text-xs ml-auto">Demo</Badge>
         </div>
 
-        <header className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="font-serif text-3xl font-medium text-foreground">Assets</h1>
+        <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>
+            <p className="text-muted-foreground">Your wealth portfolio across all categories.</p>
+          </div>
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -153,8 +157,13 @@ const DemoAssetsPage = () => {
               <Ruler size={14} />
               {areaUnit === 'sqm' ? 'm²' : 'sq ft'}
             </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/demo/add">
+                <Plus className="h-4 w-4 mr-1" />
+                Add Asset
+              </Link>
+            </Button>
           </div>
-          <p className="text-muted-foreground">Your wealth portfolio across all categories.</p>
         </header>
 
         {/* Search and Filters */}

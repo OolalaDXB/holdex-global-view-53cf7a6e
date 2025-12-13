@@ -207,7 +207,7 @@ const LiabilitiesPage = () => {
           <div className="flex items-center gap-2">
             <LoanPayoffCalculator />
             <LoanComparisonTool />
-            <Button onClick={() => setShowAddDialog(true)}>
+            <Button onClick={() => setShowAddDialog(true)} variant="outline" size="sm">
               <Plus className="h-4 w-4 mr-1" />
               Add Liability
             </Button>
