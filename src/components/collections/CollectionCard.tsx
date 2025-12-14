@@ -3,6 +3,7 @@ import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Collection } from '@/hooks/useCollections';
 import { Button } from '@/components/ui/button';
+import { CertaintyBadge } from '@/components/ui/certainty-badge';
 import { getCountryFlag } from '@/hooks/useCountries';
 
 interface CollectionCardProps {
@@ -95,7 +96,10 @@ export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete 
       
       <div className="p-4 space-y-3">
         <div>
-          <h4 className="font-medium text-foreground">{collection.name}</h4>
+          <div className="flex items-center gap-2">
+            <h4 className="font-medium text-foreground">{collection.name}</h4>
+            <CertaintyBadge certainty={(collection as any).certainty} />
+          </div>
           <p className="text-sm text-muted-foreground">
             {categoryLabels[collection.type] || collection.type} · {getCountryFlag(collection.country)} {collection.country}
           </p>

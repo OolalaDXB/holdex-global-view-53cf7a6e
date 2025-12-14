@@ -119,7 +119,7 @@ export function useBalanceSheet({
 
     // Filter assets
     const filteredAssets = filterByCertainty(filterByEntity(assets), 'certain');
-    const filteredCollections = filterByEntity(collections);
+    const filteredCollections = filterByCertainty(filterByEntity(collections), 'probable');
     const filteredLiabilities = filterByCertainty(filterByEntity(liabilities), 'certain');
     const filteredReceivables = filterByCertainty(filterByEntity(receivables), 'contractual');
 
@@ -198,6 +198,48 @@ export function useBalanceSheet({
     const totalLiabilities = currentLiabilitiesTotal + nonCurrentLiabilitiesTotal;
     const netWorth = totalAssets - totalLiabilities;
 
+    // Calculate certainty summary for all items (not filtered by certainty)
+    const allAssetsFiltered = filterByEntity(assets);
+    const allCollectionsFiltered = filterByEntity(collections);
+    const allLiabilitiesFiltered = filterByEntity(liabilities);
+    const allReceivablesFiltered = filterByEntity(receivables);
+
+    const calcAssetCertaintySummary = () => {
+      const summary = { certain: 0, contractual: 0, probable: 0, optional: 0 };
+      
+      allAssetsFiltered.forEach(a => {
+        const cert = (a.certainty || 'certain') as keyof typeof summary;
+        const value = toBaseCurrency(a.current_value, a.currency, a.ticker);
+        if (cert in summary) summary[cert] += value;
+      });
+      
+      allCollectionsFiltered.forEach(c => {
+        const cert = ((c as any).certainty || 'probable') as keyof typeof summary;
+        const value = toBaseCurrency(c.current_value, c.currency);
+        if (cert in summary) summary[cert] += value;
+      });
+      
+      allReceivablesFiltered.forEach(r => {
+        const cert = (r.certainty || 'contractual') as keyof typeof summary;
+        const value = toBaseCurrency(r.current_balance, r.currency);
+        if (cert in summary) summary[cert] += value;
+      });
+      
+      return summary;
+    };
+
+    const calcLiabilityCertaintySummary = () => {
+      const summary = { certain: 0, contractual: 0, probable: 0, optional: 0 };
+      
+      allLiabilitiesFiltered.forEach(l => {
+        const cert = (l.certainty || 'certain') as keyof typeof summary;
+        const value = toBaseCurrency(l.current_balance, l.currency);
+        if (cert in summary) summary[cert] += value;
+      });
+      
+      return summary;
+    };
+
     return {
       currentAssets: {
         cashAndBank: cashAndBankTotal,
@@ -239,6 +281,10 @@ export function useBalanceSheet({
         shortTermLoans,
         mortgages,
         longTermLoans,
+      },
+      certaintySummary: {
+        assets: calcAssetCertaintySummary(),
+        liabilities: calcLiabilityCertaintySummary(),
       },
     };
   }, [assets, collections, liabilities, receivables, entityFilter, certaintyFilter, rates, cryptoPrices]);

@@ -176,6 +176,7 @@ export type Database = {
           acquisition_type: string | null
           brand: string | null
           called_amount: number | null
+          certainty: string | null
           commitment_amount: number | null
           country: string
           created_at: string | null
@@ -203,6 +204,7 @@ export type Database = {
           acquisition_type?: string | null
           brand?: string | null
           called_amount?: number | null
+          certainty?: string | null
           commitment_amount?: number | null
           country: string
           created_at?: string | null
@@ -230,6 +232,7 @@ export type Database = {
           acquisition_type?: string | null
           brand?: string | null
           called_amount?: number | null
+          certainty?: string | null
           commitment_amount?: number | null
           country?: string
           created_at?: string | null
