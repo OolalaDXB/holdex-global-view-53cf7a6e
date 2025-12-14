@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCreateAsset } from '@/hooks/useAssets';
 import { useCreateCollection } from '@/hooks/useCollections';
 import { useDefaultEntity } from '@/components/entities/EntitySelect';
+import { useCurrencyList } from '@/hooks/useCurrencyList';
 import { cn } from '@/lib/utils';
 import { 
   Gem, 
@@ -55,14 +56,13 @@ const collectionTypes = [
   { id: 'lp-position', label: 'LP Position', icon: BarChart3, description: 'Fund investments' },
 ];
 
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF'];
-
 export function OnboardingWizard({ userName }: OnboardingWizardProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const createAsset = useCreateAsset();
   const createCollection = useCreateCollection();
   const defaultEntityId = useDefaultEntity();
+  const currencies = useCurrencyList();
   
   const [step, setStep] = useState<Step>('welcome');
   const [category, setCategory] = useState<Category | null>(null);

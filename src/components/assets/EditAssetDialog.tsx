@@ -23,6 +23,7 @@ import { useGeocode } from '@/hooks/useGeocode';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CertaintyLevel } from '@/lib/certainty';
+import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 interface EditAssetDialogProps {
   asset: Asset | null;
@@ -30,14 +31,13 @@ interface EditAssetDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
-
 export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogProps) {
   const { toast } = useToast();
   const updateAsset = useUpdateAsset();
   const { data: entities } = useEntities();
   const { showIslamic } = useComplianceMode();
   const { geocodeAddress, isGeocoding } = useGeocode();
+  const currencies = useCurrencyList();
   const [showAIDialog, setShowAIDialog] = useState(false);
   
   const [formData, setFormData] = useState({

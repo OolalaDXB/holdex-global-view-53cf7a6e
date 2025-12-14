@@ -23,6 +23,7 @@ import { useAssets } from '@/hooks/useAssets';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 interface LiabilityDialogProps {
   open: boolean;
@@ -30,14 +31,13 @@ interface LiabilityDialogProps {
   liability?: Liability | null;
 }
 
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
-
 export function LiabilityDialog({ open, onOpenChange, liability }: LiabilityDialogProps) {
   const { toast } = useToast();
   const createLiability = useCreateLiability();
   const updateLiability = useUpdateLiability();
   const { data: assets } = useAssets();
   const { showIslamic, showJewish } = useComplianceMode();
+  const currencies = useCurrencyList();
   const isEditing = !!liability;
 
   const filteredFinancingTypes = getFilteredFinancingTypes(showIslamic, showJewish);

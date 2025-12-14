@@ -21,14 +21,13 @@ import { useAssets } from '@/hooks/useAssets';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CertaintyLevel } from '@/lib/certainty';
+import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 interface ReceivableDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   receivable?: Receivable | null;
 }
-
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
 
 const receivableTypes = [
   { value: 'personal_loan', label: 'Personal Loan' },
@@ -59,6 +58,7 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
   const createReceivable = useCreateReceivable();
   const updateReceivable = useUpdateReceivable();
   const { data: assets } = useAssets();
+  const currencies = useCurrencyList();
   const isEditing = !!receivable;
 
   const [formData, setFormData] = useState({

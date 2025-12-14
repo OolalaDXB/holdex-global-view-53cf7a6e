@@ -16,12 +16,12 @@ import { toast } from 'sonner';
 
 // Use centralized LIABILITY_TYPES from useLiabilities hook
 import { LIABILITY_TYPES } from '@/hooks/useLiabilities';
-
-const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'AED', 'SAR', 'QAR', 'BHD', 'KWD', 'OMR'];
+import { useDemoCurrencyList } from '@/hooks/useCurrencyList';
 
 const DemoAddLiabilityPage = () => {
   const navigate = useNavigate();
   const { addLiability, assets, entities, profile } = useDemo();
+  const currencies = useDemoCurrencyList(profile);
 
   const showIslamic = profile.compliance_mode === 'islamic' || profile.compliance_mode === 'all';
 
@@ -176,7 +176,7 @@ const DemoAddLiabilityPage = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {CURRENCIES.map((currency) => (
+                      {currencies.map((currency) => (
                         <SelectItem key={currency} value={currency}>
                           {currency}
                         </SelectItem>
