@@ -7,9 +7,12 @@ import { useCollections, Collection } from '@/hooks/useCollections';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
-import { Search } from 'lucide-react';
+import { Search, LayoutGrid, List, Rows3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
+type ViewMode = 'grid' | 'list' | 'compact';
 
 type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'lp-position' | 'other';
 type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
@@ -35,6 +38,7 @@ const CollectionsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
   
@@ -96,6 +100,19 @@ const CollectionsPage = () => {
                 ))}
               </SelectContent>
             </Select>
+
+            {/* View toggle */}
+            <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
+              <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3">
+                <LayoutGrid size={16} />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="List view" className="px-3">
+                <List size={16} />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="compact" aria-label="Compact view" className="px-3">
+                <Rows3 size={16} />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
           
           <div className="flex flex-wrap gap-2">
@@ -122,8 +139,14 @@ const CollectionsPage = () => {
           </div>
         ) : (
           <>
-            {/* Collections Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {/* Collections Grid/List/Compact */}
+            <div className={cn(
+              viewMode === 'grid'
+                ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                : viewMode === 'compact'
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
+                  : "flex flex-col gap-3"
+            )}>
               {filteredCollections.map((collection, index) => (
                 <CollectionCard 
                   key={collection.id} 
@@ -132,6 +155,7 @@ const CollectionsPage = () => {
                   delay={index * 50}
                   onEdit={setEditingCollection}
                   onDelete={setDeletingCollection}
+                  compact={viewMode === 'compact'}
                 />
               ))}
             </div>

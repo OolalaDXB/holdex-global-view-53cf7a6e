@@ -17,6 +17,7 @@ import { PendingReceivablesWidget } from '@/components/dashboard/PendingReceivab
 import { UpcomingLoanPaymentsWidget } from '@/components/dashboard/UpcomingLoanPaymentsWidget';
 import { EntityBreakdown } from '@/components/dashboard/EntityBreakdown';
 import { CertaintySummary } from '@/components/dashboard/CertaintySummary';
+import { CertaintyMiniChart } from '@/components/dashboard/CertaintyMiniChart';
 import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { DebtToIncomeWidget } from '@/components/dashboard/DebtToIncomeWidget';
 import { NetWorthProjectionWidget } from '@/components/dashboard/NetWorthProjectionWidget';
@@ -344,6 +345,7 @@ const Dashboard = () => {
                 assetsBreakdown={assetsBreakdown}
                 totalAssets={netWorth}
               />
+              <CertaintyMiniChart data={netWorthHistoryData} />
               <BlurToggle />
               <ViewToggle config={viewConfig} onChange={setViewConfig} />
               <CurrencySwitcher />
