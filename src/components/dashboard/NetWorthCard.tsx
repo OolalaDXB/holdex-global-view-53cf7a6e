@@ -61,24 +61,31 @@ export function NetWorthCard({
   return (
     <div className="animate-fade-in">
       <div className="flex items-center justify-between mb-2">
-        <p className="wealth-label">{showGross ? 'Gross Assets' : 'Net Worth'}</p>
+        <p className="wealth-label">Net Worth</p>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center gap-2">
-              <span className={cn(
-                "text-xs transition-colors",
-                !showGross ? "text-foreground font-medium" : "text-muted-foreground"
-              )}>Net</span>
-              <Switch
-                checked={showGross}
-                onCheckedChange={setShowGross}
-                className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-primary h-4 w-7"
-              />
+            <button 
+              onClick={() => setShowGross(!showGross)}
+              className="flex items-center gap-1 px-2 py-1 rounded-md hover:bg-secondary/50 transition-colors"
+            >
               <span className={cn(
                 "text-xs transition-colors",
                 showGross ? "text-foreground font-medium" : "text-muted-foreground"
               )}>Gross</span>
-            </div>
+              <div className={cn(
+                "relative w-8 h-4 rounded-full transition-colors",
+                "bg-secondary border border-border"
+              )}>
+                <div className={cn(
+                  "absolute top-0.5 w-3 h-3 rounded-full bg-primary transition-all duration-200",
+                  showGross ? "left-0.5" : "left-[calc(100%-14px)]"
+                )} />
+              </div>
+              <span className={cn(
+                "text-xs transition-colors",
+                !showGross ? "text-foreground font-medium" : "text-muted-foreground"
+              )}>Net</span>
+            </button>
           </TooltipTrigger>
           <TooltipContent>
             <p>Gross = total assets before debt</p>
@@ -104,9 +111,12 @@ export function NetWorthCard({
       </div>
       
       {/* Compact summary row */}
-      {!isBlurred && !showGross && totalLiabilities > 0 && (
+      {!isBlurred && totalLiabilities > 0 && (
         <p className="text-xs text-muted-foreground mt-2">
-          {symbol}{formatValue(grossAssets)} gross − {symbol}{formatValue(totalLiabilities)} debt
+          {showGross 
+            ? `${symbol}${formatValue(grossAssets)} total assets`
+            : `${symbol}${formatValue(grossAssets)} gross − ${symbol}${formatValue(totalLiabilities)} debt`
+          }
         </p>
       )}
     </div>
