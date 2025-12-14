@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { CalendarIcon, FileText, Plus, Pencil, Trash2, Download, FileDown, RefreshCw, FileSpreadsheet } from 'lucide-react';
-import { useAuditEvents, AUDIT_ACTIONS, ENTITY_TYPE_LABELS } from '@/hooks/useAuditEvents';
+import { useAuditEvents, AUDIT_ACTIONS, ENTITY_TYPE_LABELS, ENTITY_TYPES } from '@/hooks/useAuditEvents';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -29,11 +29,13 @@ const ACTION_COLORS: Record<string, string> = {
 
 export const AuditLogViewer = () => {
   const [actionFilter, setActionFilter] = useState('all');
+  const [entityTypeFilter, setEntityTypeFilter] = useState('all');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
   const { data: events = [], isLoading, refetch } = useAuditEvents({
     actionFilter,
+    entityTypeFilter,
     startDate,
     endDate,
     limit: 100,
@@ -41,6 +43,7 @@ export const AuditLogViewer = () => {
 
   const clearFilters = () => {
     setActionFilter('all');
+    setEntityTypeFilter('all');
     setStartDate(undefined);
     setEndDate(undefined);
   };
@@ -98,6 +101,19 @@ export const AuditLogViewer = () => {
           </SelectContent>
         </Select>
 
+        <Select value={entityTypeFilter} onValueChange={setEntityTypeFilter}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent>
+            {ENTITY_TYPES.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="w-[140px] justify-start">
@@ -132,7 +148,7 @@ export const AuditLogViewer = () => {
           </PopoverContent>
         </Popover>
 
-        {(actionFilter !== 'all' || startDate || endDate) && (
+        {(actionFilter !== 'all' || entityTypeFilter !== 'all' || startDate || endDate) && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             Clear
           </Button>

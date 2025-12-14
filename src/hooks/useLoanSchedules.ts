@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 export type LoanSchedule = Tables<'loan_schedules'>;
 export type LoanPayment = Tables<'loan_payments'>;
@@ -158,6 +159,7 @@ export function useAllUpcomingLoanPayments() {
 export function useCreateLoanSchedule() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { logEvent } = useAuditLog();
   
   return useMutation({
     mutationFn: async (schedule: Omit<LoanSchedule, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
@@ -174,12 +176,19 @@ export function useCreateLoanSchedule() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['loan-schedule', data.liability_id] });
+      logEvent({
+        action: 'create',
+        entityType: 'loan_schedule',
+        entityId: data.id,
+        metadata: { liability_id: data.liability_id, principal: data.principal_amount },
+      });
     },
   });
 }
 
 export function useUpdateLoanSchedule() {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
   
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<LoanSchedule> & { id: string }) => {
@@ -196,26 +205,40 @@ export function useUpdateLoanSchedule() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['loan-schedule', data.liability_id] });
       queryClient.invalidateQueries({ queryKey: ['upcoming-loan-payments'] });
+      logEvent({
+        action: 'update',
+        entityType: 'loan_schedule',
+        entityId: data.id,
+        metadata: { liability_id: data.liability_id },
+      });
     },
   });
 }
 
 export function useDeleteLoanSchedule() {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
   
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, liabilityId }: { id: string; liabilityId?: string }) => {
       const { error } = await supabase
         .from('loan_schedules')
         .delete()
         .eq('id', id);
       
       if (error) throw error;
+      return { id, liabilityId };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['loan-schedule'] });
       queryClient.invalidateQueries({ queryKey: ['loan-payments'] });
       queryClient.invalidateQueries({ queryKey: ['upcoming-loan-payments'] });
+      logEvent({
+        action: 'delete',
+        entityType: 'loan_schedule',
+        entityId: data.id,
+        metadata: { liability_id: data.liabilityId },
+      });
     },
   });
 }
@@ -223,6 +246,7 @@ export function useDeleteLoanSchedule() {
 export function useCreateLoanPayments() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { logEvent } = useAuditLog();
   
   return useMutation({
     mutationFn: async (payments: Omit<LoanPayment, 'id' | 'user_id' | 'created_at'>[]) => {
@@ -242,6 +266,12 @@ export function useCreateLoanPayments() {
       if (data.length > 0) {
         queryClient.invalidateQueries({ queryKey: ['loan-payments', data[0].loan_schedule_id] });
         queryClient.invalidateQueries({ queryKey: ['upcoming-loan-payments'] });
+        logEvent({
+          action: 'create',
+          entityType: 'loan_payment',
+          entityId: data[0].loan_schedule_id,
+          metadata: { count: data.length },
+        });
       }
     },
   });
@@ -249,6 +279,7 @@ export function useCreateLoanPayments() {
 
 export function useMarkPaymentPaid() {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
   
   return useMutation({
     mutationFn: async ({ 
@@ -314,12 +345,18 @@ export function useMarkPaymentPaid() {
       
       if (updateError) throw updateError;
       
-      return { scheduleId };
+      return { paymentId, scheduleId, actualAmount };
     },
-    onSuccess: ({ scheduleId }) => {
+    onSuccess: ({ paymentId, scheduleId, actualAmount }) => {
       queryClient.invalidateQueries({ queryKey: ['loan-payments'] });
       queryClient.invalidateQueries({ queryKey: ['loan-schedule'] });
       queryClient.invalidateQueries({ queryKey: ['upcoming-loan-payments'] });
+      logEvent({
+        action: 'update',
+        entityType: 'loan_payment',
+        entityId: paymentId,
+        metadata: { status: 'paid', amount: actualAmount },
+      });
     },
   });
 }

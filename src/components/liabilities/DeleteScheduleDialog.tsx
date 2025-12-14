@@ -20,7 +20,7 @@ export function DeleteScheduleDialog({
 
   const handleDelete = async () => {
     try {
-      await deleteSchedule.mutateAsync(scheduleId);
+      await deleteSchedule.mutateAsync({ id: scheduleId });
       toast({
         title: 'Schedule deleted',
         description: `Payment schedule for ${liabilityName} has been removed`,
