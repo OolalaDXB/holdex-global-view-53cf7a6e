@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 export type Receivable = Tables<'receivables'>;
 export type ReceivableInsert = TablesInsert<'receivables'>;
@@ -30,6 +31,7 @@ export function useReceivables() {
 export function useCreateReceivable() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { logEvent } = useAuditLog();
   
   return useMutation({
     mutationFn: async (receivable: Omit<ReceivableInsert, 'user_id'>) => {
@@ -42,14 +44,21 @@ export function useCreateReceivable() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['receivables'] });
+      logEvent({
+        action: 'create',
+        entityType: 'receivable',
+        entityId: data.id,
+        metadata: { name: data.name, type: data.type },
+      });
     },
   });
 }
 
 export function useUpdateReceivable() {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
   
   return useMutation({
     mutationFn: async ({ id, ...updates }: ReceivableUpdate & { id: string }) => {
@@ -63,26 +72,40 @@ export function useUpdateReceivable() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['receivables'] });
+      logEvent({
+        action: 'update',
+        entityType: 'receivable',
+        entityId: data.id,
+        metadata: { name: data.name },
+      });
     },
   });
 }
 
 export function useDeleteReceivable() {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
   
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
       const { error } = await supabase
         .from('receivables')
         .delete()
         .eq('id', id);
       
       if (error) throw error;
+      return { id, name };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['receivables'] });
+      logEvent({
+        action: 'delete',
+        entityType: 'receivable',
+        entityId: data.id,
+        metadata: { name: data.name },
+      });
     },
   });
 }

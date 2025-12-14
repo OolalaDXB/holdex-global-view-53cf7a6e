@@ -20,7 +20,7 @@ export function DeleteLiabilityDialog({
 
   const handleDelete = async () => {
     try {
-      await deleteLiability.mutateAsync(liabilityId);
+      await deleteLiability.mutateAsync({ id: liabilityId, name: liabilityName });
       toast({
         title: 'Liability deleted',
         description: `${liabilityName} has been removed`,

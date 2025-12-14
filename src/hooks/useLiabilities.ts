@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 export type Liability = Tables<'liabilities'>;
 export type LiabilityInsert = TablesInsert<'liabilities'>;
@@ -69,6 +70,7 @@ export const useLiabilities = () => {
 export const useCreateLiability = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async (liability: Omit<LiabilityInsert, 'user_id'>) => {
@@ -83,14 +85,21 @@ export const useCreateLiability = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['liabilities'] });
+      logEvent({
+        action: 'create',
+        entityType: 'liability',
+        entityId: data.id,
+        metadata: { name: data.name, type: data.type },
+      });
     },
   });
 };
 
 export const useUpdateLiability = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Partial<Omit<LiabilityInsert, 'user_id'>>) => {
@@ -104,26 +113,40 @@ export const useUpdateLiability = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['liabilities'] });
+      logEvent({
+        action: 'update',
+        entityType: 'liability',
+        entityId: data.id,
+        metadata: { name: data.name },
+      });
     },
   });
 };
 
 export const useDeleteLiability = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
       const { error } = await supabase
         .from('liabilities')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+      return { id, name };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['liabilities'] });
+      logEvent({
+        action: 'delete',
+        entityType: 'liability',
+        entityId: data.id,
+        metadata: { name: data.name },
+      });
     },
   });
 };

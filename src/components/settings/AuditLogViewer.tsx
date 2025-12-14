@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { CalendarIcon, FileText, Plus, Pencil, Trash2, Download, FileDown, RefreshCw } from 'lucide-react';
+import { CalendarIcon, FileText, Plus, Pencil, Trash2, Download, FileDown, RefreshCw, FileSpreadsheet } from 'lucide-react';
 import { useAuditEvents, AUDIT_ACTIONS, ENTITY_TYPE_LABELS } from '@/hooks/useAuditEvents';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,6 +9,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 const ACTION_ICONS: Record<string, typeof Plus> = {
   create: Plus,
@@ -47,6 +48,37 @@ export const AuditLogViewer = () => {
   const getActionIcon = (action: string) => {
     const Icon = ACTION_ICONS[action] || FileText;
     return <Icon className={cn("h-4 w-4", ACTION_COLORS[action] || "text-muted-foreground")} />;
+  };
+
+  const exportToCSV = () => {
+    if (events.length === 0) {
+      toast.error('No events to export');
+      return;
+    }
+
+    const headers = ['Date', 'Time', 'Action', 'Entity Type', 'Entity ID', 'Details'];
+    const rows = events.map(event => [
+      format(new Date(event.created_at), 'yyyy-MM-dd'),
+      format(new Date(event.created_at), 'HH:mm:ss'),
+      event.action,
+      ENTITY_TYPE_LABELS[event.entity_type] || event.entity_type,
+      event.entity_id || '',
+      event.metadata ? JSON.stringify(event.metadata) : '',
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `audit-log-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('Audit log exported');
   };
 
   return (
@@ -106,9 +138,14 @@ export const AuditLogViewer = () => {
           </Button>
         )}
 
-        <Button variant="ghost" size="icon" onClick={() => refetch()} className="ml-auto">
-          <RefreshCw className="h-4 w-4" />
-        </Button>
+        <div className="ml-auto flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={exportToCSV} title="Export to CSV">
+            <FileSpreadsheet className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => refetch()} title="Refresh">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Event List */}
