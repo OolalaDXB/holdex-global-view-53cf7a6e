@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuditLog } from './useAuditLog';
 
 export type SharedAccess = Tables<'shared_access'>;
 
@@ -90,6 +91,7 @@ export const useSharedOwnerProfile = (ownerId: string | null) => {
 export const useInvitePartner = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async (email: string) => {
@@ -108,14 +110,21 @@ export const useInvitePartner = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['shared_access'] });
+      logEvent({
+        action: 'create',
+        entityType: 'shared_access',
+        entityId: data.id,
+        metadata: { shared_with_email: data.shared_with_email },
+      });
     },
   });
 };
 
 export const useRevokeAccess = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async (id: string) => {
@@ -125,9 +134,15 @@ export const useRevokeAccess = () => {
         .eq('id', id);
 
       if (error) throw error;
+      return id;
     },
-    onSuccess: () => {
+    onSuccess: (id) => {
       queryClient.invalidateQueries({ queryKey: ['shared_access'] });
+      logEvent({
+        action: 'delete',
+        entityType: 'shared_access',
+        entityId: id,
+      });
     },
   });
 };
@@ -135,6 +150,7 @@ export const useRevokeAccess = () => {
 // Hook to accept or decline an invitation
 export const useRespondToInvitation = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'accepted' | 'declined' }) => {
@@ -144,10 +160,17 @@ export const useRespondToInvitation = () => {
         .eq('id', id);
 
       if (error) throw error;
+      return { id, status };
     },
-    onSuccess: () => {
+    onSuccess: ({ id, status }) => {
       queryClient.invalidateQueries({ queryKey: ['received_invitations'] });
       queryClient.invalidateQueries({ queryKey: ['shared_access'] });
+      logEvent({
+        action: 'update',
+        entityType: 'shared_access',
+        entityId: id,
+        metadata: { status },
+      });
     },
   });
 };

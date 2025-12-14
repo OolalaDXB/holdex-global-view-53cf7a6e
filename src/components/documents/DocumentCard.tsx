@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Document, DOCUMENT_TYPES, getExpiryStatus } from '@/hooks/useDocuments';
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 interface DocumentCardProps {
   document: Document;
@@ -12,8 +13,19 @@ interface DocumentCardProps {
 }
 
 export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentCardProps) => {
+  const { logEvent } = useAuditLog();
   const typeInfo = DOCUMENT_TYPES.find(t => t.value === document.type);
   const expiryStatus = getExpiryStatus(document.expiry_date);
+
+  const handleDownload = () => {
+    logEvent({
+      action: 'download',
+      entityType: 'document',
+      entityId: document.id,
+      metadata: { name: document.name, file_type: document.file_type },
+    });
+    window.open(document.file_url, '_blank');
+  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -84,7 +96,7 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            onClick={() => window.open(document.file_url, '_blank')}
+            onClick={handleDownload}
           >
             <ExternalLink className="w-4 h-4" />
           </Button>

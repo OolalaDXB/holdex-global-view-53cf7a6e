@@ -11,6 +11,7 @@ import { useReceivables } from '@/hooks/useReceivables';
 import { useEntities } from '@/hooks/useEntities';
 import { useNetWorthHistory } from '@/hooks/useNetWorthHistory';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
+import { useAuditLog } from '@/hooks/useAuditLog';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useBlur } from '@/contexts/BlurContext';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ const BalanceSheetPage = () => {
 
   const { displayCurrency } = useCurrency();
   const { isBlurred } = useBlur();
+  const { logEvent } = useAuditLog();
 
   const { data: assets = [] } = useAssets();
   const { data: collections = [] } = useCollections();
@@ -136,6 +138,16 @@ const BalanceSheetPage = () => {
     setIsExporting(true);
     try {
       await statementRef.current?.exportToPDF();
+      logEvent({
+        action: 'export_pdf',
+        entityType: 'balance_sheet',
+        metadata: { 
+          asOfDate: format(asOfDate, 'yyyy-MM-dd'),
+          entityFilter,
+          certaintyFilter,
+          displayCurrency,
+        },
+      });
       toast.success('PDF exported successfully');
     } catch (error) {
       toast.error('Failed to export PDF');
