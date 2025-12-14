@@ -443,8 +443,8 @@ export const EntityDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Avatar Upload */}
-          <div className="flex items-center gap-4">
+          {/* Avatar Upload - Compact Layout */}
+          <div className="flex items-start gap-4">
             <EntityAvatar
               avatarUrl={formData.avatar_url}
               entityType={formData.type}
@@ -452,14 +452,14 @@ export const EntityDialog = ({
               name={formData.name}
               size="lg"
             />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0 pt-1">
               <Label className="text-sm mb-2 block">Photo</Label>
               <ImageUpload
                 value={formData.avatar_url || ''}
                 onChange={(url) => setFormData({ ...formData, avatar_url: url || undefined })}
                 assetId={entity?.id || 'new-entity'}
                 hideAIButton
-                className="h-20"
+                compact
               />
             </div>
           </div>
