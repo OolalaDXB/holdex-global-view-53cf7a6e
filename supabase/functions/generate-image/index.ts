@@ -13,40 +13,54 @@ interface GenerateRequest {
   model?: string;
   description?: string;
   country?: string;
+  notes?: string;
 }
 
 const generatePrompt = (req: GenerateRequest): string => {
   const baseStyle = "professional product photography, studio lighting, clean background, high resolution, luxury aesthetic, elegant composition";
+  const notesContext = req.notes ? `. Additional details: ${req.notes}` : '';
+  
+  let basePrompt: string;
   
   switch (req.assetType) {
     case 'watch':
-      return `${req.brand || ''} ${req.model || ''} luxury watch, ${req.name}, ${baseStyle}, close-up detail shot, Swiss craftsmanship, on dark velvet`;
+      basePrompt = `${req.brand || ''} ${req.model || ''} luxury watch, ${req.name}, ${baseStyle}, close-up detail shot, Swiss craftsmanship, on dark velvet`;
+      break;
     
     case 'vehicle':
-      return `${req.brand || ''} ${req.model || ''} luxury automobile, ${req.name}, ${baseStyle}, 3/4 front angle, showroom setting, dramatic lighting`;
+      basePrompt = `${req.brand || ''} ${req.model || ''} luxury automobile, ${req.name}, ${baseStyle}, 3/4 front angle, showroom setting, dramatic lighting`;
+      break;
     
     case 'art':
-      return `${req.description || req.name}, fine art piece, gallery display, museum quality, elegant frame, sophisticated lighting, ${baseStyle}`;
+      basePrompt = `${req.description || req.name}, fine art piece, gallery display, museum quality, elegant frame, sophisticated lighting, ${baseStyle}`;
+      break;
     
     case 'wine':
-      return `Premium wine bottle, ${req.name}, ${req.description || 'fine vintage wine'}, cellar atmosphere, oak barrel background, ${baseStyle}`;
+      basePrompt = `Premium wine bottle, ${req.name}, ${req.description || 'fine vintage wine'}, cellar atmosphere, oak barrel background, ${baseStyle}`;
+      break;
     
     case 'jewelry':
-      return `${req.name}, ${req.description || 'luxury jewelry'}, ${req.brand || ''}, macro photography, diamond sparkle, velvet display, ${baseStyle}`;
+      basePrompt = `${req.name}, ${req.description || 'luxury jewelry'}, ${req.brand || ''}, macro photography, diamond sparkle, velvet display, ${baseStyle}`;
+      break;
     
     case 'real-estate':
       const location = req.country ? `in ${req.country}` : '';
-      return `Luxury property ${location}, ${req.name}, architectural photography, golden hour lighting, high-end real estate exterior, manicured landscape, ${baseStyle}`;
+      basePrompt = `Luxury property ${location}, ${req.name}, architectural photography, golden hour lighting, high-end real estate exterior, manicured landscape, ${baseStyle}`;
+      break;
     
     case 'business':
-      return `${req.name}, corporate headquarters building, modern glass architecture, executive business environment, professional corporate imagery, ${baseStyle}`;
+      basePrompt = `${req.name}, corporate headquarters building, modern glass architecture, executive business environment, professional corporate imagery, ${baseStyle}`;
+      break;
     
     case 'crypto':
-      return `Digital asset concept art, ${req.name}, futuristic blockchain visualization, glowing digital currency tokens, tech-forward aesthetic, abstract digital asset representation, ${baseStyle}`;
+      basePrompt = `Digital asset concept art, ${req.name}, futuristic blockchain visualization, glowing digital currency tokens, tech-forward aesthetic, abstract digital asset representation, ${baseStyle}`;
+      break;
     
     default:
-      return `${req.name}, ${req.description || ''}, premium luxury item, ${baseStyle}`;
+      basePrompt = `${req.name}, ${req.description || ''}, premium luxury item, ${baseStyle}`;
   }
+  
+  return basePrompt + notesContext;
 };
 
 serve(async (req) => {
@@ -56,7 +70,7 @@ serve(async (req) => {
   }
 
   try {
-    const { assetType, name, brand, model, description, country } = await req.json() as GenerateRequest;
+    const { assetType, name, brand, model, description, country, notes } = await req.json() as GenerateRequest;
     
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -64,7 +78,7 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const prompt = generatePrompt({ assetType, name, brand, model, description, country });
+    const prompt = generatePrompt({ assetType, name, brand, model, description, country, notes });
     console.log('Generating image with prompt:', prompt);
 
     // Call Lovable AI Gateway with image generation model

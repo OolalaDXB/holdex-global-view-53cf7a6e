@@ -8,6 +8,7 @@ interface GenerateImageParams {
   model?: string;
   description?: string;
   country?: string;
+  notes?: string;
 }
 
 export const useAIImageGeneration = () => {
