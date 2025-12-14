@@ -55,6 +55,7 @@ export const useExchangeRates = (): UseExchangeRatesResult => {
     },
     staleTime: 1000 * 60 * 60, // Cache for 1 hour
     gcTime: 1000 * 60 * 60 * 24, // Keep in cache for 24 hours
+    refetchInterval: 1000 * 60 * 60, // Auto-refresh every hour
     refetchOnWindowFocus: false,
   });
 
