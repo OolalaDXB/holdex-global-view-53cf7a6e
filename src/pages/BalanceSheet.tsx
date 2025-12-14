@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { format, subMonths } from 'date-fns';
 import { CalendarIcon, FileDown, Printer, Loader2, GitCompare } from 'lucide-react';
+import { CertaintyReportPDF } from '@/components/reports/CertaintyReportPDF';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useBalanceSheet, CertaintyFilter } from '@/hooks/useBalanceSheet';
 import { useAssets } from '@/hooks/useAssets';
@@ -251,6 +252,7 @@ const BalanceSheetPage = () => {
                 </Popover>
               )}
 
+              <CertaintyReportPDF />
               <Button 
                 variant="outline" 
                 size="sm" 
