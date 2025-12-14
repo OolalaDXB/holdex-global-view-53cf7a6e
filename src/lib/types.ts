@@ -48,6 +48,16 @@ export const parseCoparceners = (data: unknown): Coparcener[] | null => {
   return result.success ? result.data : null;
 };
 
+// Helper to get entity's share from ownership allocation (for multi-entity calculations)
+export const getEntityShareFromAllocation = (
+  allocation: OwnershipAllocation[] | null | undefined,
+  entityId: string
+): number => {
+  if (!allocation || !Array.isArray(allocation) || allocation.length === 0) return 0;
+  const entry = allocation.find(a => a.entity_id === entityId);
+  return entry ? (entry.percentage || 0) / 100 : 0;
+};
+
 // Helper to get user's ownership share from parsed allocation
 export const getUserOwnershipShare = (
   allocation: OwnershipAllocation[] | null | undefined,
@@ -80,4 +90,28 @@ export interface RechartsLegendProps {
     id?: string;
     color?: string;
   }>;
+}
+
+// Loan payment with schedule relationship (for UpcomingLoanPaymentsWidget)
+export interface LoanPaymentWithSchedule {
+  id: string;
+  payment_date: string;
+  payment_number: number;
+  total_amount: number | null;
+  status: string | null;
+  loan_schedules?: {
+    liabilities?: {
+      name: string;
+      currency: string;
+    } | null;
+  } | null;
+}
+
+// Audit event metadata type
+export interface AuditEventMetadata {
+  name?: string;
+  shared_with_email?: string;
+  status?: string;
+  asOfDate?: string;
+  [key: string]: unknown;
 }

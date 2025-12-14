@@ -13,14 +13,14 @@ import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { DemoEntitySelect } from '@/components/demo/DemoEntitySelect';
 import { CertaintySelect } from '@/components/ui/certainty-select';
-import { Asset } from '@/hooks/useAssets';
+import { DemoAsset } from '@/data/demoData';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useDemoCurrencyList } from '@/hooks/useCurrencyList';
 
 interface DemoEditAssetDialogProps {
-  asset: Asset | null;
+  asset: DemoAsset | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

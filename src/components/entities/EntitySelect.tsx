@@ -149,7 +149,7 @@ export const EntitySelect = ({
       return (
         <div className="flex items-center gap-2">
           <EntityAvatar 
-            avatarUrl={(entity as any).avatar_url}
+            avatarUrl={entity.avatar_url ?? undefined}
             entityType={entity.type}
             entityColor={entity.color}
             name={entity.name}
@@ -160,11 +160,10 @@ export const EntitySelect = ({
       );
     }
     
-    const typeInfo = ENTITY_TYPES.find(t => t.value === entity.type);
     return (
       <div className="flex items-center gap-2">
         <EntityAvatar 
-          avatarUrl={(entity as any).avatar_url}
+          avatarUrl={entity.avatar_url ?? undefined}
           entityType={entity.type}
           entityColor={entity.color}
           name={entity.name}
@@ -210,7 +209,7 @@ export const EntitySelect = ({
             <SelectItem value={personalEntity.id}>
               <div className="flex items-center gap-2">
                 <EntityAvatar 
-                  avatarUrl={(personalEntity as any).avatar_url}
+                  avatarUrl={personalEntity.avatar_url ?? undefined}
                   entityType={personalEntity.type}
                   entityColor={personalEntity.color}
                   name={personalEntity.name}
@@ -233,7 +232,7 @@ export const EntitySelect = ({
               <SelectItem key={entity.id} value={entity.id}>
                 <div className="flex items-center gap-2">
                   <EntityAvatar 
-                    avatarUrl={(entity as any).avatar_url}
+                    avatarUrl={entity.avatar_url ?? undefined}
                     entityType={entity.type}
                     entityColor={entity.color}
                     name={entity.name}

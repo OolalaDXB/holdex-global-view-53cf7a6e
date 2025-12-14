@@ -19,7 +19,7 @@ import { DemoDataBadge } from '@/components/ui/demo-data-badge';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Asset } from '@/hooks/useAssets';
+import { DemoAsset } from '@/data/demoData';
 import { DemoEditAssetDialog } from '@/components/demo/DemoEditAssetDialog';
 import { DemoDeleteAssetDialog } from '@/components/demo/DemoDeleteAssetDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -56,8 +56,8 @@ const sortOptions: { value: SortOption; label: string }[] = [
 const DemoAssetsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
-  const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
+  const [editingAsset, setEditingAsset] = useState<DemoAsset | null>(null);
+  const [deletingAsset, setDeletingAsset] = useState<DemoAsset | null>(null);
   
   // Property filters
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>('all');
@@ -306,13 +306,13 @@ const DemoAssetsPage = () => {
           {filteredAndSortedAssets.map((asset, index) => (
             <AssetCard 
               key={asset.id} 
-              asset={asset as any} 
+              asset={asset}
               rates={rates}
               cryptoPrices={prices}
               delay={index * 50}
-              onEdit={setEditingAsset as any}
-              onDelete={setDeletingAsset as any}
-              entities={entities as any}
+              onEdit={(a) => setEditingAsset(a as DemoAsset)}
+              onDelete={(a) => setDeletingAsset(a as DemoAsset)}
+              entities={entities}
               areaUnit={areaUnit}
             />
           ))}

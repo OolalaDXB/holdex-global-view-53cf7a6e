@@ -17,6 +17,7 @@ import { DeleteEntityDialog } from '@/components/entities/DeleteEntityDialog';
 import { EntityDetailDrawer } from '@/components/entities/EntityDetailDrawer';
 import { convertToEUR } from '@/lib/currency';
 import { toast } from '@/hooks/use-toast';
+import { parseOwnershipAllocation, getEntityShareFromAllocation } from '@/lib/types';
 
 type FilterType = 'all' | string;
 
@@ -52,14 +53,6 @@ const Entities = () => {
     }
     return entity.name;
   };
-
-  // Helper to get entity's share from ownership_allocation
-  const getEntityShareFromAllocation = (allocation: any[] | null, entityId: string): number => {
-    if (!allocation || !Array.isArray(allocation)) return 0;
-    const entry = allocation.find((a: any) => a.entity_id === entityId);
-    return entry ? (entry.percentage || 0) / 100 : 0;
-  };
-
   // Calculate stats per entity (considering ownership_allocation for shared assets)
   const entityStats = useMemo(() => {
     if (!entities) return {};
@@ -76,9 +69,9 @@ const Entities = () => {
       // Process assets
       assets?.forEach(a => {
         const valueInEur = convertToEUR(Number(a.current_value), a.currency, rates as Record<string, number>);
-        const allocation = a.ownership_allocation as any[] | null;
+        const allocation = parseOwnershipAllocation(a.ownership_allocation);
         
-        if (allocation && Array.isArray(allocation) && allocation.length > 0) {
+        if (allocation && allocation.length > 0) {
           // Shared ownership - check if this entity has a share
           const share = getEntityShareFromAllocation(allocation, entity.id);
           if (share > 0) {
@@ -95,9 +88,9 @@ const Entities = () => {
       // Process collections
       collections?.forEach(c => {
         const valueInEur = convertToEUR(Number(c.current_value), c.currency, rates as Record<string, number>);
-        const allocation = c.ownership_allocation as any[] | null;
+        const allocation = parseOwnershipAllocation(c.ownership_allocation);
         
-        if (allocation && Array.isArray(allocation) && allocation.length > 0) {
+        if (allocation && allocation.length > 0) {
           const share = getEntityShareFromAllocation(allocation, entity.id);
           if (share > 0) {
             assetCount += 1;

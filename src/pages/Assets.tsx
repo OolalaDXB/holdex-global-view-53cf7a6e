@@ -683,8 +683,8 @@ const AssetsPage = () => {
                   cryptoPrices={prices}
                   displayCurrency={displayCurrency}
                   delay={index * 50}
-                  onEdit={setEditingAsset}
-                  onDelete={setDeletingAsset}
+                  onEdit={(a) => setEditingAsset(a as Asset)}
+                  onDelete={(a) => setDeletingAsset(a as Asset)}
                   entities={entities}
                   areaUnit={areaUnit}
                   compact={viewMode === 'compact'}

@@ -114,7 +114,7 @@ const CollectionsPage = () => {
     })
     .filter(c => {
       if (certaintyFilter === 'all') return true;
-      const cert = (c as any).certainty || 'probable';
+      const cert = c.certainty ?? 'probable';
       if (certaintyFilter === 'certain') return cert === 'certain';
       if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
       return true;
