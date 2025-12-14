@@ -2,8 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { Beneficiary, Coparcener, parseBeneficiaries, parseCoparceners } from '@/lib/types';
 
-export type Entity = Tables<'entities'>;
+export type Entity = Tables<'entities'> & {
+  parsed_beneficiaries?: Beneficiary[] | null;
+  parsed_coparceners?: Coparcener[] | null;
+};
 export type EntityInsert = TablesInsert<'entities'>;
 export type EntityUpdate = TablesUpdate<'entities'>;
 
@@ -80,7 +84,11 @@ export const useEntities = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data as Entity[];
+      return (data ?? []).map(entity => ({
+        ...entity,
+        parsed_beneficiaries: parseBeneficiaries(entity.beneficiaries),
+        parsed_coparceners: parseCoparceners(entity.coparceners),
+      })) as Entity[];
     },
     enabled: !!user,
   });
