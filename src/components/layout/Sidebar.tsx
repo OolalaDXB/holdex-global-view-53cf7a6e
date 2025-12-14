@@ -88,12 +88,12 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
           collapsed ? "justify-center" : "justify-between"
         )}>
           {!collapsed && (
-            <h1 className="font-serif text-2xl font-semibold text-foreground tracking-wide">
-              HOLDEX
+            <h1 className="font-serif text-2xl font-semibold tracking-wide" style={{ color: '#F5F5F5' }}>
+              VERSO
             </h1>
           )}
           {collapsed && (
-            <span className="font-serif text-xl font-semibold text-foreground">H</span>
+            <span className="font-serif text-xl font-semibold" style={{ color: '#F5F5F5' }}>V</span>
           )}
           <button
             onClick={toggle}
