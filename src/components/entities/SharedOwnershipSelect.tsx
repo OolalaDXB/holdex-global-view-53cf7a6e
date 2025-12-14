@@ -50,13 +50,16 @@ export const SharedOwnershipSelect = ({
   }, [entities]);
 
   // Initialize allocation from current or default 50/50
-  const [myPercentage, setMyPercentage] = useState(() => {
+  const [myPercentage, setMyPercentage] = useState<number>(() => {
     if (currentAllocation && currentAllocation.length > 0) {
       const myAlloc = currentAllocation.find(a => a.entity_id === personalEntity?.id);
       return myAlloc?.percentage || 50;
     }
     return 50;
   });
+  
+  // Local input state for controlled input without resetting on each keystroke
+  const [percentageInput, setPercentageInput] = useState<string>(myPercentage.toString());
 
   const [partnerEntityId, setPartnerEntityId] = useState<string | null>(() => {
     if (currentAllocation && currentAllocation.length > 0) {
@@ -129,10 +132,20 @@ export const SharedOwnershipSelect = ({
               <div className="flex items-center gap-2">
                 <Input
                   type="number"
-                  min="1"
-                  max="99"
-                  value={myPercentage}
-                  onChange={(e) => setMyPercentage(Math.min(99, Math.max(1, parseInt(e.target.value) || 50)))}
+                  min="0"
+                  max="100"
+                  value={percentageInput}
+                  onChange={(e) => setPercentageInput(e.target.value)}
+                  onBlur={() => {
+                    const parsed = parseInt(percentageInput);
+                    if (!isNaN(parsed)) {
+                      const clamped = Math.min(100, Math.max(0, parsed));
+                      setMyPercentage(clamped);
+                      setPercentageInput(clamped.toString());
+                    } else {
+                      setPercentageInput(myPercentage.toString());
+                    }
+                  }}
                   className="w-20 text-center"
                 />
                 <span className="text-muted-foreground">%</span>

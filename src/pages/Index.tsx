@@ -47,6 +47,19 @@ interface City {
   timezone: string;
 }
 
+// Helper to calculate user's share of an asset/collection based on ownership_allocation
+const getUserOwnershipShare = (
+  ownershipAllocation: { entity_id: string; percentage: number }[] | null | undefined,
+  personalEntityId: string | null
+): number => {
+  if (!ownershipAllocation || ownershipAllocation.length === 0) {
+    return 1; // Full ownership if no allocation
+  }
+  // Find personal entity's share
+  const myShare = ownershipAllocation.find(a => a.entity_id === personalEntityId);
+  return myShare ? myShare.percentage / 100 : 1;
+};
+
 const Dashboard = () => {
   const { toast } = useToast();
   const { data: profile } = useProfile();
@@ -92,16 +105,29 @@ const Dashboard = () => {
   );
   const filteredCollections = showCollections ? collections : [];
 
+  // Find personal entity for ownership calculations
+  const personalEntity = entities.find(e => e.type === 'personal');
+  const personalEntityId = personalEntity?.id || null;
+
   // Calculate totals using live rates and crypto prices (in EUR for storage)
+  // Apply ownership allocation to get user's share only
   const totalAssetsEUR = filteredAssets.reduce((sum, asset) => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    return sum + eurValue;
+    const ownershipShare = getUserOwnershipShare(
+      asset.ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    return sum + (eurValue * ownershipShare);
   }, 0);
 
   const totalCollectionsEUR = filteredCollections.reduce((sum, item) => {
     const eurValue = convertToEUR(item.current_value, item.currency, rates);
-    return sum + eurValue;
+    const ownershipShare = getUserOwnershipShare(
+      item.ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    return sum + (eurValue * ownershipShare);
   }, 0);
 
   const totalLiabilitiesEUR = liabilities.reduce((sum, item) => {
@@ -117,11 +143,24 @@ const Dashboard = () => {
   const assetsBreakdownEUR = certaintyLevels.reduce((acc, level) => {
     acc[level] = filteredAssets
       .filter(a => (a.certainty || 'certain') === level)
-      .reduce((sum, asset) => sum + convertToEUR(getAssetValue(asset), asset.currency, rates), 0);
+      .reduce((sum, asset) => {
+        const eurValue = convertToEUR(getAssetValue(asset), asset.currency, rates);
+        const ownershipShare = getUserOwnershipShare(
+          asset.ownership_allocation as { entity_id: string; percentage: number }[] | null,
+          personalEntityId
+        );
+        return sum + (eurValue * ownershipShare);
+      }, 0);
     // Add collections to 'certain' level (they don't have certainty field)
     if (level === 'certain') {
-      acc[level] += filteredCollections.reduce((sum, item) => 
-        sum + convertToEUR(item.current_value, item.currency, rates), 0);
+      acc[level] += filteredCollections.reduce((sum, item) => {
+        const eurValue = convertToEUR(item.current_value, item.currency, rates);
+        const ownershipShare = getUserOwnershipShare(
+          item.ownership_allocation as { entity_id: string; percentage: number }[] | null,
+          personalEntityId
+        );
+        return sum + (eurValue * ownershipShare);
+      }, 0);
     }
     return acc;
   }, {} as Record<typeof certaintyLevels[number], number>);
