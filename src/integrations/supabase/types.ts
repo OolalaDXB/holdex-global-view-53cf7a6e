@@ -225,6 +225,7 @@ export type Database = {
           name: string
           notes: string | null
           ownership_allocation: Json | null
+          ownership_percentage: number | null
           purchase_date: string | null
           purchase_value: number | null
           type: string
@@ -253,6 +254,7 @@ export type Database = {
           name: string
           notes?: string | null
           ownership_allocation?: Json | null
+          ownership_percentage?: number | null
           purchase_date?: string | null
           purchase_value?: number | null
           type: string
@@ -281,6 +283,7 @@ export type Database = {
           name?: string
           notes?: string | null
           ownership_allocation?: Json | null
+          ownership_percentage?: number | null
           purchase_date?: string | null
           purchase_value?: number | null
           type?: string
@@ -1182,7 +1185,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      validate_ownership_allocation: {
+        Args: { allocation: Json }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
