@@ -24,7 +24,7 @@
     --secondary-foreground: 48 14% 90%;
 
     --muted: 0 0% 18%;
-    --muted-foreground: 30 5% 55%;
+    --muted-foreground: 30 5% 65%; /* Increased from 55% for better contrast */
 
     --accent: 0 0% 16%;
     --accent-foreground: 48 14% 95%;
@@ -46,11 +46,11 @@
     --terracotta: 18 43% 56%;
     --sage: 100 10% 50%;
     --dusty-rose: 0 25% 52%;
-    --warm-gray: 30 5% 35%;
+    --warm-gray: 30 5% 45%; /* Increased from 35% for better contrast */
 
     /* Sidebar */
     --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 48 14% 85%;
+    --sidebar-foreground: 48 14% 90%; /* Increased from 85% for better contrast */
     --sidebar-primary: 18 43% 56%;
     --sidebar-primary-foreground: 48 14% 95%;
     --sidebar-accent: 0 0% 14%;
