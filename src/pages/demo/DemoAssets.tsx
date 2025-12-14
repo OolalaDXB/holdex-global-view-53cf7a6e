@@ -150,27 +150,32 @@ const DemoAssetsPage = () => {
           <Badge variant="outline" className="text-xs ml-auto">Demo</Badge>
         </div>
 
-        <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>
-            <p className="text-muted-foreground">Your wealth portfolio across all categories.</p>
+        <header className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>
+              <p className="text-muted-foreground">Your wealth portfolio across all categories.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleAreaUnit}
+                className="flex items-center gap-2"
+              >
+                <Ruler size={14} />
+                {areaUnit === 'sqm' ? 'm²' : 'sq ft'}
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/demo/add">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Asset
+                </Link>
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={toggleAreaUnit}
-              className="flex items-center gap-2"
-            >
-              <Ruler size={14} />
-              {areaUnit === 'sqm' ? 'm²' : 'sq ft'}
-            </Button>
-            <Button asChild size="sm" variant="outline">
-              <Link to="/demo/add">
-                <Plus className="h-4 w-4 mr-1" />
-                Add Asset
-              </Link>
-            </Button>
+          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
+            <span>Using demo exchange rates</span>
           </div>
         </header>
 

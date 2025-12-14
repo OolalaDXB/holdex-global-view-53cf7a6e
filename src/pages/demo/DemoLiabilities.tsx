@@ -356,23 +356,28 @@ const DemoLiabilitiesPage = () => {
   return (
     <AppLayout isDemo>
       <div className="p-8 lg:p-12 max-w-5xl">
-        <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-xs font-medium">
-              Demo Mode
+        <header className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                Demo Mode
+              </div>
+              <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Liabilities</h1>
+              <p className="text-muted-foreground">
+                Manage your loans, mortgages, and payment schedules.
+              </p>
             </div>
-            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Liabilities</h1>
-            <p className="text-muted-foreground">
-              Manage your loans, mortgages, and payment schedules.
-            </p>
+            <div className="flex items-center gap-2">
+              <DemoLoanPayoffCalculator />
+              <LoanComparisonTool />
+              <Button onClick={() => setShowAddDialog(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                Add Liability
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <DemoLoanPayoffCalculator />
-            <LoanComparisonTool />
-            <Button onClick={() => setShowAddDialog(true)}>
-              <Plus className="h-4 w-4 mr-1" />
-              Add Liability
-            </Button>
+          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
+            <span>Using demo exchange rates</span>
           </div>
         </header>
 

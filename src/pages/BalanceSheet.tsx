@@ -10,6 +10,7 @@ import { useLiabilities } from '@/hooks/useLiabilities';
 import { useReceivables } from '@/hooks/useReceivables';
 import { useEntities } from '@/hooks/useEntities';
 import { useNetWorthHistory } from '@/hooks/useNetWorthHistory';
+import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useBlur } from '@/contexts/BlurContext';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { BalanceSheetStatement, BalanceSheetStatementRef } from '@/components/balance-sheet/BalanceSheetStatement';
 import { BalanceSheetComparison } from '@/components/balance-sheet/BalanceSheetComparison';
+import { DataStatusBadge } from '@/components/ui/data-status-badge';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -41,6 +43,14 @@ const BalanceSheetPage = () => {
   const { data: receivables = [] } = useReceivables();
   const { data: entities = [] } = useEntities();
   const { data: netWorthHistory = [] } = useNetWorthHistory();
+  const { 
+    data: exchangeRatesData, 
+    isStale: fxIsStale, 
+    isUnavailable: fxIsUnavailable, 
+    cacheTimestamp: fxCacheTimestamp,
+    isFetching: fxFetching,
+    refetch: refetchFx 
+  } = useExchangeRates();
 
   // Map simple filter to hook filter
   const hookCertaintyFilter: CertaintyFilter = 
@@ -147,6 +157,16 @@ const BalanceSheetPage = () => {
       <div className="p-6 lg:p-10 print:p-0">
         {/* Controls Header */}
         <div className="max-w-[800px] mx-auto mb-8 print:hidden">
+          <div className="flex flex-wrap items-center gap-4 mb-4">
+            <DataStatusBadge
+              label="FX"
+              status={fxIsUnavailable ? 'unavailable' : fxIsStale ? 'stale' : 'live'}
+              lastUpdated={exchangeRatesData?.lastUpdated}
+              cacheTimestamp={fxCacheTimestamp}
+              isFetching={fxFetching}
+              onRefresh={refetchFx}
+            />
+          </div>
           <div className="flex flex-wrap items-end gap-4 pb-6 border-b border-border">
             {/* Date Picker */}
             <div className="space-y-1.5">
