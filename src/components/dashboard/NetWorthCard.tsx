@@ -1,12 +1,15 @@
-import { TrendingUp, TrendingDown, Wallet, Scale, Percent } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
 
 interface NetWorthCardProps {
   totalValue: number;
   grossAssets: number;
   totalLiabilities: number;
   change: number;
+  grossChange?: number;
   currency?: string;
   isBlurred?: boolean;
 }
@@ -20,20 +23,32 @@ const currencySymbols: Record<string, string> = {
   RUB: '₽',
 };
 
+const STORAGE_KEY = 'holdex-gross-net-view';
+
 export function NetWorthCard({ 
   totalValue, 
   grossAssets,
   totalLiabilities,
-  change, 
+  change,
+  grossChange,
   currency = 'EUR', 
   isBlurred = false 
 }: NetWorthCardProps) {
-  const isPositive = change >= 0;
+  const [showGross, setShowGross] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(STORAGE_KEY) === 'gross';
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, showGross ? 'gross' : 'net');
+  }, [showGross]);
+
+  const displayValue = showGross ? grossAssets : totalValue;
+  const displayChange = showGross ? (grossChange ?? change) : change;
+  const isPositive = displayChange >= 0;
   const symbol = currencySymbols[currency] || `${currency} `;
-  
-  // Debt-to-Asset ratio = Total Liabilities / Gross Assets
-  const debtToAssetRatio = grossAssets > 0 ? (totalLiabilities / grossAssets) * 100 : 0;
-  const isHealthyRatio = debtToAssetRatio < 50;
   
   const formatValue = (value: number) => {
     if (isBlurred) return '•••••';
@@ -45,10 +60,35 @@ export function NetWorthCard({
 
   return (
     <div className="animate-fade-in">
-      <p className="wealth-label mb-2">Net Worth</p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="wealth-label">{showGross ? 'Gross Assets' : 'Net Worth'}</p>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-2">
+              <span className={cn(
+                "text-xs transition-colors",
+                !showGross ? "text-foreground font-medium" : "text-muted-foreground"
+              )}>Net</span>
+              <Switch
+                checked={showGross}
+                onCheckedChange={setShowGross}
+                className="data-[state=checked]:bg-primary data-[state=unchecked]:bg-primary h-4 w-7"
+              />
+              <span className={cn(
+                "text-xs transition-colors",
+                showGross ? "text-foreground font-medium" : "text-muted-foreground"
+              )}>Gross</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Gross = total assets before debt</p>
+            <p>Net = assets minus liabilities</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
       <div className="flex items-baseline gap-4">
         <h2 className="wealth-value text-foreground">
-          {isBlurred ? '•••••' : `${totalValue < 0 ? '-' : ''}${symbol}${formatValue(totalValue)}`}
+          {isBlurred ? '•••••' : `${displayValue < 0 ? '-' : ''}${symbol}${formatValue(displayValue)}`}
         </h2>
         <div className={cn(
           "flex items-center gap-1 text-sm font-medium",
@@ -59,62 +99,15 @@ export function NetWorthCard({
           ) : (
             <TrendingDown size={16} strokeWidth={1.5} />
           )}
-          <span>{isPositive ? '+' : ''}{change.toFixed(1)}% MTD</span>
+          <span>{isPositive ? '+' : ''}{displayChange.toFixed(1)}% MTD</span>
         </div>
       </div>
       
-      {/* Breakdown row */}
-      {!isBlurred && (
-        <div className="flex flex-wrap items-center gap-4 mt-3 text-sm">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Wallet size={14} />
-                <span className="tabular-nums">{symbol}{formatValue(grossAssets)}</span>
-                <span className="text-xs">gross</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Total assets before subtracting liabilities</p>
-            </TooltipContent>
-          </Tooltip>
-          
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1.5 text-foreground">
-                <Scale size={14} />
-                <span className="tabular-nums">{symbol}{formatValue(totalValue)}</span>
-                <span className="text-xs">net</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Gross assets minus all liabilities</p>
-            </TooltipContent>
-          </Tooltip>
-
-          {totalLiabilities > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className={cn(
-                  "flex items-center gap-1.5",
-                  isHealthyRatio ? "text-muted-foreground" : "text-warning"
-                )}>
-                  <Percent size={14} />
-                  <span className="tabular-nums">{debtToAssetRatio.toFixed(0)}%</span>
-                  <span className="text-xs">debt ratio</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Debt-to-Asset ratio: {symbol}{formatValue(totalLiabilities)} liabilities ÷ {symbol}{formatValue(grossAssets)} assets</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {debtToAssetRatio < 30 ? 'Conservative leverage' : 
-                   debtToAssetRatio < 50 ? 'Moderate leverage' : 
-                   debtToAssetRatio < 70 ? 'High leverage' : 'Very high leverage'}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
+      {/* Compact summary row */}
+      {!isBlurred && !showGross && totalLiabilities > 0 && (
+        <p className="text-xs text-muted-foreground mt-2">
+          {symbol}{formatValue(grossAssets)} gross − {symbol}{formatValue(totalLiabilities)} debt
+        </p>
       )}
     </div>
   );
