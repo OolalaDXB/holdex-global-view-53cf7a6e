@@ -95,10 +95,27 @@ const Demo = () => {
   );
   const filteredCollections = showCollections ? collections : [];
 
-  // Helper to check if certainty is confirmed (certain or contractual)
-  const isConfirmedCertainty = (certainty: string | null | undefined): boolean => {
-    return certainty === 'certain' || certainty === 'contractual' || !certainty;
-  };
+  // Calculate certainty breakdown by level
+  const certaintyLevels = ['certain', 'contractual', 'probable', 'optional'] as const;
+  
+  const assetsBreakdownEUR = certaintyLevels.reduce((acc, level) => {
+    acc[level] = filteredAssets
+      .filter(a => ((a as any).certainty || 'certain') === level)
+      .reduce((sum, asset) => sum + convertToEUR(getAssetValue(asset), asset.currency, rates), 0);
+    // Add collections to 'certain' level (they don't have certainty field)
+    if (level === 'certain') {
+      acc[level] += filteredCollections.reduce((sum, item) => 
+        sum + convertToEUR(item.current_value, item.currency, rates), 0);
+    }
+    return acc;
+  }, {} as Record<typeof certaintyLevels[number], number>);
+
+  const liabilitiesBreakdownEUR = certaintyLevels.reduce((acc, level) => {
+    acc[level] = liabilities
+      .filter(l => ((l as any).certainty || 'certain') === level)
+      .reduce((sum, item) => sum + convertToEUR(item.current_balance, item.currency, rates), 0);
+    return acc;
+  }, {} as Record<typeof certaintyLevels[number], number>);
 
   // Calculate totals using rates (in EUR)
   const totalAssetsEUR = filteredAssets.reduce((sum, asset) => {
@@ -119,30 +136,30 @@ const Demo = () => {
 
   const netWorthEUR = totalAssetsEUR + totalCollectionsEUR - totalLiabilitiesEUR;
 
-  // Calculate confirmed vs projected values
-  const confirmedAssetsEUR = filteredAssets.reduce((sum, asset) => {
-    if (!isConfirmedCertainty((asset as any).certainty)) return sum;
-    const value = getAssetValue(asset);
-    return sum + convertToEUR(value, asset.currency, rates);
-  }, 0);
-
-  const confirmedCollectionsEUR = filteredCollections.reduce((sum, item) => {
-    if (!isConfirmedCertainty((item as any).certainty)) return sum;
-    return sum + convertToEUR(item.current_value, item.currency, rates);
-  }, 0);
-
-  const confirmedLiabilitiesEUR = liabilities.reduce((sum, item) => {
-    if (!isConfirmedCertainty((item as any).certainty)) return sum;
-    return sum + convertToEUR(item.current_balance, item.currency, rates);
-  }, 0);
-
-  const confirmedNetWorthEUR = confirmedAssetsEUR + confirmedCollectionsEUR - confirmedLiabilitiesEUR;
+  // Confirmed = certain + contractual, Projected = probable + optional
+  const confirmedNetWorthEUR = (assetsBreakdownEUR.certain + assetsBreakdownEUR.contractual) - 
+                               (liabilitiesBreakdownEUR.certain + liabilitiesBreakdownEUR.contractual);
   const projectedNetWorthEUR = netWorthEUR - confirmedNetWorthEUR;
   
   // Convert to display currency
   const netWorth = convertFromEUR(netWorthEUR, displayCurrency, rates);
   const confirmedNetWorth = convertFromEUR(confirmedNetWorthEUR, displayCurrency, rates);
   const projectedNetWorth = convertFromEUR(projectedNetWorthEUR, displayCurrency, rates);
+
+  // Convert breakdown to display currency for widget
+  const assetsBreakdown = {
+    certain: convertFromEUR(assetsBreakdownEUR.certain, displayCurrency, rates),
+    contractual: convertFromEUR(assetsBreakdownEUR.contractual, displayCurrency, rates),
+    probable: convertFromEUR(assetsBreakdownEUR.probable, displayCurrency, rates),
+    optional: convertFromEUR(assetsBreakdownEUR.optional, displayCurrency, rates),
+  };
+  
+  const liabilitiesBreakdown = {
+    certain: convertFromEUR(liabilitiesBreakdownEUR.certain, displayCurrency, rates),
+    contractual: convertFromEUR(liabilitiesBreakdownEUR.contractual, displayCurrency, rates),
+    probable: convertFromEUR(liabilitiesBreakdownEUR.probable, displayCurrency, rates),
+    optional: convertFromEUR(liabilitiesBreakdownEUR.optional, displayCurrency, rates),
+  };
 
   // Calculate breakdowns
   const typeBreakdownEUR: Record<string, number> = { 
@@ -365,14 +382,12 @@ const Demo = () => {
         </CollapsibleProvider>
 
         {/* Optional widgets shown in demo to showcase features */}
-        {projectedNetWorth > 0 && (
-          <CertaintyBreakdownWidget
-            confirmedValue={confirmedNetWorth}
-            projectedValue={projectedNetWorth}
-            currency={displayCurrency}
-            delay={150}
-          />
-        )}
+        <CertaintyBreakdownWidget
+          assetsBreakdown={assetsBreakdown}
+          liabilitiesBreakdown={liabilitiesBreakdown}
+          currency={displayCurrency}
+          delay={150}
+        />
 
         <DemoDebtToIncomeWidget delay={175} />
 
