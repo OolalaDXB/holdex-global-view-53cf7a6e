@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useSidebarContext } from '@/contexts/SidebarContext';
 import { 
   LayoutDashboard, 
   Wallet, 
@@ -46,7 +46,7 @@ const actionsNavigation = [
 
 
 export function Sidebar({ isDemo = false }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, toggle } = useSidebarContext();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -96,7 +96,7 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
             <span className="font-serif text-xl font-semibold text-foreground">H</span>
           )}
           <button
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={toggle}
             className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors text-sidebar-foreground"
           >
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
