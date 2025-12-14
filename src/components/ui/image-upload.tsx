@@ -12,9 +12,10 @@ interface ImageUploadProps {
   hideAIButton?: boolean;
   className?: string;
   disabled?: boolean;
+  compact?: boolean;
 }
 
-export function ImageUpload({ value, onChange, assetId, onGenerateAI, hideAIButton = false, className, disabled }: ImageUploadProps) {
+export function ImageUpload({ value, onChange, assetId, onGenerateAI, hideAIButton = false, className, disabled, compact = false }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadImage, deleteImage, isUploading } = useImageUpload();
   const [isDragging, setIsDragging] = useState(false);
@@ -52,7 +53,10 @@ export function ImageUpload({ value, onChange, assetId, onGenerateAI, hideAIButt
         <img
           src={value}
           alt="Asset"
-          className="w-full h-48 object-cover rounded-lg"
+          className={cn(
+            "object-cover rounded-lg",
+            compact ? "w-full h-16" : "w-full h-48"
+          )}
         />
         {!disabled && (
           <button
@@ -63,6 +67,44 @@ export function ImageUpload({ value, onChange, assetId, onGenerateAI, hideAIButt
             <X size={16} className="text-foreground" />
           </button>
         )}
+      </div>
+    );
+  }
+
+  if (compact) {
+    return (
+      <div
+        className={cn(
+          "border border-dashed rounded-lg p-2 transition-colors flex items-center gap-2",
+          isDragging ? "border-primary bg-primary/5" : "border-border",
+          disabled && "opacity-50 cursor-not-allowed",
+          className
+        )}
+        onDragOver={(e) => { e.preventDefault(); if (!disabled) setIsDragging(true); }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={disabled ? undefined : handleDrop}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          disabled={disabled}
+          onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+        />
+        
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading || disabled}
+          className="text-xs"
+        >
+          <Upload size={12} className="mr-1" />
+          {isUploading ? 'Uploading...' : 'Upload'}
+        </Button>
+        <span className="text-xs text-muted-foreground">or drag & drop</span>
       </div>
     );
   }
