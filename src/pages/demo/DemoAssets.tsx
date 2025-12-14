@@ -4,7 +4,15 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { useDemo } from '@/contexts/DemoContext';
 import { fallbackRates } from '@/lib/currency';
-import { fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
+
+// Demo crypto prices (static for demo purposes)
+const demoCryptoPrices = {
+  BTC: { price: 100000, change24h: 2.5 },
+  ETH: { price: 3500, change24h: 1.2 },
+  SOL: { price: 180, change24h: 3.1 },
+  USDT: { price: 1, change24h: 0 },
+  USDC: { price: 1, change24h: 0 },
+};
 import { cn } from '@/lib/utils';
 import { Search, Info, Ruler, LayoutGrid, List, ArrowUpDown, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -62,7 +70,7 @@ const DemoAssetsPage = () => {
   
   const { assets, entities, profile, updateProfile } = useDemo();
   const rates = fallbackRates;
-  const prices = fallbackCryptoPrices;
+  const prices = demoCryptoPrices;
   const areaUnit = profile?.area_unit || 'sqm';
 
   const toggleAreaUnit = () => {

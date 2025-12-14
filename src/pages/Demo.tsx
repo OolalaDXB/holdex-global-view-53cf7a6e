@@ -17,7 +17,20 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useDemo } from '@/contexts/DemoContext';
 import { convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
-import { fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
+
+// Demo crypto prices (static for demo purposes)
+const demoCryptoPrices: Record<string, { price: number; change24h: number }> = {
+  BTC: { price: 100000, change24h: 2.5 },
+  ETH: { price: 3500, change24h: 1.2 },
+  SOL: { price: 180, change24h: 3.1 },
+  USDT: { price: 1, change24h: 0 },
+  USDC: { price: 1, change24h: 0 },
+  BNB: { price: 600, change24h: 0.8 },
+  XRP: { price: 2.2, change24h: -0.5 },
+  ADA: { price: 0.9, change24h: 1.5 },
+  DOGE: { price: 0.35, change24h: 4.2 },
+  MATIC: { price: 0.5, change24h: 2.1 },
+};
 import { RefreshCw, Camera, Info } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
@@ -70,7 +83,7 @@ const Demo = () => {
 
   // Use fallback rates for demo (realistic static rates)
   const rates = fallbackRates;
-  const prices = fallbackCryptoPrices;
+  const prices = demoCryptoPrices;
 
   // Get included types based on view config
   const getIncludedTypes = (): string[] => {

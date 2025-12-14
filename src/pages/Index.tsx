@@ -31,13 +31,13 @@ import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useNetWorthHistory } from '@/hooks/useNetWorthHistory';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
-import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
+import { useCryptoPrices } from '@/hooks/useCryptoPrices';
 import { useSaveSnapshot } from '@/hooks/useNetWorthSnapshot';
 import { useProfile } from '@/hooks/useProfile';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useBlur } from '@/contexts/BlurContext';
 import { convertToEUR, convertFromEUR, fallbackRates, formatCurrency } from '@/lib/currency';
-import { RefreshCw, Camera, Info } from 'lucide-react';
+import { RefreshCw, Camera, Info, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getCountryFlag } from '@/hooks/useCountries';
@@ -69,7 +69,7 @@ const Dashboard = () => {
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: netWorthHistoryData = [] } = useNetWorthHistory();
   const { data: exchangeRates, isLoading: ratesLoading, dataUpdatedAt: fxUpdatedAt } = useExchangeRates();
-  const { data: cryptoPrices, dataUpdatedAt: cryptoUpdatedAt } = useCryptoPrices();
+  const { data: cryptoPrices, dataUpdatedAt: cryptoUpdatedAt, isStale: cryptoIsStale, isUnavailable: cryptoIsUnavailable, message: cryptoMessage } = useCryptoPrices();
   const saveSnapshot = useSaveSnapshot();
   const { displayCurrency, convertToDisplay, formatInDisplayCurrency } = useCurrency();
   const { config: viewConfig, setConfig: setViewConfig, getIncludedTypes, includesCollections, shouldIncludeAsset } = useViewConfig();
@@ -82,7 +82,7 @@ const Dashboard = () => {
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
   const rates = exchangeRates?.rates || fallbackRates;
-  const prices = cryptoPrices || fallbackCryptoPrices;
+  const prices = cryptoPrices || {};
   
   // Get included types based on view config
   const includedTypes = getIncludedTypes();
@@ -441,11 +441,25 @@ const Dashboard = () => {
                 <span>FX: {fxLastUpdated}</span>
               </div>
             )}
-            {hasCrypto && cryptoLastUpdated && (
-              <div className="flex items-center gap-1">
-                <RefreshCw size={12} />
-                <span>Crypto: {cryptoLastUpdated}</span>
-              </div>
+            {hasCrypto && (
+              <>
+                {cryptoIsUnavailable ? (
+                  <div className="flex items-center gap-1 text-destructive">
+                    <AlertTriangle size={12} />
+                    <span>Crypto prices unavailable</span>
+                  </div>
+                ) : cryptoIsStale ? (
+                  <div className="flex items-center gap-1 text-yellow-600">
+                    <AlertTriangle size={12} />
+                    <span>Crypto: {cryptoMessage || 'Using cached prices'}</span>
+                  </div>
+                ) : cryptoLastUpdated && (
+                  <div className="flex items-center gap-1">
+                    <RefreshCw size={12} />
+                    <span>Crypto: {cryptoLastUpdated}</span>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </header>
