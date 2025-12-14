@@ -48,6 +48,24 @@ const sortOptions: { value: SortOption; label: string }[] = [
   { value: 'date-asc', label: 'Oldest First' },
 ];
 
+const propertyTypeOptions = [
+  { value: 'all', label: 'All Types' },
+  { value: 'apartment', label: 'Apartment' },
+  { value: 'villa', label: 'Villa' },
+  { value: 'studio', label: 'Studio' },
+  { value: 'penthouse', label: 'Penthouse' },
+  { value: 'townhouse', label: 'Townhouse' },
+  { value: 'office', label: 'Office' },
+  { value: 'land', label: 'Land' },
+];
+
+const tenureTypeOptions = [
+  { value: 'all', label: 'All Tenure' },
+  { value: 'freehold', label: 'Freehold' },
+  { value: 'leasehold', label: 'Leasehold' },
+  { value: 'share_of_freehold', label: 'Share of Freehold' },
+];
+
 const AssetsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const entityFilter = searchParams.get('entity');
@@ -57,15 +75,30 @@ const AssetsPage = () => {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   
-  // Property filters
-  const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>('all');
-  const [minRooms, setMinRooms] = useState('');
-  const [minSize, setMinSize] = useState('');
-  
   // Sorting and view
   const [sortBy, setSortBy] = useState<SortOption>('value-desc');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
+  
+  // Real Estate filters
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>('all');
+  const [tenureTypeFilter, setTenureTypeFilter] = useState<string>('all');
+  const [minRooms, setMinRooms] = useState('');
+  const [minSize, setMinSize] = useState('');
+  
+  // Investment filters
+  const [platformFilter, setPlatformFilter] = useState<string>('all');
+  const [performanceFilter, setPerformanceFilter] = useState<string>('all');
+  
+  // Crypto filters
+  const [tickerFilter, setTickerFilter] = useState<string>('all');
+  
+  // Bank filters
+  const [institutionFilter, setInstitutionFilter] = useState<string>('all');
+  
+  // Business filters
+  const [countryFilter, setCountryFilter] = useState<string>('all');
+  const [ownershipFilter, setOwnershipFilter] = useState<string>('all');
   
   // Filters panel
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -91,14 +124,53 @@ const AssetsPage = () => {
     return entity?.name || 'Unknown Entity';
   };
 
-  // Count active filters
-  const activeFilterCount = [
-    certaintyFilter !== 'all',
-    propertyTypeFilter !== 'all',
-    minRooms !== '',
-    minSize !== '',
-    viewMode !== 'grid',
-  ].filter(Boolean).length;
+  // Unique values for dynamic filter options
+  const uniquePlatforms = useMemo(() => {
+    const platforms = assets.filter(a => a.type === 'investment').map(a => a.platform).filter(Boolean);
+    return ['all', ...Array.from(new Set(platforms))];
+  }, [assets]);
+  
+  const uniqueTickers = useMemo(() => {
+    const tickers = assets.filter(a => a.type === 'crypto').map(a => a.ticker).filter(Boolean);
+    return ['all', ...Array.from(new Set(tickers))];
+  }, [assets]);
+  
+  const uniqueInstitutions = useMemo(() => {
+    const institutions = assets.filter(a => a.type === 'bank').map(a => a.institution).filter(Boolean);
+    return ['all', ...Array.from(new Set(institutions))];
+  }, [assets]);
+  
+  const uniqueCountries = useMemo(() => {
+    const countries = assets.filter(a => a.type === 'business').map(a => a.country).filter(Boolean);
+    return ['all', ...Array.from(new Set(countries))];
+  }, [assets]);
+
+  // Count active filters based on current type
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    // Common filters
+    if (certaintyFilter !== 'all') count++;
+    if (viewMode !== 'grid') count++;
+    
+    // Type-specific filters
+    if (filter === 'real-estate') {
+      if (propertyTypeFilter !== 'all') count++;
+      if (tenureTypeFilter !== 'all') count++;
+      if (minRooms !== '') count++;
+      if (minSize !== '') count++;
+    } else if (filter === 'investment') {
+      if (platformFilter !== 'all') count++;
+      if (performanceFilter !== 'all') count++;
+    } else if (filter === 'crypto') {
+      if (tickerFilter !== 'all') count++;
+    } else if (filter === 'bank') {
+      if (institutionFilter !== 'all') count++;
+    } else if (filter === 'business') {
+      if (countryFilter !== 'all') count++;
+      if (ownershipFilter !== 'all') count++;
+    }
+    return count;
+  }, [filter, certaintyFilter, viewMode, propertyTypeFilter, tenureTypeFilter, minRooms, minSize, platformFilter, performanceFilter, tickerFilter, institutionFilter, countryFilter, ownershipFilter]);
 
   const filteredAndSortedAssets = useMemo(() => {
     let result = assets
@@ -119,28 +191,59 @@ const AssetsPage = () => {
         );
       })
       .filter(a => {
-        if (propertyTypeFilter === 'all') return true;
-        if (a.type !== 'real-estate') return filter !== 'real-estate';
-        return (a as any).property_type === propertyTypeFilter;
-      })
-      .filter(a => {
-        if (!minRooms) return true;
-        if (a.type !== 'real-estate') return true;
-        return ((a as any).rooms || 0) >= parseInt(minRooms);
-      })
-      .filter(a => {
-        if (!minSize) return true;
-        if (a.type !== 'real-estate') return true;
-        const minSizeNum = parseFloat(minSize);
-        const assetSizeSqm = (a as any).size_sqm || 0;
-        const compareSize = areaUnit === 'sqft' ? minSizeNum / 10.7639 : minSizeNum;
-        return assetSizeSqm >= compareSize;
-      })
-      .filter(a => {
         if (certaintyFilter === 'all') return true;
         const cert = a.certainty || 'certain';
         if (certaintyFilter === 'certain') return cert === 'certain';
         if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
+        return true;
+      })
+      // Real Estate filters
+      .filter(a => {
+        if (filter !== 'real-estate') return true;
+        if (propertyTypeFilter !== 'all' && (a as any).property_type !== propertyTypeFilter) return false;
+        if (tenureTypeFilter !== 'all' && (a as any).tenure_type !== tenureTypeFilter) return false;
+        if (minRooms && ((a as any).rooms || 0) < parseInt(minRooms)) return false;
+        if (minSize) {
+          const minSizeNum = parseFloat(minSize);
+          const assetSizeSqm = (a as any).size_sqm || 0;
+          const compareSize = areaUnit === 'sqft' ? minSizeNum / 10.7639 : minSizeNum;
+          if (assetSizeSqm < compareSize) return false;
+        }
+        return true;
+      })
+      // Investment filters
+      .filter(a => {
+        if (filter !== 'investment') return true;
+        if (platformFilter !== 'all' && a.platform !== platformFilter) return false;
+        if (performanceFilter !== 'all') {
+          const purchaseValue = a.purchase_value || a.current_value;
+          const performance = purchaseValue > 0 ? ((a.current_value - purchaseValue) / purchaseValue) * 100 : 0;
+          if (performanceFilter === 'positive' && performance <= 0) return false;
+          if (performanceFilter === 'negative' && performance >= 0) return false;
+        }
+        return true;
+      })
+      // Crypto filters
+      .filter(a => {
+        if (filter !== 'crypto') return true;
+        if (tickerFilter !== 'all' && a.ticker !== tickerFilter) return false;
+        return true;
+      })
+      // Bank filters
+      .filter(a => {
+        if (filter !== 'bank') return true;
+        if (institutionFilter !== 'all' && a.institution !== institutionFilter) return false;
+        return true;
+      })
+      // Business filters
+      .filter(a => {
+        if (filter !== 'business') return true;
+        if (countryFilter !== 'all' && a.country !== countryFilter) return false;
+        if (ownershipFilter !== 'all') {
+          const ownership = (a as any).ownership_percentage || 100;
+          if (ownershipFilter === 'majority' && ownership < 50) return false;
+          if (ownershipFilter === 'minority' && ownership >= 50) return false;
+        }
         return true;
       });
 
@@ -164,7 +267,7 @@ const AssetsPage = () => {
     }
 
     return result;
-  }, [assets, filter, entityFilter, searchQuery, propertyTypeFilter, minRooms, minSize, areaUnit, sortBy, certaintyFilter]);
+  }, [assets, filter, entityFilter, searchQuery, certaintyFilter, propertyTypeFilter, tenureTypeFilter, minRooms, minSize, areaUnit, platformFilter, performanceFilter, tickerFilter, institutionFilter, countryFilter, ownershipFilter, sortBy]);
 
   const hasCryptoAssets = assets.some(a => a.type === 'crypto');
   const lastCryptoUpdate = dataUpdatedAt 
@@ -273,8 +376,9 @@ const AssetsPage = () => {
           <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
             <CollapsibleContent>
               <div className="p-4 bg-secondary/50 rounded-lg border border-border space-y-4">
+                {/* Common filters row */}
                 <div className="flex flex-wrap items-center gap-4">
-                  {/* Certainty filter */}
+                  {/* Certainty filter - shown for all types */}
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Certainty:</span>
                     <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
@@ -306,8 +410,8 @@ const AssetsPage = () => {
                   </div>
                 </div>
 
-                {/* Property-specific filters */}
-                {(filter === 'all' || filter === 'real-estate') && (
+                {/* Real Estate specific filters */}
+                {filter === 'real-estate' && (
                   <div className="flex flex-wrap gap-4 pt-3 border-t border-border">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">Property type:</span>
@@ -316,14 +420,22 @@ const AssetsPage = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All</SelectItem>
-                          <SelectItem value="apartment">Apartment</SelectItem>
-                          <SelectItem value="villa">Villa</SelectItem>
-                          <SelectItem value="studio">Studio</SelectItem>
-                          <SelectItem value="penthouse">Penthouse</SelectItem>
-                          <SelectItem value="townhouse">Townhouse</SelectItem>
-                          <SelectItem value="office">Office</SelectItem>
-                          <SelectItem value="land">Land</SelectItem>
+                          {propertyTypeOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Tenure:</span>
+                      <Select value={tenureTypeFilter} onValueChange={setTenureTypeFilter}>
+                        <SelectTrigger className="w-36 h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tenureTypeOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -349,6 +461,116 @@ const AssetsPage = () => {
                         placeholder="0"
                       />
                       <span className="text-xs text-muted-foreground">{areaUnit === 'sqm' ? 'm²' : 'sq ft'}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Investment specific filters */}
+                {filter === 'investment' && (
+                  <div className="flex flex-wrap gap-4 pt-3 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Platform:</span>
+                      <Select value={platformFilter} onValueChange={setPlatformFilter}>
+                        <SelectTrigger className="w-36 h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {uniquePlatforms.map((platform) => (
+                            <SelectItem key={platform} value={platform}>
+                              {platform === 'all' ? 'All Platforms' : platform}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Performance:</span>
+                      <Select value={performanceFilter} onValueChange={setPerformanceFilter}>
+                        <SelectTrigger className="w-32 h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="positive">Positive</SelectItem>
+                          <SelectItem value="negative">Negative</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Crypto specific filters */}
+                {filter === 'crypto' && (
+                  <div className="flex flex-wrap gap-4 pt-3 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Ticker:</span>
+                      <Select value={tickerFilter} onValueChange={setTickerFilter}>
+                        <SelectTrigger className="w-32 h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {uniqueTickers.map((ticker) => (
+                            <SelectItem key={ticker} value={ticker}>
+                              {ticker === 'all' ? 'All Tickers' : ticker}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Bank specific filters */}
+                {filter === 'bank' && (
+                  <div className="flex flex-wrap gap-4 pt-3 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Institution:</span>
+                      <Select value={institutionFilter} onValueChange={setInstitutionFilter}>
+                        <SelectTrigger className="w-40 h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {uniqueInstitutions.map((institution) => (
+                            <SelectItem key={institution} value={institution}>
+                              {institution === 'all' ? 'All Institutions' : institution}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Business specific filters */}
+                {filter === 'business' && (
+                  <div className="flex flex-wrap gap-4 pt-3 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Country:</span>
+                      <Select value={countryFilter} onValueChange={setCountryFilter}>
+                        <SelectTrigger className="w-36 h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {uniqueCountries.map((country) => (
+                            <SelectItem key={country} value={country}>
+                              {country === 'all' ? 'All Countries' : country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Ownership:</span>
+                      <Select value={ownershipFilter} onValueChange={setOwnershipFilter}>
+                        <SelectTrigger className="w-32 h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="majority">Majority (≥50%)</SelectItem>
+                          <SelectItem value="minority">Minority (&lt;50%)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 )}
