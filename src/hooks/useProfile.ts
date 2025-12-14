@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -63,7 +63,7 @@ const parseProfile = (data: BaseProfile | null): Profile | null => {
   };
 };
 
-export const useProfile = () => {
+export const useProfile = (): UseQueryResult<Profile | null, Error> => {
   const { user } = useAuth();
 
   return useQuery({
@@ -84,12 +84,14 @@ export const useProfile = () => {
   });
 };
 
-export const useUpdateProfile = () => {
+type ProfileUpdateParams = Partial<Omit<BaseProfile, 'id' | 'created_at'>>;
+
+export const useUpdateProfile = (): UseMutationResult<Profile | null, Error, ProfileUpdateParams> => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (updates: Partial<Omit<BaseProfile, 'id' | 'created_at'>>) => {
+    mutationFn: async (updates: ProfileUpdateParams): Promise<Profile | null> => {
       if (!user) throw new Error('Not authenticated');
       
       // Use upsert to create profile if it doesn't exist
@@ -97,7 +99,7 @@ export const useUpdateProfile = () => {
         .from('profiles')
         .upsert({
           id: user.id,
-          email: user.email || '',
+          email: user.email ?? '',
           ...updates,
         })
         .select()

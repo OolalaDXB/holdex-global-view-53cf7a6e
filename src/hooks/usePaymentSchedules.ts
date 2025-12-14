@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -24,12 +24,12 @@ export interface PaymentSchedule {
 
 export type PaymentScheduleInsert = Omit<PaymentSchedule, 'id' | 'created_at' | 'updated_at'>;
 
-export function usePaymentSchedules(assetId: string | null) {
+export function usePaymentSchedules(assetId: string | null | undefined): UseQueryResult<PaymentSchedule[], Error> {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['payment-schedules', assetId],
-    queryFn: async () => {
+    queryFn: async (): Promise<PaymentSchedule[]> => {
       if (!assetId) return [];
       
       const { data, error } = await supabase
@@ -39,18 +39,18 @@ export function usePaymentSchedules(assetId: string | null) {
         .order('payment_number', { ascending: true });
 
       if (error) throw error;
-      return data as PaymentSchedule[];
+      return (data ?? []) as PaymentSchedule[];
     },
     enabled: !!user && !!assetId,
   });
 }
 
-export function useCreatePaymentSchedule() {
+export function useCreatePaymentSchedule(): UseMutationResult<PaymentSchedule, Error, Omit<PaymentScheduleInsert, 'user_id'>> {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (payment: Omit<PaymentScheduleInsert, 'user_id'>) => {
+    mutationFn: async (payment: Omit<PaymentScheduleInsert, 'user_id'>): Promise<PaymentSchedule> => {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
@@ -60,7 +60,7 @@ export function useCreatePaymentSchedule() {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as PaymentSchedule;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['payment-schedules', data.asset_id] });
@@ -68,11 +68,13 @@ export function useCreatePaymentSchedule() {
   });
 }
 
-export function useUpdatePaymentSchedule() {
+type UpdatePaymentScheduleParams = Partial<PaymentSchedule> & { id: string };
+
+export function useUpdatePaymentSchedule(): UseMutationResult<PaymentSchedule, Error, UpdatePaymentScheduleParams> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<PaymentSchedule> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: UpdatePaymentScheduleParams): Promise<PaymentSchedule> => {
       const { data, error } = await supabase
         .from('payment_schedules')
         .update(updates)
@@ -81,7 +83,7 @@ export function useUpdatePaymentSchedule() {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as PaymentSchedule;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['payment-schedules', data.asset_id] });
@@ -89,11 +91,16 @@ export function useUpdatePaymentSchedule() {
   });
 }
 
-export function useDeletePaymentSchedule() {
+interface DeletePaymentScheduleParams {
+  id: string;
+  assetId: string;
+}
+
+export function useDeletePaymentSchedule(): UseMutationResult<{ assetId: string }, Error, DeletePaymentScheduleParams> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, assetId }: { id: string; assetId: string }) => {
+    mutationFn: async ({ id, assetId }: DeletePaymentScheduleParams): Promise<{ assetId: string }> => {
       const { error } = await supabase
         .from('payment_schedules')
         .delete()
@@ -108,12 +115,12 @@ export function useDeletePaymentSchedule() {
   });
 }
 
-export function useBulkCreatePaymentSchedules() {
+export function useBulkCreatePaymentSchedules(): UseMutationResult<PaymentSchedule[], Error, Omit<PaymentScheduleInsert, 'user_id'>[]> {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (payments: Omit<PaymentScheduleInsert, 'user_id'>[]) => {
+    mutationFn: async (payments: Omit<PaymentScheduleInsert, 'user_id'>[]): Promise<PaymentSchedule[]> => {
       if (!user) throw new Error('User not authenticated');
 
       const paymentsWithUser = payments.map(p => ({ ...p, user_id: user.id }));
@@ -124,11 +131,11 @@ export function useBulkCreatePaymentSchedules() {
         .select();
 
       if (error) throw error;
-      return data;
+      return (data ?? []) as PaymentSchedule[];
     },
     onSuccess: (data) => {
-      if (data && data.length > 0) {
-        queryClient.invalidateQueries({ queryKey: ['payment-schedules', data[0].asset_id] });
+      if (data.length > 0) {
+        queryClient.invalidateQueries({ queryKey: ['payment-schedules', data[0]?.asset_id] });
       }
     },
   });

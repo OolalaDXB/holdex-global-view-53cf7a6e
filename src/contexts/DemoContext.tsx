@@ -23,21 +23,21 @@ interface DemoContextType {
 
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
 
-export function DemoProvider({ children }: { children: ReactNode }) {
+const generateId = (): string => `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+const now = (): string => new Date().toISOString();
+
+export function DemoProvider({ children }: { children: ReactNode }): JSX.Element {
   const [assets, setAssets] = useState<DemoAsset[]>(demoAssets);
   const [collections, setCollections] = useState<DemoCollection[]>(demoCollections);
   const [liabilities, setLiabilities] = useState<DemoLiability[]>(demoLiabilities);
   const [entities, setEntities] = useState<DemoEntity[]>(demoEntities);
   const [profile, setProfile] = useState<DemoProfile>(demoProfile);
 
-  const updateProfile = (updates: Partial<DemoProfile>) => {
-    setProfile(prev => ({ ...prev, ...updates, updated_at: new Date().toISOString() }));
+  const updateProfile = (updates: Partial<DemoProfile>): void => {
+    setProfile(prev => ({ ...prev, ...updates, updated_at: now() }));
   };
 
-  const generateId = () => `demo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  const now = () => new Date().toISOString();
-
-  const addAsset = (asset: Omit<DemoAsset, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+  const addAsset = (asset: Omit<DemoAsset, 'id' | 'user_id' | 'created_at' | 'updated_at'>): void => {
     const newAsset: DemoAsset = {
       ...asset,
       id: generateId(),
@@ -48,17 +48,17 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setAssets(prev => [newAsset, ...prev]);
   };
 
-  const updateAsset = (id: string, updates: Partial<DemoAsset>) => {
+  const updateAsset = (id: string, updates: Partial<DemoAsset>): void => {
     setAssets(prev => prev.map(a => 
       a.id === id ? { ...a, ...updates, updated_at: now() } : a
     ));
   };
 
-  const deleteAsset = (id: string) => {
+  const deleteAsset = (id: string): void => {
     setAssets(prev => prev.filter(a => a.id !== id));
   };
 
-  const addCollection = (collection: Omit<DemoCollection, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+  const addCollection = (collection: Omit<DemoCollection, 'id' | 'user_id' | 'created_at' | 'updated_at'>): void => {
     const newCollection: DemoCollection = {
       ...collection,
       id: generateId(),
@@ -69,17 +69,17 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setCollections(prev => [newCollection, ...prev]);
   };
 
-  const updateCollection = (id: string, updates: Partial<DemoCollection>) => {
+  const updateCollection = (id: string, updates: Partial<DemoCollection>): void => {
     setCollections(prev => prev.map(c => 
       c.id === id ? { ...c, ...updates, updated_at: now() } : c
     ));
   };
 
-  const deleteCollection = (id: string) => {
+  const deleteCollection = (id: string): void => {
     setCollections(prev => prev.filter(c => c.id !== id));
   };
 
-  const addLiability = (liability: Omit<DemoLiability, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+  const addLiability = (liability: Omit<DemoLiability, 'id' | 'user_id' | 'created_at' | 'updated_at'>): void => {
     const newLiability: DemoLiability = {
       ...liability,
       id: generateId(),
@@ -90,13 +90,13 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     setLiabilities(prev => [newLiability, ...prev]);
   };
 
-  const updateLiability = (id: string, updates: Partial<DemoLiability>) => {
+  const updateLiability = (id: string, updates: Partial<DemoLiability>): void => {
     setLiabilities(prev => prev.map(l => 
       l.id === id ? { ...l, ...updates, updated_at: now() } : l
     ));
   };
 
-  const deleteLiability = (id: string) => {
+  const deleteLiability = (id: string): void => {
     setLiabilities(prev => prev.filter(l => l.id !== id));
   };
 
@@ -138,7 +138,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useDemo() {
+export function useDemo(): DemoContextType {
   const context = useContext(DemoContext);
   if (!context) {
     throw new Error('useDemo must be used within a DemoProvider');

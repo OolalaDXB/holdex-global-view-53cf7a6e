@@ -50,21 +50,21 @@ const currencySymbols: Record<string, string> = {
 // Currencies with 0 decimal places
 const zeroDecimalCurrencies = ['JPY', 'KRW', 'VND', 'IDR'];
 
-export function CurrencyProvider({ children }: { children: ReactNode }) {
+export function CurrencyProvider({ children }: { children: ReactNode }): JSX.Element {
   const { data: profile } = useProfile();
   const { data: exchangeRates } = useExchangeRates();
   
-  const baseCurrency = profile?.base_currency || 'EUR';
-  const secondaryCurrency1 = profile?.secondary_currency_1 || 'USD';
-  const secondaryCurrency2 = profile?.secondary_currency_2 || 'AED';
-  const rates = exchangeRates?.rates || fallbackRates;
+  const baseCurrency = profile?.base_currency ?? 'EUR';
+  const secondaryCurrency1 = profile?.secondary_currency_1 ?? 'USD';
+  const secondaryCurrency2 = profile?.secondary_currency_2 ?? 'AED';
+  const rates = exchangeRates?.rates ?? fallbackRates;
   
   // Get the user's configured currencies
   const userCurrencies = [baseCurrency, secondaryCurrency1, secondaryCurrency2].filter(
     (c, i, arr) => arr.indexOf(c) === i
   );
   
-  const [displayCurrency, setDisplayCurrencyState] = useState(() => {
+  const [displayCurrency, setDisplayCurrencyState] = useState<string>(() => {
     const saved = localStorage.getItem(DISPLAY_CURRENCY_KEY);
     // Only use saved if it's still in the user's configured currencies
     if (saved && userCurrencies.includes(saved)) {
@@ -83,9 +83,9 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     } else if (!saved) {
       setDisplayCurrencyState(baseCurrency);
     }
-  }, [baseCurrency, secondaryCurrency1, secondaryCurrency2]);
+  }, [baseCurrency, secondaryCurrency1, secondaryCurrency2, userCurrencies]);
 
-  const setDisplayCurrency = (currency: string) => {
+  const setDisplayCurrency = (currency: string): void => {
     setDisplayCurrencyState(currency);
     localStorage.setItem(DISPLAY_CURRENCY_KEY, currency);
   };
@@ -105,7 +105,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   // Format amount in display currency
   const formatInDisplayCurrency = (amount: number, fromCurrency: string): string => {
     const converted = convertToDisplay(amount, fromCurrency);
-    const symbol = currencySymbols[displayCurrency] || `${displayCurrency} `;
+    const symbol = currencySymbols[displayCurrency] ?? `${displayCurrency} `;
     const decimals = zeroDecimalCurrencies.includes(displayCurrency) ? 0 : 0;
     
     const formatted = new Intl.NumberFormat('en-US', {
@@ -135,7 +135,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useCurrency() {
+export function useCurrency(): CurrencyContextType {
   const context = useContext(CurrencyContext);
   if (context === undefined) {
     throw new Error('useCurrency must be used within a CurrencyProvider');

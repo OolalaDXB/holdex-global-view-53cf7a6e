@@ -9,19 +9,19 @@ interface BlurContextType {
 
 const BlurContext = createContext<BlurContextType | undefined>(undefined);
 
-export const BlurProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const BlurProvider: React.FC<{ children: ReactNode }> = ({ children }): JSX.Element => {
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
-  const [isBlurred, setIsBlurred] = useState(false);
+  const [isBlurred, setIsBlurred] = useState<boolean>(false);
 
   // Sync with profile on load
   useEffect(() => {
-    if (profile?.blur_amounts !== undefined) {
+    if (profile?.blur_amounts !== undefined && profile.blur_amounts !== null) {
       setIsBlurred(profile.blur_amounts);
     }
   }, [profile?.blur_amounts]);
 
-  const toggleBlur = async () => {
+  const toggleBlur = async (): Promise<void> => {
     const newValue = !isBlurred;
     setIsBlurred(newValue);
     
@@ -32,6 +32,7 @@ export const BlurProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } catch (error) {
         // Revert on error
         setIsBlurred(!newValue);
+        console.error('Failed to update blur preference:', error);
       }
     }
   };
@@ -50,7 +51,7 @@ export const BlurProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
-export const useBlur = () => {
+export const useBlur = (): BlurContextType => {
   const context = useContext(BlurContext);
   if (context === undefined) {
     throw new Error('useBlur must be used within a BlurProvider');
