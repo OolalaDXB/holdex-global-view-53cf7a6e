@@ -8,14 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useDemo } from '@/contexts/DemoContext';
-import { FavoriteCitiesSelect } from '@/components/settings/FavoriteCitiesSelect';
+import { FavoriteCitiesSelect, SimplifiedCity } from '@/components/settings/FavoriteCitiesSelect';
 import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
 import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
 
-interface City {
-  name: string;
-  timezone: string;
-}
+type City = SimplifiedCity;
 
 const FISCAL_YEAR_OPTIONS = [
   { value: '01-01', label: 'January 1 (Default)' },

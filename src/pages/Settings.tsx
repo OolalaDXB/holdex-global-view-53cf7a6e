@@ -14,15 +14,12 @@ import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
-import { FavoriteCitiesSelect } from '@/components/settings/FavoriteCitiesSelect';
+import { FavoriteCitiesSelect, SimplifiedCity } from '@/components/settings/FavoriteCitiesSelect';
 import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
 import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
 import { X } from 'lucide-react';
 
-interface City {
-  name: string;
-  timezone: string;
-}
+type City = SimplifiedCity;
 
 const FISCAL_YEAR_OPTIONS = [
   { value: '01-01', label: 'January 1 (Default)' },
