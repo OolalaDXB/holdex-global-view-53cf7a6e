@@ -9,6 +9,7 @@ import { ReceivableCard } from '@/components/receivables/ReceivableCard';
 import { ReceivableDialog } from '@/components/receivables/ReceivableDialog';
 import { RecordPaymentDialog } from '@/components/receivables/RecordPaymentDialog';
 import { DeleteReceivableDialog } from '@/components/receivables/DeleteReceivableDialog';
+import { DataStatusBadge } from '@/components/ui/data-status-badge';
 import { useReceivables, Receivable } from '@/hooks/useReceivables';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -20,8 +21,17 @@ type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
 export default function ReceivablesPage() {
   const { data: receivables, isLoading } = useReceivables();
-  const { data: rates } = useExchangeRates();
+  const { 
+    data: exchangeRatesData, 
+    isStale: fxIsStale, 
+    isUnavailable: fxIsUnavailable, 
+    cacheTimestamp: fxCacheTimestamp,
+    isFetching: fxFetching,
+    refetch: refetchFx
+  } = useExchangeRates();
   const { displayCurrency } = useCurrency();
+  
+  const rates = exchangeRatesData?.rates;
   
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -90,15 +100,27 @@ export default function ReceivablesPage() {
   return (
     <AppLayout>
       <div className="p-8 lg:p-12 max-w-7xl">
-        <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Receivables</h1>
-            <p className="text-muted-foreground">Track money owed to you</p>
+        <header className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Receivables</h1>
+              <p className="text-muted-foreground">Track money owed to you</p>
+            </div>
+            <Button onClick={handleAdd}>
+              <Plus size={16} className="mr-2" />
+              Add Receivable
+            </Button>
           </div>
-          <Button onClick={handleAdd}>
-            <Plus size={16} className="mr-2" />
-            Add Receivable
-          </Button>
+          <div className="flex flex-wrap items-center gap-4 mt-3">
+            <DataStatusBadge
+              label="FX"
+              status={fxIsUnavailable ? 'unavailable' : fxIsStale ? 'stale' : 'live'}
+              lastUpdated={exchangeRatesData?.lastUpdated}
+              cacheTimestamp={fxCacheTimestamp}
+              isFetching={fxFetching}
+              onRefresh={refetchFx}
+            />
+          </div>
         </header>
 
         {/* Summary Cards */}
