@@ -1,3 +1,4 @@
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { NetWorthCard } from '@/components/dashboard/NetWorthCard';
 import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
@@ -25,6 +26,7 @@ import { NetWorthProjectionWidget } from '@/components/dashboard/NetWorthProject
 import { AssetCard } from '@/components/assets/AssetCard';
 import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAssets } from '@/hooks/useAssets';
 import { useEntities } from '@/hooks/useEntities';
 import { useCollections } from '@/hooks/useCollections';
@@ -34,10 +36,11 @@ import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCryptoPrices } from '@/hooks/useCryptoPrices';
 import { useSaveSnapshot } from '@/hooks/useNetWorthSnapshot';
 import { useProfile } from '@/hooks/useProfile';
+import { useSharedOwnerProfile } from '@/hooks/useSharedAccess';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useBlur } from '@/contexts/BlurContext';
 import { convertToEUR, convertFromEUR, fallbackRates, formatCurrency } from '@/lib/currency';
-import { RefreshCw, Camera, Info, AlertTriangle } from 'lucide-react';
+import { RefreshCw, Camera, Info, AlertTriangle, Eye, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getCountryFlag } from '@/hooks/useCountries';
@@ -62,6 +65,14 @@ const getUserOwnershipShare = (
 
 const Dashboard = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Check if viewing someone else's portfolio
+  const viewingOwnerId = searchParams.get('view');
+  const { data: sharedOwnerProfile } = useSharedOwnerProfile(viewingOwnerId);
+  const isViewingShared = !!viewingOwnerId;
+  
   const { data: profile } = useProfile();
   const { data: assets = [], isLoading: assetsLoading } = useAssets();
   const { data: entities = [] } = useEntities();
@@ -384,6 +395,27 @@ const Dashboard = () => {
   return (
     <AppLayout>
       <div className="p-8 lg:p-12 max-w-7xl">
+        {/* Read-only banner when viewing shared portfolio */}
+        {isViewingShared && (
+          <Alert className="mb-6 bg-secondary border-border">
+            <Eye className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>
+                Viewing <strong>{sharedOwnerProfile?.full_name || sharedOwnerProfile?.email || 'Shared'}</strong>'s portfolio (read-only)
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/')}
+                className="h-7 px-2 ml-4"
+              >
+                <X size={14} className="mr-1" />
+                Exit
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* World Clocks Widget */}
         {showWidget('world_clocks') && favoriteCities.length > 0 && (
           <WorldClocksWidget 
@@ -397,6 +429,11 @@ const Dashboard = () => {
 
         {/* Net Worth Card - Always visible */}
         <header className="mb-12">
+          {isViewingShared && (
+            <p className="text-sm text-muted-foreground mb-2">
+              {sharedOwnerProfile?.full_name || 'Shared Portfolio'}
+            </p>
+          )}
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
             <NetWorthCard 
               totalValue={netWorth} 
@@ -415,23 +452,25 @@ const Dashboard = () => {
               <BlurToggle />
               <ViewToggle config={viewConfig} onChange={setViewConfig} />
               <CurrencySwitcher />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleSaveSnapshot}
-                    disabled={saveSnapshot.isPending}
-                    className="gap-2"
-                  >
-                    <Camera size={14} />
-                    {saveSnapshot.isPending ? 'Saving...' : 'Snapshot'}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Save your current portfolio value for accurate historical tracking</p>
-                </TooltipContent>
-              </Tooltip>
+              {!isViewingShared && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleSaveSnapshot}
+                      disabled={saveSnapshot.isPending}
+                      className="gap-2"
+                    >
+                      <Camera size={14} />
+                      {saveSnapshot.isPending ? 'Saving...' : 'Snapshot'}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Save your current portfolio value for accurate historical tracking</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
