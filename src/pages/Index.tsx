@@ -40,7 +40,8 @@ import { useSharedOwnerProfile } from '@/hooks/useSharedAccess';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useBlur } from '@/contexts/BlurContext';
 import { convertToEUR, convertFromEUR, fallbackRates, formatCurrency } from '@/lib/currency';
-import { RefreshCw, Camera, Info, AlertTriangle, Eye, X } from 'lucide-react';
+import { Camera, Info, Eye, X } from 'lucide-react';
+import { DataStatusBadge } from '@/components/ui/data-status-badge';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getCountryFlag } from '@/hooks/useCountries';
@@ -466,76 +467,24 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
-            {fxIsUnavailable ? (
-              <div className="flex items-center gap-1 text-destructive">
-                <AlertTriangle size={12} />
-                <span>FX rates unavailable</span>
-                <button 
-                  onClick={() => refetchFx()} 
-                  disabled={ratesFetching}
-                  className="ml-1 hover:text-foreground transition-colors"
-                >
-                  <RefreshCw size={12} className={ratesFetching ? 'animate-spin' : ''} />
-                </button>
-              </div>
-            ) : fxIsStale ? (
-              <div className="flex items-center gap-1 text-yellow-600">
-                <AlertTriangle size={12} />
-                <span>
-                  Cached FX from {fxCacheTimestamp ? new Date(fxCacheTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'earlier'}
-                </span>
-                <button 
-                  onClick={() => refetchFx()} 
-                  disabled={ratesFetching}
-                  className="ml-1 hover:text-foreground transition-colors"
-                  title="Retry fetching live rates"
-                >
-                  <RefreshCw size={12} className={ratesFetching ? 'animate-spin' : ''} />
-                </button>
-              </div>
-            ) : exchangeRates?.lastUpdated && (
-              <div className="flex items-center gap-1">
-                <RefreshCw size={12} className={ratesLoading ? 'animate-spin' : ''} />
-                <span>FX: {new Date(exchangeRates.lastUpdated).toLocaleDateString()}</span>
-              </div>
-            )}
+          <div className="flex flex-wrap items-center gap-4 mt-3">
+            <DataStatusBadge
+              label="FX"
+              status={fxIsUnavailable ? 'unavailable' : fxIsStale ? 'stale' : 'live'}
+              lastUpdated={exchangeRates?.lastUpdated}
+              cacheTimestamp={fxCacheTimestamp}
+              isFetching={ratesFetching}
+              onRefresh={refetchFx}
+            />
             {hasCrypto && (
-              <>
-                {cryptoIsUnavailable ? (
-                  <div className="flex items-center gap-1 text-destructive">
-                    <AlertTriangle size={12} />
-                    <span>Crypto prices unavailable</span>
-                    <button 
-                      onClick={() => refetchCrypto()} 
-                      disabled={cryptoFetching}
-                      className="ml-1 hover:text-foreground transition-colors"
-                    >
-                      <RefreshCw size={12} className={cryptoFetching ? 'animate-spin' : ''} />
-                    </button>
-                  </div>
-                ) : cryptoIsStale ? (
-                  <div className="flex items-center gap-1 text-yellow-600">
-                    <AlertTriangle size={12} />
-                    <span>
-                      Cached prices from {cacheTimestamp ? new Date(cacheTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'earlier'}
-                    </span>
-                    <button 
-                      onClick={() => refetchCrypto()} 
-                      disabled={cryptoFetching}
-                      className="ml-1 hover:text-foreground transition-colors"
-                      title="Retry fetching live prices"
-                    >
-                      <RefreshCw size={12} className={cryptoFetching ? 'animate-spin' : ''} />
-                    </button>
-                  </div>
-                ) : cryptoLastUpdated && (
-                  <div className="flex items-center gap-1">
-                    <RefreshCw size={12} />
-                    <span>Crypto: {cryptoLastUpdated}</span>
-                  </div>
-                )}
-              </>
+              <DataStatusBadge
+                label="Crypto"
+                status={cryptoIsUnavailable ? 'unavailable' : cryptoIsStale ? 'stale' : 'live'}
+                lastUpdated={cryptoUpdatedAt}
+                cacheTimestamp={cacheTimestamp}
+                isFetching={cryptoFetching}
+                onRefresh={refetchCrypto}
+              />
             )}
           </div>
         </header>
