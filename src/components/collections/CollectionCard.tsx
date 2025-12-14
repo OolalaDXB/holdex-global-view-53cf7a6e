@@ -12,6 +12,7 @@ interface CollectionCardProps {
   delay?: number;
   onEdit?: (collection: Collection) => void;
   onDelete?: (collection: Collection) => void;
+  compact?: boolean;
 }
 
 const categoryIcons: Record<string, typeof Watch> = {
@@ -34,7 +35,7 @@ const categoryLabels: Record<string, string> = {
   'other': 'Other',
 };
 
-export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete }: CollectionCardProps) {
+export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete, compact = false }: CollectionCardProps) {
   const Icon = categoryIcons[collection.type] || Sparkles;
   const activeRates = rates || fallbackRates;
   const eurValue = convertToEUR(collection.current_value, collection.currency, activeRates);
@@ -43,6 +44,84 @@ export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete 
     : 0;
 
   const hasImage = !!collection.image_url;
+
+  // Compact mode: simplified card
+  if (compact) {
+    return (
+      <div 
+        className="collection-card animate-fade-in group p-3"
+        style={{ animationDelay: `${delay}ms` }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            {hasImage ? (
+              <img 
+                src={collection.image_url!} 
+                alt={collection.name}
+                className="w-8 h-8 rounded-md object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-md flex items-center justify-center bg-primary/10 flex-shrink-0">
+                <Icon size={16} strokeWidth={1.5} className="text-primary" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <h4 className="font-medium text-foreground text-sm truncate">{collection.name}</h4>
+                <CertaintyBadge certainty={(collection as any).certainty} showLabel={false} />
+              </div>
+              <p className="text-xs text-muted-foreground truncate">
+                {categoryLabels[collection.type] || collection.type}
+                {collection.brand && ` · ${collection.brand}`}
+              </p>
+            </div>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <span className="text-sm font-semibold tabular-nums text-foreground">
+              {formatCurrency(collection.current_value, collection.currency)}
+            </span>
+            {appreciation !== 0 && (
+              <p className={cn(
+                "text-[10px] tabular-nums",
+                appreciation >= 0 ? "text-positive" : "text-negative"
+              )}>
+                {appreciation >= 0 ? '+' : ''}{appreciation.toFixed(0)}%
+              </p>
+            )}
+          </div>
+        </div>
+        
+        {(onEdit || onDelete) && (
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onEdit && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(collection);
+                }}
+                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                title="Edit"
+              >
+                <Pencil size={12} />
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(collection);
+                }}
+                className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                title="Delete"
+              >
+                <Trash2 size={12} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div 
