@@ -9,7 +9,7 @@ import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useReceivables } from '@/hooks/useReceivables';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
-import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
+import { useCryptoPrices } from '@/hooks/useCryptoPrices';
 import { useCurrency } from '@/contexts/CurrencyContext';
 
 interface CertaintyData {
@@ -39,7 +39,7 @@ export function CertaintyReportPDF() {
   const { displayCurrency } = useCurrency();
   
   const rates = exchangeRates?.rates || fallbackRates;
-  const prices = cryptoPrices || fallbackCryptoPrices;
+  const prices = cryptoPrices || {};
 
   // Helper to get asset value with crypto prices
   const getAssetValue = (asset: typeof assets[0]) => {

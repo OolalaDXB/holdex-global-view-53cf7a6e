@@ -7,11 +7,12 @@ import { DeleteAssetDialog } from '@/components/assets/DeleteAssetDialog';
 import { useAssets, Asset } from '@/hooks/useAssets';
 import { useEntities } from '@/hooks/useEntities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
-import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
+import { useCryptoPrices } from '@/hooks/useCryptoPrices';
 import { useProfile } from '@/hooks/useProfile';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
+import { AlertTriangle } from 'lucide-react';
 import { RefreshCw, Search, X, LayoutGrid, List, ArrowUpDown, Plus, Rows3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -68,12 +69,12 @@ const AssetsPage = () => {
   const { data: assets = [], isLoading } = useAssets();
   const { data: entities = [] } = useEntities();
   const { data: exchangeRates } = useExchangeRates();
-  const { data: cryptoPrices, isLoading: cryptoLoading, dataUpdatedAt } = useCryptoPrices();
+  const { data: cryptoPrices, isLoading: cryptoLoading, dataUpdatedAt, isStale: cryptoIsStale, isUnavailable: cryptoIsUnavailable, message: cryptoMessage } = useCryptoPrices();
   const { data: profile } = useProfile();
   const { displayCurrency } = useCurrency();
   
   const rates = exchangeRates?.rates || fallbackRates;
-  const prices = cryptoPrices || fallbackCryptoPrices;
+  const prices = cryptoPrices || {};
   const areaUnit = (profile as any)?.area_unit || 'sqm';
 
   const clearEntityFilter = () => {
@@ -188,10 +189,24 @@ const AssetsPage = () => {
           </div>
         )}
         
-        {hasCryptoAssets && lastCryptoUpdate && (
-          <div className="flex items-center gap-2 mb-4 text-xs text-muted-foreground">
-            <RefreshCw size={12} className={cryptoLoading ? 'animate-spin' : ''} />
-            <span>Digital asset prices updated at {lastCryptoUpdate}</span>
+        {hasCryptoAssets && (
+          <div className="flex items-center gap-2 mb-4 text-xs">
+            {cryptoIsUnavailable ? (
+              <span className="flex items-center gap-1 text-destructive">
+                <AlertTriangle size={12} />
+                Crypto prices unavailable - values may be inaccurate
+              </span>
+            ) : cryptoIsStale ? (
+              <span className="flex items-center gap-1 text-yellow-600">
+                <AlertTriangle size={12} />
+                {cryptoMessage || 'Using cached crypto prices'}
+              </span>
+            ) : lastCryptoUpdate && (
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <RefreshCw size={12} className={cryptoLoading ? 'animate-spin' : ''} />
+                Digital asset prices updated at {lastCryptoUpdate}
+              </span>
+            )}
           </div>
         )}
 

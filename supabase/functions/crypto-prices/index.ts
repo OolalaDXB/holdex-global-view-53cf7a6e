@@ -24,24 +24,19 @@ const tickerToId: Record<string, string> = {
   'UNI': 'uniswap',
 };
 
-// Fallback prices when API is rate limited
-const fallbackPrices: Record<string, { price: number; change24h: number }> = {
-  BTC: { price: 100000, change24h: 0 },
-  ETH: { price: 3500, change24h: 0 },
-  SOL: { price: 180, change24h: 0 },
-  USDT: { price: 1, change24h: 0 },
-  USDC: { price: 1, change24h: 0 },
-  BNB: { price: 600, change24h: 0 },
-  XRP: { price: 2.2, change24h: 0 },
-  ADA: { price: 0.9, change24h: 0 },
-  DOGE: { price: 0.35, change24h: 0 },
-  MATIC: { price: 0.5, change24h: 0 },
-  DOT: { price: 7, change24h: 0 },
-  LTC: { price: 100, change24h: 0 },
-  AVAX: { price: 35, change24h: 0 },
-  LINK: { price: 15, change24h: 0 },
-  UNI: { price: 12, change24h: 0 },
-};
+// In-memory cache
+interface CacheEntry {
+  prices: Record<string, { price: number; change24h: number }>;
+  timestamp: number;
+}
+
+let priceCache: CacheEntry | null = null;
+const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour
+
+function isCacheValid(): boolean {
+  if (!priceCache) return false;
+  return Date.now() - priceCache.timestamp < CACHE_MAX_AGE_MS;
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -57,19 +52,29 @@ serve(async (req) => {
       `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
     );
 
-    // If rate limited (429), return fallback prices
-    if (response.status === 429) {
-      console.log('CoinGecko rate limited, returning fallback prices');
-      return new Response(JSON.stringify({ prices: fallbackPrices, timestamp: Date.now(), fallback: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
+    // If rate limited or error, try to use cache
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('CoinGecko API error:', response.status, errorText);
-      // Return fallback on any error
-      return new Response(JSON.stringify({ prices: fallbackPrices, timestamp: Date.now(), fallback: true }), {
+      console.log(`CoinGecko API error: ${response.status}`);
+      
+      if (isCacheValid() && priceCache) {
+        console.log('Returning stale cached prices');
+        return new Response(JSON.stringify({ 
+          prices: priceCache.prices, 
+          timestamp: priceCache.timestamp,
+          status: 'stale',
+          message: 'Using cached prices (API temporarily unavailable)'
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      console.log('No valid cache available');
+      return new Response(JSON.stringify({ 
+        prices: null, 
+        timestamp: Date.now(),
+        status: 'unavailable',
+        message: 'Crypto prices temporarily unavailable'
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
@@ -89,16 +94,45 @@ serve(async (req) => {
       }
     }
 
+    // Update cache
+    priceCache = {
+      prices,
+      timestamp: Date.now(),
+    };
+
     console.log('Fetched crypto prices:', Object.keys(prices).length, 'tokens');
 
-    return new Response(JSON.stringify({ prices, timestamp: Date.now() }), {
+    return new Response(JSON.stringify({ 
+      prices, 
+      timestamp: Date.now(),
+      status: 'live',
+      message: null
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Error in crypto-prices function:', errorMessage);
-    // Return fallback prices on error instead of 500
-    return new Response(JSON.stringify({ prices: fallbackPrices, timestamp: Date.now(), fallback: true }), {
+    
+    // Try to use cache on error
+    if (isCacheValid() && priceCache) {
+      console.log('Returning stale cached prices after error');
+      return new Response(JSON.stringify({ 
+        prices: priceCache.prices, 
+        timestamp: priceCache.timestamp,
+        status: 'stale',
+        message: 'Using cached prices (API error)'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    return new Response(JSON.stringify({ 
+      prices: null, 
+      timestamp: Date.now(),
+      status: 'unavailable',
+      message: 'Crypto prices temporarily unavailable'
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

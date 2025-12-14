@@ -8,15 +8,30 @@ interface CryptoPrices {
   };
 }
 
+type CryptoPriceStatus = 'live' | 'stale' | 'unavailable';
+
 interface CryptoPricesResponse {
-  prices: CryptoPrices;
+  prices: CryptoPrices | null;
   timestamp: number;
+  status: CryptoPriceStatus;
+  message: string | null;
 }
 
-export const useCryptoPrices = () => {
-  return useQuery({
+interface UseCryptoPricesResult {
+  data: CryptoPrices | null;
+  isLoading: boolean;
+  error: Error | null;
+  status: CryptoPriceStatus;
+  isStale: boolean;
+  isUnavailable: boolean;
+  message: string | null;
+  dataUpdatedAt: number | undefined;
+}
+
+export const useCryptoPrices = (): UseCryptoPricesResult => {
+  const query = useQuery({
     queryKey: ['crypto-prices'],
-    queryFn: async (): Promise<CryptoPrices> => {
+    queryFn: async (): Promise<CryptoPricesResponse> => {
       const { data, error } = await supabase.functions.invoke<CryptoPricesResponse>('crypto-prices');
       
       if (error) {
@@ -24,25 +39,29 @@ export const useCryptoPrices = () => {
         throw error;
       }
       
-      return data?.prices || {};
+      return {
+        prices: data?.prices || null,
+        timestamp: data?.timestamp || Date.now(),
+        status: data?.status || 'unavailable',
+        message: data?.message || null,
+      };
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
     refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
     refetchOnWindowFocus: false,
   });
-};
 
-// Fallback prices in case API is unavailable
-export const fallbackCryptoPrices: CryptoPrices = {
-  BTC: { price: 100000, change24h: 0 },
-  ETH: { price: 3500, change24h: 0 },
-  SOL: { price: 180, change24h: 0 },
-  USDT: { price: 1, change24h: 0 },
-  USDC: { price: 1, change24h: 0 },
-  BNB: { price: 600, change24h: 0 },
-  XRP: { price: 2.2, change24h: 0 },
-  ADA: { price: 0.9, change24h: 0 },
-  DOGE: { price: 0.35, change24h: 0 },
-  MATIC: { price: 0.5, change24h: 0 },
+  const responseData = query.data;
+  
+  return {
+    data: responseData?.prices || null,
+    isLoading: query.isLoading,
+    error: query.error,
+    status: responseData?.status || 'unavailable',
+    isStale: responseData?.status === 'stale',
+    isUnavailable: responseData?.status === 'unavailable' || !responseData?.prices,
+    message: responseData?.message || null,
+    dataUpdatedAt: query.dataUpdatedAt,
+  };
 };
