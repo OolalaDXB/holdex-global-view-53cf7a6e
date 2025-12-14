@@ -17,7 +17,8 @@ import {
   Building,
   Handshake,
   FileText,
-  TrendingDown
+  TrendingDown,
+  Scale
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -35,7 +36,7 @@ const portfolioNavigation = [
 const managementNavigation = [
   { name: 'Entities', href: '/entities', demoHref: '/demo/entities', icon: Building },
   { name: 'Documents', href: '/documents', demoHref: '/demo/documents', icon: FileText },
-  { name: 'Balance Sheet', href: '/balance-sheet', demoHref: '/demo/balance-sheet', icon: FileText },
+  { name: 'Balance Sheet', href: '/balance-sheet', demoHref: '/demo/balance-sheet', icon: Scale },
 ];
 
 const actionsNavigation = [
