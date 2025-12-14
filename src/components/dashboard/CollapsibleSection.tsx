@@ -162,7 +162,8 @@ export function CollapsibleSection({
   useEffect(() => {
     context?.registerSection(id);
     return () => context?.unregisterSection(id);
-  }, [id, context]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const toggleOpen = () => {
     const newState = !isOpen;
