@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { LIABILITY_TYPES, getLiabilityTypeInfo } from '@/hooks/useLiabilities';
+import { getLiabilityTypeInfo } from '@/hooks/useLiabilities';
 import { formatCurrency } from '@/lib/currency';
+import { RechartsTooltipProps, RechartsLegendProps } from '@/lib/types';
 
 interface LiabilityBreakdownChartProps {
   liabilities: Array<{
@@ -54,9 +55,9 @@ export function LiabilityBreakdownChart({ liabilities, baseCurrency = 'EUR' }: L
     return null;
   }
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: RechartsTooltipProps) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const data = payload[0].payload as { name: string; value: number };
       const percentage = ((data.value / total) * 100).toFixed(1);
       return (
         <div className="bg-card border border-border rounded-md px-3 py-2 shadow-lg">
@@ -71,11 +72,12 @@ export function LiabilityBreakdownChart({ liabilities, baseCurrency = 'EUR' }: L
     return null;
   };
 
-  const renderLegend = (props: any) => {
+  const renderLegend = (props: RechartsLegendProps) => {
     const { payload } = props;
+    if (!payload) return null;
     return (
       <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 mt-2">
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index: number) => (
           <div key={`legend-${index}`} className="flex items-center gap-1.5 text-xs">
             <div 
               className="w-2.5 h-2.5 rounded-full" 

@@ -2,8 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { OwnershipAllocation, parseOwnershipAllocation } from '@/lib/types';
 
-export type Collection = Tables<'collections'>;
+export type Collection = Tables<'collections'> & {
+  parsed_ownership_allocation?: OwnershipAllocation[] | null;
+};
 export type CollectionInsert = TablesInsert<'collections'>;
 
 export const useCollections = () => {
@@ -18,7 +21,10 @@ export const useCollections = () => {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      return data as Collection[];
+      return (data ?? []).map(collection => ({
+        ...collection,
+        parsed_ownership_allocation: parseOwnershipAllocation(collection.ownership_allocation),
+      })) as Collection[];
     },
     enabled: !!user,
   });
