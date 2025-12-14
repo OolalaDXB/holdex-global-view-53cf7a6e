@@ -38,6 +38,7 @@ import {
 import { getLiabilityIcon } from '@/components/liabilities/LiabilityIcon';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { DemoDataBadge } from '@/components/ui/demo-data-badge';
 
 const assetTypeIcons: Record<string, typeof Building2> = {
   'real-estate': Building2,
@@ -145,7 +146,10 @@ const DemoEntitiesPage = () => {
           <span className="text-sm text-muted-foreground">
             Demo mode — Changes are temporary
           </span>
-          <Badge variant="outline" className="text-xs ml-auto">Demo</Badge>
+          <div className="ml-auto flex items-center gap-3">
+            <DemoDataBadge label="Demo FX rates" />
+            <Badge variant="outline" className="text-xs">Demo</Badge>
+          </div>
         </div>
 
         <header className="mb-8 flex items-center justify-between">
