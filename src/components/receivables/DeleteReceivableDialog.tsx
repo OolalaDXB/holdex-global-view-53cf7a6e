@@ -25,7 +25,7 @@ export function DeleteReceivableDialog({ open, onOpenChange, receivable }: Delet
     if (!receivable) return;
     
     try {
-      await deleteReceivable.mutateAsync(receivable.id);
+      await deleteReceivable.mutateAsync({ id: receivable.id, name: receivable.name });
       toast({ title: 'Receivable deleted' });
       onOpenChange(false);
     } catch (error) {
