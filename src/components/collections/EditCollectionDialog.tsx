@@ -12,14 +12,13 @@ import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { useUpdateCollection, Collection } from '@/hooks/useCollections';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 interface EditCollectionDialogProps {
   collection: Collection | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
 const categories = [
   { value: 'watch', label: 'Watch' },
   { value: 'vehicle', label: 'Vehicle' },
@@ -33,6 +32,7 @@ const categories = [
 export function EditCollectionDialog({ collection, open, onOpenChange }: EditCollectionDialogProps) {
   const { toast } = useToast();
   const updateCollection = useUpdateCollection();
+  const currencies = useCurrencyList();
   const [showAIDialog, setShowAIDialog] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   

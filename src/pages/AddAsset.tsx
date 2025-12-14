@@ -25,6 +25,7 @@ import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { useGeocode } from '@/hooks/useGeocode';
 import { cn } from '@/lib/utils';
 import { CertaintyLevel } from '@/lib/certainty';
+import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 type Step = 'category' | 'type' | 'form';
 type Category = 'wealth' | 'collections';
@@ -47,8 +48,6 @@ const collectionTypes = [
   { id: 'lp-position', label: 'LP Position', icon: BarChart3, description: 'Fund investments' },
 ];
 
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
-
 const AddAssetPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -59,6 +58,7 @@ const AddAssetPage = () => {
   const defaultEntityId = useDefaultEntity();
   const { showIslamic, showJewish } = useComplianceMode();
   const { geocodeAddress, isGeocoding } = useGeocode();
+  const currencies = useCurrencyList();
   
   // Get filtered financing types based on compliance mode
   const filteredFinancingTypes = getFilteredFinancingTypes(showIslamic, showJewish);

@@ -17,6 +17,7 @@ import { Asset } from '@/hooks/useAssets';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useDemoCurrencyList } from '@/hooks/useCurrencyList';
 
 interface DemoEditAssetDialogProps {
   asset: Asset | null;
@@ -24,11 +25,10 @@ interface DemoEditAssetDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB', 'GEL'];
-
 export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAssetDialogProps) {
   const { toast } = useToast();
-  const { updateAsset } = useDemo();
+  const { updateAsset, profile } = useDemo();
+  const currencies = useDemoCurrencyList(profile);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [showAIDialog, setShowAIDialog] = useState(false);

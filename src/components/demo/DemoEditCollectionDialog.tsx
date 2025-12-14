@@ -10,6 +10,7 @@ import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { Collection } from '@/hooks/useCollections';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
+import { useDemoCurrencyList } from '@/hooks/useCurrencyList';
 
 interface DemoEditCollectionDialogProps {
   collection: Collection | null;
@@ -17,11 +18,10 @@ interface DemoEditCollectionDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB', 'GEL'];
-
 export function DemoEditCollectionDialog({ collection, open, onOpenChange }: DemoEditCollectionDialogProps) {
   const { toast } = useToast();
-  const { updateCollection } = useDemo();
+  const { updateCollection, profile } = useDemo();
+  const currencies = useDemoCurrencyList(profile);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [showAIDialog, setShowAIDialog] = useState(false);

@@ -22,6 +22,7 @@ import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { DemoLiability } from '@/data/demoData';
+import { useDemoCurrencyList } from '@/hooks/useCurrencyList';
 
 interface DemoLiabilityDialogProps {
   open: boolean;
@@ -29,11 +30,10 @@ interface DemoLiabilityDialogProps {
   liability?: DemoLiability | null;
 }
 
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB'];
-
 export function DemoLiabilityDialog({ open, onOpenChange, liability }: DemoLiabilityDialogProps) {
   const { toast } = useToast();
   const { assets, addLiability, updateLiability, profile } = useDemo();
+  const currencies = useDemoCurrencyList(profile);
   const isEditing = !!liability;
 
   const showIslamic = profile.compliance_mode === 'islamic' || profile.compliance_mode === 'all';

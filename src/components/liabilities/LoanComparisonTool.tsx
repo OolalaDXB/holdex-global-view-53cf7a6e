@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Trash2, Calculator, Scale, TrendingDown, TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
 import { calculateMonthlyPayment } from '@/hooks/useLoanSchedules';
+import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 interface LoanScenario {
   id: string;
@@ -26,8 +27,6 @@ interface CalculatedScenario extends LoanScenario {
   totalInterest: number;
 }
 
-const CURRENCIES = ['EUR', 'USD', 'AED', 'GBP', 'CHF'];
-
 const PRESET_SCENARIOS = [
   { label: 'Current Loan', principal: 500000, rate: 4.5, term: 240 },
   { label: 'Refinance (Lower Rate)', principal: 500000, rate: 3.5, term: 240 },
@@ -35,6 +34,7 @@ const PRESET_SCENARIOS = [
 ];
 
 export function LoanComparisonTool() {
+  const currencies = useCurrencyList();
   const [open, setOpen] = useState(false);
   const [scenarios, setScenarios] = useState<LoanScenario[]>([
     { id: '1', name: 'Current Loan', principal: 500000, interestRate: 4.5, termMonths: 240, currency: 'EUR', closingCosts: 0 },
@@ -192,7 +192,7 @@ export function LoanComparisonTool() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {CURRENCIES.map(curr => (
+                        {currencies.map(curr => (
                           <SelectItem key={curr} value={curr}>{curr}</SelectItem>
                         ))}
                       </SelectContent>

@@ -11,6 +11,7 @@ import { Entity, EntityInsert, ENTITY_TYPES, MATRIMONIAL_REGIMES, LEGAL_FORMS, T
 import { Loader2, User, UserCircle, Users, Building2, Landmark, FolderClosed, Shield, Home } from 'lucide-react';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { EntityIcon, getEntityIconName } from './EntityIcon';
+import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 interface EntityDialogProps {
   open: boolean;
@@ -33,8 +34,6 @@ const ENTITY_COLORS = [
 
 // Icons are now handled by EntityIcon component
 
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'INR'];
-
 // Get category of entity type
 const getEntityCategory = (type: string) => {
   const entityType = ENTITY_TYPES.find(t => t.value === type);
@@ -50,6 +49,7 @@ export const EntityDialog = ({
 }: EntityDialogProps) => {
   const { data: entities } = useEntities();
   const { showHindu, showIslamic } = useComplianceMode();
+  const currencies = useCurrencyList();
   const filteredEntityTypes = getFilteredEntityTypes(showHindu);
   const filteredTrustTypes = getFilteredTrustTypes(showIslamic);
   const [formData, setFormData] = useState<Omit<EntityInsert, 'user_id'>>({

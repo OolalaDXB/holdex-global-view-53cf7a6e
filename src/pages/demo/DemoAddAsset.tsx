@@ -17,6 +17,7 @@ import { useDemo } from '@/contexts/DemoContext';
 import { getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
 import { useDemoComplianceMode } from '@/hooks/useComplianceMode';
 import { DemoEntitySelect, useDemoDefaultEntity } from '@/components/demo/DemoEntitySelect';
+import { useDemoCurrencyList } from '@/hooks/useCurrencyList';
 
 type Step = 'category' | 'type' | 'form';
 type Category = 'wealth' | 'collections';
@@ -39,14 +40,13 @@ const collectionTypes = [
   { id: 'lp-position', label: 'LP Position', icon: BarChart3, description: 'Fund investments' },
 ];
 
-const currencies = ['EUR', 'USD', 'AED', 'GBP', 'CHF', 'RUB', 'GEL'];
-
 const DemoAddAssetPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { addAsset, addCollection, addLiability } = useDemo();
+  const { addAsset, addCollection, addLiability, profile } = useDemo();
   const defaultEntityId = useDemoDefaultEntity();
   const { showIslamic, showJewish } = useDemoComplianceMode();
+  const currencies = useDemoCurrencyList(profile);
   
   // Get filtered financing types based on compliance mode
   const filteredFinancingTypes = getFilteredFinancingTypes(showIslamic, showJewish);
