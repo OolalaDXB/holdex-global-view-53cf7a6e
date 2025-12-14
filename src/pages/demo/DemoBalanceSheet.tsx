@@ -16,6 +16,7 @@ import { BalanceSheetStatement, BalanceSheetStatementRef } from '@/components/ba
 import { BalanceSheetComparison } from '@/components/balance-sheet/BalanceSheetComparison';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { DemoDataBadge } from '@/components/ui/demo-data-badge';
 
 type CertaintyFilter = 'all' | 'confirmed' | 'projected';
 
@@ -221,7 +222,10 @@ const DemoBalanceSheetPage = () => {
           <span className="text-sm text-muted-foreground">
             Demo Mode — Changes are temporary
           </span>
-          <Badge variant="outline" className="text-xs ml-auto">Demo</Badge>
+          <div className="ml-auto flex items-center gap-3">
+            <DemoDataBadge label="Demo FX rates" />
+            <Badge variant="outline" className="text-xs">Demo</Badge>
+          </div>
         </div>
 
         {/* Controls Header */}
