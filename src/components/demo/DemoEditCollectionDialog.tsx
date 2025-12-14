@@ -7,10 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CountrySelect } from '@/components/ui/country-select';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
+import { CertaintySelect } from '@/components/ui/certainty-select';
 import { Collection } from '@/hooks/useCollections';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
 import { useDemoCurrencyList } from '@/hooks/useCurrencyList';
+import { getDefaultCertainty } from '@/lib/certainty';
 
 interface DemoEditCollectionDialogProps {
   collection: Collection | null;
@@ -23,6 +25,7 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
   const { updateCollection, profile } = useDemo();
   const currencies = useDemoCurrencyList(profile);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userChangedCertainty, setUserChangedCertainty] = useState(false);
   
   const [showAIDialog, setShowAIDialog] = useState(false);
   
@@ -36,6 +39,7 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
     model: '',
     year: '',
     image_url: null as string | null,
+    certainty: 'probable' as string,
   });
 
   useEffect(() => {
@@ -50,7 +54,9 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
         model: collection.model || '',
         year: collection.year?.toString() || '',
         image_url: collection.image_url || null,
+        certainty: (collection as any).certainty || getDefaultCertainty(collection.type),
       });
+      setUserChangedCertainty(false);
     }
   }, [collection]);
 
@@ -70,7 +76,8 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
         model: formData.model || null,
         year: formData.year ? parseInt(formData.year) : null,
         image_url: formData.image_url,
-      });
+        certainty: formData.certainty,
+      } as any);
 
       toast({
         title: "Collection updated",
@@ -152,6 +159,17 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
                 value={formData.current_value}
                 onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
                 required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <CertaintySelect
+                value={formData.certainty}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, certainty: value });
+                  setUserChangedCertainty(true);
+                }}
+                showLabel
               />
             </div>
 

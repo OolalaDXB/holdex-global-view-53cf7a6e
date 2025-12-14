@@ -10,9 +10,11 @@ import { CountrySelect } from '@/components/ui/country-select';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
+import { CertaintySelect } from '@/components/ui/certainty-select';
 import { useUpdateCollection, Collection } from '@/hooks/useCollections';
 import { useToast } from '@/hooks/use-toast';
 import { useCurrencyList } from '@/hooks/useCurrencyList';
+import { getDefaultCertainty } from '@/lib/certainty';
 
 interface EditCollectionDialogProps {
   collection: Collection | null;
@@ -35,6 +37,7 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
   const currencies = useCurrencyList();
   const [showAIDialog, setShowAIDialog] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
+  const [userChangedCertainty, setUserChangedCertainty] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -48,6 +51,7 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
     year: '',
     notes: '',
     image_url: null as string | null,
+    certainty: 'probable' as string,
   });
 
   useEffect(() => {
@@ -64,10 +68,22 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
         year: collection.year?.toString() || '',
         notes: collection.notes || '',
         image_url: collection.image_url || null,
+        certainty: (collection as any).certainty || getDefaultCertainty(collection.type),
       });
       setActiveTab('details');
+      setUserChangedCertainty(false);
     }
   }, [collection]);
+
+  // Update certainty when type changes (unless user has manually changed it)
+  useEffect(() => {
+    if (formData.type && !userChangedCertainty) {
+      setFormData(prev => ({
+        ...prev,
+        certainty: getDefaultCertainty(prev.type),
+      }));
+    }
+  }, [formData.type, userChangedCertainty]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +103,8 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
         year: formData.year ? parseInt(formData.year) : null,
         notes: formData.notes || null,
         image_url: formData.image_url,
-      });
+        certainty: formData.certainty,
+      } as any);
 
       toast({
         title: "Collection updated",
@@ -147,7 +164,10 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
                     <Label htmlFor="edit-type">Category</Label>
                     <Select 
                       value={formData.type} 
-                      onValueChange={(value) => setFormData({ ...formData, type: value })}
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, type: value });
+                        setUserChangedCertainty(false);
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -193,6 +213,17 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
                       value={formData.current_value}
                       onChange={(e) => setFormData({ ...formData, current_value: e.target.value })}
                       required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <CertaintySelect
+                      value={formData.certainty}
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, certainty: value });
+                        setUserChangedCertainty(true);
+                      }}
+                      showLabel
                     />
                   </div>
 

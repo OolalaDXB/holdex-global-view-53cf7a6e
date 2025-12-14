@@ -13,6 +13,13 @@ interface BalanceSheetItem {
   certainty?: string;
 }
 
+interface CertaintySummary {
+  certain: number;
+  contractual: number;
+  probable: number;
+  optional: number;
+}
+
 interface BalanceSheetData {
   currentAssets: {
     cashAndBank: number;
@@ -54,6 +61,10 @@ interface BalanceSheetData {
     shortTermLoans: BalanceSheetItem[];
     mortgages: BalanceSheetItem[];
     longTermLoans: BalanceSheetItem[];
+  };
+  certaintySummary?: {
+    assets: CertaintySummary;
+    liabilities: CertaintySummary;
   };
 }
 
@@ -541,6 +552,62 @@ export const BalanceSheetStatement = forwardRef<BalanceSheetStatementRef, Balanc
             value={data.netWorth}
             isNetWorth
           />
+
+          {/* CERTAINTY BREAKDOWN */}
+          {data.certaintySummary && (
+            <>
+              <tr><td colSpan={2} className="h-6" /></tr>
+              <SectionHeader title="Certainty Analysis" />
+              <tr>
+                <td colSpan={2} className="py-2">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="p-3 rounded-lg bg-positive/10 border border-positive/20">
+                      <div className="text-xs text-muted-foreground mb-1">Confirmed Net Worth</div>
+                      <div className="font-semibold text-positive">
+                        {formatValue(
+                          (data.certaintySummary.assets.certain + data.certaintySummary.assets.contractual) -
+                          (data.certaintySummary.liabilities.certain + data.certaintySummary.liabilities.contractual)
+                        )}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-1">Verified + Committed values</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                      <div className="text-xs text-muted-foreground mb-1">Projected Addition</div>
+                      <div className="font-semibold text-foreground">
+                        +{formatValue(
+                          (data.certaintySummary.assets.probable + data.certaintySummary.assets.optional) -
+                          (data.certaintySummary.liabilities.probable + data.certaintySummary.liabilities.optional)
+                        )}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-1">Estimated + Speculative values</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={2} className="py-2">
+                  <div className="grid grid-cols-4 gap-2 text-xs">
+                    <div className="text-center p-2 rounded bg-positive/5">
+                      <div className="font-medium text-positive">✓ Verified</div>
+                      <div className="tabular-nums">{formatValue(data.certaintySummary.assets.certain)}</div>
+                    </div>
+                    <div className="text-center p-2 rounded bg-primary/5">
+                      <div className="font-medium text-primary">📄 Committed</div>
+                      <div className="tabular-nums">{formatValue(data.certaintySummary.assets.contractual)}</div>
+                    </div>
+                    <div className="text-center p-2 rounded bg-warning/5">
+                      <div className="font-medium text-warning">~ Estimated</div>
+                      <div className="tabular-nums">{formatValue(data.certaintySummary.assets.probable)}</div>
+                    </div>
+                    <div className="text-center p-2 rounded bg-muted">
+                      <div className="font-medium text-muted-foreground">? Speculative</div>
+                      <div className="tabular-nums">{formatValue(data.certaintySummary.assets.optional)}</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </>
+          )}
         </tbody>
       </table>
 
