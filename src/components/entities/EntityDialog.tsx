@@ -7,10 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { CountrySelect } from '@/components/ui/country-select';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { Entity, EntityInsert, ENTITY_TYPES, MATRIMONIAL_REGIMES, LEGAL_FORMS, TRUST_TYPES, useEntities, getFilteredEntityTypes, getFilteredTrustTypes } from '@/hooks/useEntities';
 import { Loader2, User, UserCircle, Users, Building2, Landmark, FolderClosed, Shield, Home } from 'lucide-react';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { EntityIcon, getEntityIconName } from './EntityIcon';
+import { EntityAvatar } from './EntityAvatar';
 import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 interface EntityDialogProps {
@@ -52,7 +54,7 @@ export const EntityDialog = ({
   const currencies = useCurrencyList();
   const filteredEntityTypes = getFilteredEntityTypes(showHindu);
   const filteredTrustTypes = getFilteredTrustTypes(showIslamic);
-  const [formData, setFormData] = useState<Omit<EntityInsert, 'user_id'>>({
+  const [formData, setFormData] = useState<Omit<EntityInsert, 'user_id'> & { avatar_url?: string | null }>({
     name: '',
     type: 'company',
     legal_name: '',
@@ -66,6 +68,7 @@ export const EntityDialog = ({
     color: '#C4785A',
     icon: 'Building2',
     notes: '',
+    avatar_url: undefined,
     // Individual fields
     date_of_birth: undefined,
     nationality: undefined,
@@ -103,6 +106,7 @@ export const EntityDialog = ({
         color: entity.color || '#C4785A',
         icon: entity.icon || '🏢',
         notes: entity.notes || '',
+        avatar_url: (entity as any).avatar_url || undefined,
         // @ts-ignore - New fields from migration
         date_of_birth: entity.date_of_birth || undefined,
         // @ts-ignore
@@ -147,6 +151,7 @@ export const EntityDialog = ({
         color: '#C4785A',
         icon: 'Building2',
         notes: '',
+        avatar_url: undefined,
         date_of_birth: undefined,
         nationality: undefined,
         tax_residence: undefined,
@@ -438,6 +443,27 @@ export const EntityDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Avatar Upload */}
+          <div className="flex items-center gap-4">
+            <EntityAvatar
+              avatarUrl={formData.avatar_url}
+              entityType={formData.type}
+              entityColor={formData.color}
+              name={formData.name}
+              size="lg"
+            />
+            <div className="flex-1">
+              <Label className="text-sm mb-2 block">Photo</Label>
+              <ImageUpload
+                value={formData.avatar_url || ''}
+                onChange={(url) => setFormData({ ...formData, avatar_url: url || undefined })}
+                assetId={entity?.id || 'new-entity'}
+                hideAIButton
+                className="h-20"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>

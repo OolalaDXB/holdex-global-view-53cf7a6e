@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CountrySelect } from '@/components/ui/country-select';
 import { User, Plus, Users } from 'lucide-react';
+import { EntityAvatar } from './EntityAvatar';
 
 interface Entity {
   id: string;
@@ -13,6 +14,7 @@ interface Entity {
   type: string;
   color?: string | null;
   ownership_percentage?: number | null;
+  avatar_url?: string | null;
 }
 
 interface OwnershipAllocation {
@@ -169,9 +171,12 @@ export const SharedOwnershipSelect = ({
                     {shareableEntities.map((entity) => (
                       <SelectItem key={entity.id} value={entity.id}>
                         <div className="flex items-center gap-2">
-                          <span 
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: entity.color || '#9B6B6B' }}
+                          <EntityAvatar
+                            avatarUrl={entity.avatar_url}
+                            entityType={entity.type}
+                            entityColor={entity.color}
+                            name={entity.name}
+                            size="sm"
                           />
                           <span>{entity.name}</span>
                         </div>

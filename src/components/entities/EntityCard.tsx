@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Edit2, Trash2, Building2, MapPin } from 'lucide-react';
 import { formatCurrency } from '@/lib/currency';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
-import { EntityIcon, getEntityIconName } from './EntityIcon';
+import { EntityAvatar } from './EntityAvatar';
 
 interface EntityCardProps {
   entity: Entity;
@@ -35,9 +35,11 @@ export const EntityCard = ({
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <EntityIcon 
-              iconName={entityType?.icon || getEntityIconName(entity.type)} 
+            <EntityAvatar 
+              avatarUrl={(entity as any).avatar_url} 
               entityType={entity.type}
+              entityColor={entity.color}
+              name={entity.name}
             />
             <div>
               <h3 className="font-medium text-foreground">{entity.name}</h3>
