@@ -1617,16 +1617,76 @@ export const demoLoanPayments: DemoLoanPayment[] = generateDemoLoanPayments();
 
 // Net worth history for the chart (12 months)
 export const demoNetWorthHistory = [
-  { snapshot_date: '2024-01-01', net_worth_eur: 2850000 },
-  { snapshot_date: '2024-02-01', net_worth_eur: 2890000 },
-  { snapshot_date: '2024-03-01', net_worth_eur: 2920000 },
-  { snapshot_date: '2024-04-01', net_worth_eur: 2880000 },
-  { snapshot_date: '2024-05-01', net_worth_eur: 2950000 },
-  { snapshot_date: '2024-06-01', net_worth_eur: 3010000 },
-  { snapshot_date: '2024-07-01', net_worth_eur: 3050000 },
-  { snapshot_date: '2024-08-01', net_worth_eur: 3020000 },
-  { snapshot_date: '2024-09-01', net_worth_eur: 3080000 },
-  { snapshot_date: '2024-10-01', net_worth_eur: 3120000 },
-  { snapshot_date: '2024-11-01', net_worth_eur: 3150000 },
-  { snapshot_date: '2024-12-01', net_worth_eur: 3180000 },
+  { 
+    snapshot_date: '2024-01-01', 
+    net_worth_eur: 2850000,
+    certainty_breakdown_assets: { certain: 2200000, contractual: 400000, probable: 350000, optional: 100000 },
+    certainty_breakdown_liabilities: { certain: 150000, contractual: 50000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-02-01', 
+    net_worth_eur: 2890000,
+    certainty_breakdown_assets: { certain: 2230000, contractual: 410000, probable: 360000, optional: 100000 },
+    certainty_breakdown_liabilities: { certain: 155000, contractual: 55000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-03-01', 
+    net_worth_eur: 2920000,
+    certainty_breakdown_assets: { certain: 2250000, contractual: 420000, probable: 370000, optional: 100000 },
+    certainty_breakdown_liabilities: { certain: 160000, contractual: 60000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-04-01', 
+    net_worth_eur: 2880000,
+    certainty_breakdown_assets: { certain: 2220000, contractual: 400000, probable: 360000, optional: 100000 },
+    certainty_breakdown_liabilities: { certain: 150000, contractual: 50000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-05-01', 
+    net_worth_eur: 2950000,
+    certainty_breakdown_assets: { certain: 2280000, contractual: 430000, probable: 370000, optional: 100000 },
+    certainty_breakdown_liabilities: { certain: 170000, contractual: 60000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-06-01', 
+    net_worth_eur: 3010000,
+    certainty_breakdown_assets: { certain: 2320000, contractual: 450000, probable: 380000, optional: 110000 },
+    certainty_breakdown_liabilities: { certain: 180000, contractual: 70000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-07-01', 
+    net_worth_eur: 3050000,
+    certainty_breakdown_assets: { certain: 2350000, contractual: 460000, probable: 390000, optional: 110000 },
+    certainty_breakdown_liabilities: { certain: 185000, contractual: 75000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-08-01', 
+    net_worth_eur: 3020000,
+    certainty_breakdown_assets: { certain: 2330000, contractual: 450000, probable: 385000, optional: 105000 },
+    certainty_breakdown_liabilities: { certain: 180000, contractual: 70000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-09-01', 
+    net_worth_eur: 3080000,
+    certainty_breakdown_assets: { certain: 2370000, contractual: 470000, probable: 400000, optional: 110000 },
+    certainty_breakdown_liabilities: { certain: 190000, contractual: 80000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-10-01', 
+    net_worth_eur: 3120000,
+    certainty_breakdown_assets: { certain: 2400000, contractual: 480000, probable: 410000, optional: 110000 },
+    certainty_breakdown_liabilities: { certain: 195000, contractual: 85000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-11-01', 
+    net_worth_eur: 3150000,
+    certainty_breakdown_assets: { certain: 2420000, contractual: 490000, probable: 420000, optional: 110000 },
+    certainty_breakdown_liabilities: { certain: 200000, contractual: 90000, probable: 0, optional: 0 },
+  },
+  { 
+    snapshot_date: '2024-12-01', 
+    net_worth_eur: 3180000,
+    certainty_breakdown_assets: { certain: 2450000, contractual: 500000, probable: 420000, optional: 110000 },
+    certainty_breakdown_liabilities: { certain: 205000, contractual: 95000, probable: 0, optional: 0 },
+  },
 ];
