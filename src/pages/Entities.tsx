@@ -171,7 +171,7 @@ const Entities = () => {
   const handleDelete = async () => {
     if (!deletingEntity) return;
     try {
-      await deleteEntity.mutateAsync(deletingEntity.id);
+      await deleteEntity.mutateAsync({ id: deletingEntity.id, name: deletingEntity.name });
       toast({ title: 'Entity deleted', description: `${deletingEntity.name} has been removed.` });
       setDeletingEntity(null);
     } catch (error: any) {

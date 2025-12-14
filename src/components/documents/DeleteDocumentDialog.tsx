@@ -34,7 +34,7 @@ export const DeleteDocumentDialog = ({
       await deleteFile(document.file_url);
       
       // Delete document record
-      await deleteDocument.mutateAsync(document.id);
+      await deleteDocument.mutateAsync({ id: document.id, name: document.name });
       
       toast({ title: 'Document deleted' });
       onOpenChange(false);

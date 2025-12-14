@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { Beneficiary, Coparcener, parseBeneficiaries, parseCoparceners } from '@/lib/types';
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 export type Entity = Tables<'entities'> & {
   parsed_beneficiaries?: Beneficiary[] | null;
@@ -97,6 +98,7 @@ export const useEntities = () => {
 export const useCreateEntity = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async (entity: Omit<EntityInsert, 'user_id'>) => {
@@ -111,14 +113,21 @@ export const useCreateEntity = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['entities'] });
+      logEvent({
+        action: 'create',
+        entityType: 'entity',
+        entityId: data.id,
+        metadata: { name: data.name, type: data.type },
+      });
     },
   });
 };
 
 export const useUpdateEntity = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: EntityUpdate & { id: string }) => {
@@ -132,26 +141,40 @@ export const useUpdateEntity = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['entities'] });
+      logEvent({
+        action: 'update',
+        entityType: 'entity',
+        entityId: data.id,
+        metadata: { name: data.name },
+      });
     },
   });
 };
 
 export const useDeleteEntity = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
       const { error } = await supabase
         .from('entities')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+      return { id, name };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['entities'] });
+      logEvent({
+        action: 'delete',
+        entityType: 'entity',
+        entityId: data.id,
+        metadata: { name: data.name },
+      });
     },
   });
 };
