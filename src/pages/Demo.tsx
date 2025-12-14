@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { NetWorthCard } from '@/components/dashboard/NetWorthCard';
 import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
+import { CertaintyTrendChart } from '@/components/dashboard/CertaintyTrendChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { CollapsibleSection, CollapsibleProvider, ExpandCollapseAllButton } from '@/components/dashboard/CollapsibleSection';
@@ -388,6 +389,27 @@ const Demo = () => {
           currency={displayCurrency}
           delay={150}
         />
+
+        {/* Certainty Trend Chart */}
+        {netWorthHistory.length > 0 && (
+          <section className="mb-8 animate-fade-in" style={{ animationDelay: '155ms' }}>
+            <h3 className="font-serif text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">
+              Certainty Trend
+            </h3>
+            <div className="asset-card">
+              <CertaintyTrendChart 
+                data={netWorthHistory.map(h => ({
+                  snapshot_date: h.snapshot_date,
+                  certainty_breakdown_assets: h.certainty_breakdown_assets,
+                  certainty_breakdown_liabilities: h.certainty_breakdown_liabilities,
+                  net_worth_eur: h.net_worth_eur,
+                }))}
+                displayCurrency={displayCurrency}
+                convertFromEUR={(value, currency) => convertFromEUR(value, currency, fallbackRates)}
+              />
+            </div>
+          </section>
+        )}
 
         <DemoDebtToIncomeWidget delay={175} />
 

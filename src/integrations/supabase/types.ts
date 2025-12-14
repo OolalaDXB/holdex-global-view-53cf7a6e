@@ -759,6 +759,8 @@ export type Database = {
           breakdown_by_country: Json | null
           breakdown_by_currency: Json | null
           breakdown_by_type: Json | null
+          certainty_breakdown_assets: Json | null
+          certainty_breakdown_liabilities: Json | null
           created_at: string | null
           crypto_prices_snapshot: Json | null
           exchange_rates_snapshot: Json | null
@@ -774,6 +776,8 @@ export type Database = {
           breakdown_by_country?: Json | null
           breakdown_by_currency?: Json | null
           breakdown_by_type?: Json | null
+          certainty_breakdown_assets?: Json | null
+          certainty_breakdown_liabilities?: Json | null
           created_at?: string | null
           crypto_prices_snapshot?: Json | null
           exchange_rates_snapshot?: Json | null
@@ -789,6 +793,8 @@ export type Database = {
           breakdown_by_country?: Json | null
           breakdown_by_currency?: Json | null
           breakdown_by_type?: Json | null
+          certainty_breakdown_assets?: Json | null
+          certainty_breakdown_liabilities?: Json | null
           created_at?: string | null
           crypto_prices_snapshot?: Json | null
           exchange_rates_snapshot?: Json | null

@@ -1,6 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Json } from '@/integrations/supabase/types';
+
+interface CertaintyBreakdown {
+  certain: number;
+  contractual: number;
+  probable: number;
+  optional: number;
+}
 
 interface SnapshotData {
   total_assets_eur: number;
@@ -12,6 +20,8 @@ interface SnapshotData {
   breakdown_by_currency: Record<string, number>;
   exchange_rates_snapshot?: Record<string, number>;
   crypto_prices_snapshot?: Record<string, { price: number; change24h: number }>;
+  certainty_breakdown_assets?: CertaintyBreakdown;
+  certainty_breakdown_liabilities?: CertaintyBreakdown;
 }
 
 export const useSaveSnapshot = () => {
@@ -46,6 +56,8 @@ export const useSaveSnapshot = () => {
             breakdown_by_currency: data.breakdown_by_currency,
             exchange_rates_snapshot: data.exchange_rates_snapshot,
             crypto_prices_snapshot: data.crypto_prices_snapshot,
+            certainty_breakdown_assets: data.certainty_breakdown_assets as unknown as Json,
+            certainty_breakdown_liabilities: data.certainty_breakdown_liabilities as unknown as Json,
           })
           .eq('id', existing.id)
           .select()
@@ -69,6 +81,8 @@ export const useSaveSnapshot = () => {
             breakdown_by_currency: data.breakdown_by_currency,
             exchange_rates_snapshot: data.exchange_rates_snapshot,
             crypto_prices_snapshot: data.crypto_prices_snapshot,
+            certainty_breakdown_assets: data.certainty_breakdown_assets as unknown as Json,
+            certainty_breakdown_liabilities: data.certainty_breakdown_liabilities as unknown as Json,
           })
           .select()
           .single();
@@ -78,7 +92,7 @@ export const useSaveSnapshot = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['net-worth-history'] });
+      queryClient.invalidateQueries({ queryKey: ['net_worth_history'] });
     },
   });
 };

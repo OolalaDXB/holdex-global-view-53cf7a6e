@@ -44,6 +44,7 @@ const BREAKDOWN_WIDGETS: Widget[] = [
 // Optional widgets - hidden by default
 const OPTIONAL_WIDGETS: Widget[] = [
   { id: 'certainty_breakdown', label: 'Certainty Breakdown', description: 'Confirmed vs projected' },
+  { id: 'certainty_trend', label: 'Certainty Trend', description: 'Historical certainty chart' },
   { id: 'debt_to_income', label: 'Debt-to-Income Ratio', description: 'DTI health indicator' },
   { id: 'net_worth_projection', label: 'Net Worth Projection', description: 'Future wealth forecast' },
   { id: 'leasehold_reminders', label: 'Leasehold Reminders', description: 'Expiring leases' },

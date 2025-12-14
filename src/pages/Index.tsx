@@ -1,6 +1,7 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { NetWorthCard } from '@/components/dashboard/NetWorthCard';
 import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
+import { CertaintyTrendChart } from '@/components/dashboard/CertaintyTrendChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
@@ -264,6 +265,8 @@ const Dashboard = () => {
         breakdown_by_currency: currencyMapEUR,
         exchange_rates_snapshot: rates,
         crypto_prices_snapshot: prices,
+        certainty_breakdown_assets: assetsBreakdownEUR,
+        certainty_breakdown_liabilities: liabilitiesBreakdownEUR,
       });
       toast({
         title: "Snapshot saved",
@@ -435,6 +438,21 @@ const Dashboard = () => {
                 isBlurred={isBlurred}
                 delay={150}
               />
+            )}
+
+            {showWidget('certainty_trend') && netWorthHistoryData.length > 0 && (
+              <section className="mb-8 animate-fade-in" style={{ animationDelay: '155ms' }}>
+                <h3 className="font-serif text-sm font-medium text-muted-foreground uppercase tracking-wide mb-4">
+                  Certainty Trend
+                </h3>
+                <div className="asset-card">
+                  <CertaintyTrendChart 
+                    data={netWorthHistoryData}
+                    displayCurrency={displayCurrency}
+                    convertFromEUR={(value, currency) => convertFromEUR(value, currency, rates)}
+                  />
+                </div>
+              </section>
             )}
 
             {showWidget('debt_to_income') && (
