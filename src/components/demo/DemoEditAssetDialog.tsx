@@ -154,13 +154,11 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
             />
           </div>
           
-          <div className="space-y-2">
-            <Label>Certainty</Label>
-            <CertaintySelect
-              value={formData.certainty}
-              onValueChange={(value) => setFormData({ ...formData, certainty: value })}
-            />
-          </div>
+          <CertaintySelect
+            value={formData.certainty}
+            onValueChange={(value) => setFormData({ ...formData, certainty: value })}
+            showLabel={true}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

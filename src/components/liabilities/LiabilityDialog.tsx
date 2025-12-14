@@ -182,13 +182,11 @@ export function LiabilityDialog({ open, onOpenChange, liability }: LiabilityDial
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Certainty</Label>
-              <CertaintySelect
-                value={formData.certainty}
-                onValueChange={(v) => setFormData({ ...formData, certainty: v })}
-              />
-            </div>
+            <CertaintySelect
+              value={formData.certainty}
+              onValueChange={(v) => setFormData({ ...formData, certainty: v })}
+              showLabel={true}
+            />
 
             <div className="space-y-2">
               <Label>Institution</Label>

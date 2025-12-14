@@ -307,13 +307,11 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Certainty</Label>
-                    <CertaintySelect
-                      value={formData.certainty}
-                      onValueChange={(value) => setFormData({ ...formData, certainty: value })}
-                    />
-                  </div>
+                  <CertaintySelect
+                    value={formData.certainty}
+                    onValueChange={(value) => setFormData({ ...formData, certainty: value })}
+                    showLabel={true}
+                  />
 
                   {asset.type === 'crypto' && (
                     <>

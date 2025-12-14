@@ -12,6 +12,7 @@ import { AIImageDialog } from '@/components/ui/ai-image-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { CertaintySelect } from '@/components/ui/certainty-select';
+import { getDefaultCertainty } from '@/lib/certainty';
 import { useToast } from '@/hooks/use-toast';
 import { useDemo } from '@/contexts/DemoContext';
 import { getFilteredFinancingTypes, isIslamicFinancing } from '@/hooks/useLiabilities';
@@ -95,6 +96,9 @@ const DemoAddAssetPage = () => {
 
   const handleTypeSelect = (type: string) => {
     setSelectedType(type);
+    // Auto-suggest certainty based on type
+    const suggestedCertainty = getDefaultCertainty(type);
+    setFormData(prev => ({ ...prev, certainty: suggestedCertainty }));
     setStep('form');
   };
 
@@ -387,13 +391,11 @@ const DemoAddAssetPage = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Certainty</Label>
-                  <CertaintySelect
-                    value={formData.certainty}
-                    onValueChange={(value) => setFormData({ ...formData, certainty: value })}
-                  />
-                </div>
+                <CertaintySelect
+                  value={formData.certainty}
+                  onValueChange={(value) => setFormData({ ...formData, certainty: value })}
+                  showLabel={true}
+                />
 
                 {selectedType === 'crypto' && (
                   <>

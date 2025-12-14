@@ -48,6 +48,7 @@ const AddLiabilityPage = () => {
     linked_asset_id: '',
     entity_id: '',
     notes: '',
+    certainty: 'certain', // Liabilities default to certain
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,6 +78,7 @@ const AddLiabilityPage = () => {
         linked_asset_id: formData.linked_asset_id || null,
         entity_id: formData.entity_id || null,
         notes: formData.notes || null,
+        certainty: formData.certainty,
       });
       toast.success('Liability added successfully');
       navigate('/liabilities');
