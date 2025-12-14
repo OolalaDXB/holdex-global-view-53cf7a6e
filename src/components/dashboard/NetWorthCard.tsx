@@ -60,7 +60,7 @@ export function NetWorthCard({
 
   return (
     <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center gap-4 mb-2">
         <p className="wealth-label">{showGross ? 'Gross Assets' : 'Net Worth'}</p>
         <Tooltip>
           <TooltipTrigger asChild>
