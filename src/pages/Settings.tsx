@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
-import { useSharedAccess, useInvitePartner, useRevokeAccess } from '@/hooks/useSharedAccess';
+import { useSharedAccess, useInvitePartner, useRevokeAccess, useReceivedInvitations, useRespondToInvitation } from '@/hooks/useSharedAccess';
 import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
@@ -17,7 +17,7 @@ import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { FavoriteCitiesSelect, SimplifiedCity } from '@/components/settings/FavoriteCitiesSelect';
 import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
 import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
-import { X } from 'lucide-react';
+import { X, Check, XCircle } from 'lucide-react';
 
 type City = SimplifiedCity;
 
@@ -34,8 +34,10 @@ const SettingsPage = () => {
   const { data: profile, isLoading: profileLoading } = useProfile();
   const updateProfile = useUpdateProfile();
   const { data: sharedAccess = [] } = useSharedAccess();
+  const { data: receivedInvitations = [] } = useReceivedInvitations();
   const invitePartner = useInvitePartner();
   const revokeAccess = useRevokeAccess();
+  const respondToInvitation = useRespondToInvitation();
   const { data: assets = [] } = useAssets();
   const { data: collections = [] } = useCollections();
   const { data: liabilities = [] } = useLiabilities();
@@ -163,6 +165,24 @@ const SettingsPage = () => {
         variant: "destructive",
         title: "Error",
         description: "Failed to revoke access. Please try again.",
+      });
+    }
+  };
+
+  const handleRespondToInvitation = async (id: string, status: 'accepted' | 'declined', ownerEmail?: string) => {
+    try {
+      await respondToInvitation.mutateAsync({ id, status });
+      toast({
+        title: status === 'accepted' ? "Invitation accepted" : "Invitation declined",
+        description: status === 'accepted' 
+          ? "You can now view this portfolio." 
+          : "The invitation has been declined.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to respond to invitation. Please try again.",
       });
     }
   };
@@ -532,6 +552,50 @@ const SettingsPage = () => {
           </section>
 
           <Separator />
+
+          {/* Received Invitations Section */}
+          {receivedInvitations.filter(inv => inv.status === 'pending').length > 0 && (
+            <section>
+              <h2 className="font-serif text-xl font-medium text-foreground mb-4">Pending Invitations</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                You have been invited to view someone else's portfolio.
+              </p>
+              <div className="space-y-2">
+                {receivedInvitations.filter(inv => inv.status === 'pending').map((invitation) => (
+                  <div key={invitation.id} className="flex items-center justify-between py-2 px-3 bg-secondary rounded-md">
+                    <div>
+                      <span className="text-sm text-foreground">Portfolio invitation</span>
+                      <span className="text-xs text-muted-foreground ml-2">(pending)</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleRespondToInvitation(invitation.id, 'accepted')}
+                        disabled={respondToInvitation.isPending}
+                        className="h-7 px-2"
+                      >
+                        <Check size={14} className="mr-1" />
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRespondToInvitation(invitation.id, 'declined')}
+                        disabled={respondToInvitation.isPending}
+                        className="h-7 px-2 text-muted-foreground hover:text-destructive"
+                      >
+                        <XCircle size={14} className="mr-1" />
+                        Decline
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {receivedInvitations.filter(inv => inv.status === 'pending').length > 0 && <Separator />}
 
           {/* Sharing Section */}
           <section>
