@@ -15,7 +15,6 @@ export function CurrencyBreakdown({ items, delay = 0, isBlurred = false }: Curre
       className="animate-fade-in" 
       style={{ animationDelay: `${delay}ms` }}
     >
-      <h3 className="font-serif text-lg font-medium text-foreground mb-4">By Currency</h3>
       <div className="flex flex-wrap gap-4">
         {items.map((item) => (
           <div 
