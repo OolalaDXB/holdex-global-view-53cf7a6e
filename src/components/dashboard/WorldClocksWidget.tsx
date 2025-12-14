@@ -17,31 +17,32 @@ const WeatherIcon: React.FC<{ condition: string; isNight: boolean; className?: s
   isNight,
   className = "w-4 h-4"
 }) => {
+  // Consistent blue-tinted color palette for weather icons
   if (isNight && condition === 'clear') {
-    return <Moon className={`${className} text-blue-300`} />;
+    return <Moon className={`${className} text-sky-300`} />;
   }
 
   switch (condition) {
     case 'clear':
-      return <Sun className={`${className} text-amber-400`} />;
+      return <Sun className={`${className} text-sky-400`} />;
     case 'partly-cloudy':
       return isNight 
-        ? <Cloud className={`${className} text-muted-foreground`} />
-        : <CloudSun className={`${className} text-amber-300`} />;
+        ? <Cloud className={`${className} text-sky-400/70`} />
+        : <CloudSun className={`${className} text-sky-400`} />;
     case 'cloudy':
-      return <Cloud className={`${className} text-muted-foreground`} />;
+      return <Cloud className={`${className} text-sky-400/70`} />;
     case 'rain':
-      return <CloudRain className={`${className} text-blue-400`} />;
+      return <CloudRain className={`${className} text-sky-500`} />;
     case 'snow':
-      return <CloudSnow className={`${className} text-blue-200`} />;
+      return <CloudSnow className={`${className} text-sky-300`} />;
     case 'thunderstorm':
-      return <CloudLightning className={`${className} text-purple-400`} />;
+      return <CloudLightning className={`${className} text-sky-600`} />;
     case 'fog':
-      return <CloudFog className={`${className} text-muted-foreground`} />;
+      return <CloudFog className={`${className} text-sky-400/60`} />;
     default:
       return isNight 
-        ? <Moon className={`${className} text-blue-300`} />
-        : <Sun className={`${className} text-amber-400`} />;
+        ? <Moon className={`${className} text-sky-300`} />
+        : <Sun className={`${className} text-sky-400`} />;
   }
 };
 
