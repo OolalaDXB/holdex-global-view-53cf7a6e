@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
+import { FavoriteCity } from '@/hooks/useProfile';
 
-interface WeatherData {
+export interface WeatherData {
   condition: 'clear' | 'cloudy' | 'partly-cloudy' | 'rain' | 'snow' | 'thunderstorm' | 'fog';
   isNight: boolean;
   temp?: number;
 }
 
-interface CityWeather {
+export interface CityWeather {
   [cityName: string]: WeatherData;
 }
 
@@ -58,7 +59,7 @@ const fetchWeatherForCity = async (cityName: string, timezone: string): Promise<
   }
 };
 
-export const useWeather = (cities: { name: string; timezone: string }[]) => {
+export const useWeather = (cities: FavoriteCity[]) => {
   return useQuery({
     queryKey: ['weather', cities.map(c => c.name).join(',')],
     queryFn: async (): Promise<CityWeather> => {

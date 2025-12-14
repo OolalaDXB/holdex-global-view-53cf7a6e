@@ -2,16 +2,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { z } from 'zod';
 
-// Typed interfaces for JSON fields
+// Type definition for FavoriteCity
 export interface FavoriteCity {
   name: string;
   timezone: string;
 }
 
-export interface DashboardWidgets {
-  enabled: string[];
-}
+// Zod schemas for runtime validation of JSON fields
+export const FavoriteCitySchema = z.object({
+  name: z.string(),
+  timezone: z.string(),
+});
+
+export const DashboardWidgetSchema = z.string();
+
+export const NewsSourceSchema = z.string();
 
 // Base profile from database
 type BaseProfile = Tables<'profiles'>;
@@ -23,21 +30,36 @@ export interface Profile extends Omit<BaseProfile, 'favorite_cities' | 'dashboar
   news_sources: string[] | null;
 }
 
-// Helper to parse and type the profile data
+// Safe parse helper that returns default on failure with proper type casting
+const parseFavoriteCities = (data: unknown): FavoriteCity[] | null => {
+  if (!Array.isArray(data)) return null;
+  
+  const result = z.array(FavoriteCitySchema).safeParse(data);
+  if (!result.success) return null;
+  
+  // Explicitly cast to our interface type (zod's inference can be imprecise)
+  return result.data.map(city => ({
+    name: city.name,
+    timezone: city.timezone,
+  }));
+};
+
+const parseStringArray = (data: unknown): string[] | null => {
+  if (!Array.isArray(data)) return null;
+  
+  const result = z.array(z.string()).safeParse(data);
+  return result.success ? result.data : null;
+};
+
+// Helper to parse and validate the profile data at runtime
 const parseProfile = (data: BaseProfile | null): Profile | null => {
   if (!data) return null;
   
   return {
     ...data,
-    favorite_cities: Array.isArray(data.favorite_cities) 
-      ? (data.favorite_cities as unknown as FavoriteCity[]) 
-      : null,
-    dashboard_widgets: Array.isArray(data.dashboard_widgets) 
-      ? (data.dashboard_widgets as unknown as string[]) 
-      : null,
-    news_sources: Array.isArray(data.news_sources) 
-      ? (data.news_sources as unknown as string[]) 
-      : null,
+    favorite_cities: parseFavoriteCities(data.favorite_cities),
+    dashboard_widgets: parseStringArray(data.dashboard_widgets),
+    news_sources: parseStringArray(data.news_sources),
   };
 };
 

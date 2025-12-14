@@ -8,19 +8,19 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
+import { useProfile, useUpdateProfile, Profile, FavoriteCity } from '@/hooks/useProfile';
 import { useSharedAccess, useInvitePartner, useRevokeAccess, useReceivedInvitations, useRespondToInvitation, ReceivedInvitation } from '@/hooks/useSharedAccess';
 import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
-import { FavoriteCitiesSelect, SimplifiedCity } from '@/components/settings/FavoriteCitiesSelect';
+import { FavoriteCitiesSelect } from '@/components/settings/FavoriteCitiesSelect';
 import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
 import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
 import { X, Check, XCircle, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-type City = SimplifiedCity;
+
 
 const FISCAL_YEAR_OPTIONS = [
   { value: '01-01', label: 'January 1 (Default)' },
@@ -59,7 +59,7 @@ const SettingsPage = () => {
   const [monthlyIncomeCurrency, setMonthlyIncomeCurrency] = useState('EUR');
   
   // New preference states
-  const [favoriteCities, setFavoriteCities] = useState<City[]>([]);
+  const [favoriteCities, setFavoriteCities] = useState<FavoriteCity[]>([]);
   const [dashboardWidgets, setDashboardWidgets] = useState<string[]>([]);
   const [blurAmounts, setBlurAmounts] = useState(false);
   const [fiscalYearStart, setFiscalYearStart] = useState('01-01');
@@ -81,16 +81,16 @@ const SettingsPage = () => {
       setComplianceMode(profile.compliance_mode || 'none');
       
       // Income fields
-      setMonthlyIncome((profile as any).monthly_income?.toString() || '');
-      setMonthlyIncomeCurrency((profile as any).monthly_income_currency || 'EUR');
+      setMonthlyIncome(profile.monthly_income?.toString() || '');
+      setMonthlyIncomeCurrency(profile.monthly_income_currency || 'EUR');
       
       // New preferences
-      setFavoriteCities((profile as any).favorite_cities || []);
-      setDashboardWidgets((profile as any).dashboard_widgets || []);
-      setBlurAmounts((profile as any).blur_amounts || false);
-      setFiscalYearStart((profile as any).fiscal_year_start || '01-01');
-      setNewsSources((profile as any).news_sources || ['bloomberg', 'reuters']);
-      setAreaUnit((profile as any).area_unit || 'sqm');
+      setFavoriteCities(profile.favorite_cities || []);
+      setDashboardWidgets(profile.dashboard_widgets || []);
+      setBlurAmounts(profile.blur_amounts || false);
+      setFiscalYearStart(profile.fiscal_year_start || '01-01');
+      setNewsSources(profile.news_sources || ['bloomberg', 'reuters']);
+      setAreaUnit((profile.area_unit as 'sqm' | 'sqft') || 'sqm');
     }
   }, [profile]);
 
