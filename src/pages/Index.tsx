@@ -69,7 +69,7 @@ const Dashboard = () => {
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: netWorthHistoryData = [] } = useNetWorthHistory();
   const { data: exchangeRates, isLoading: ratesLoading, dataUpdatedAt: fxUpdatedAt } = useExchangeRates();
-  const { data: cryptoPrices, dataUpdatedAt: cryptoUpdatedAt, isStale: cryptoIsStale, isUnavailable: cryptoIsUnavailable, message: cryptoMessage } = useCryptoPrices();
+  const { data: cryptoPrices, dataUpdatedAt: cryptoUpdatedAt, isStale: cryptoIsStale, isUnavailable: cryptoIsUnavailable, message: cryptoMessage, cacheTimestamp, refetch: refetchCrypto, isFetching: cryptoFetching } = useCryptoPrices();
   const saveSnapshot = useSaveSnapshot();
   const { displayCurrency, convertToDisplay, formatInDisplayCurrency } = useCurrency();
   const { config: viewConfig, setConfig: setViewConfig, getIncludedTypes, includesCollections, shouldIncludeAsset } = useViewConfig();
@@ -447,11 +447,28 @@ const Dashboard = () => {
                   <div className="flex items-center gap-1 text-destructive">
                     <AlertTriangle size={12} />
                     <span>Crypto prices unavailable</span>
+                    <button 
+                      onClick={() => refetchCrypto()} 
+                      disabled={cryptoFetching}
+                      className="ml-1 hover:text-foreground transition-colors"
+                    >
+                      <RefreshCw size={12} className={cryptoFetching ? 'animate-spin' : ''} />
+                    </button>
                   </div>
                 ) : cryptoIsStale ? (
                   <div className="flex items-center gap-1 text-yellow-600">
                     <AlertTriangle size={12} />
-                    <span>Crypto: {cryptoMessage || 'Using cached prices'}</span>
+                    <span>
+                      Cached prices from {cacheTimestamp ? new Date(cacheTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'earlier'}
+                    </span>
+                    <button 
+                      onClick={() => refetchCrypto()} 
+                      disabled={cryptoFetching}
+                      className="ml-1 hover:text-foreground transition-colors"
+                      title="Retry fetching live prices"
+                    >
+                      <RefreshCw size={12} className={cryptoFetching ? 'animate-spin' : ''} />
+                    </button>
                   </div>
                 ) : cryptoLastUpdated && (
                   <div className="flex items-center gap-1">
