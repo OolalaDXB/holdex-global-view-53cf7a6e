@@ -26,7 +26,7 @@ interface SidebarProps {
 }
 
 const portfolioNavigation = [
-  { name: 'Dashboard', href: '/', demoHref: '/demo', icon: LayoutDashboard, shortcut: '⌘⇧D' },
+  { name: 'Dashboard', href: '/', demoHref: '/demo', icon: LayoutDashboard },
   { name: 'Assets', href: '/assets', demoHref: '/demo/assets', icon: Wallet },
   { name: 'Collections', href: '/collections', demoHref: '/demo/collections', icon: Gem },
   { name: 'Liabilities', href: '/liabilities', demoHref: '/demo/liabilities', icon: TrendingDown },
@@ -40,8 +40,8 @@ const managementNavigation = [
 ];
 
 const actionsNavigation = [
-  { name: 'Add Asset', href: '/add', demoHref: '/demo/add', icon: Plus, shortcut: '⌘⇧A' },
-  { name: 'Add Liability', href: '/add-liability', demoHref: '/demo/add-liability', icon: TrendingDown, shortcut: '⌘⇧L' },
+  { name: 'Add Asset', href: '/add', demoHref: '/demo/add', icon: Plus },
+  { name: 'Add Liability', href: '/add-liability', demoHref: '/demo/add-liability', icon: TrendingDown },
 ];
 
 
@@ -131,9 +131,6 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
                 {!collapsed && (
                   <span className="flex-1">{item.name}</span>
                 )}
-                {!collapsed && item.shortcut && (
-                  <span className="text-[10px] text-muted-foreground font-mono">{item.shortcut}</span>
-                )}
               </NavLink>
             ))}
           </div>
@@ -191,9 +188,6 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
                 <item.icon size={20} strokeWidth={1.5} />
                 {!collapsed && (
                   <span className="flex-1">{item.name}</span>
-                )}
-                {!collapsed && item.shortcut && (
-                  <span className="text-[10px] text-muted-foreground font-mono">{item.shortcut}</span>
                 )}
               </NavLink>
             ))}

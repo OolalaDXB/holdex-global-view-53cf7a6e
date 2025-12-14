@@ -1,11 +1,10 @@
-import { TrendingUp, TrendingDown, CheckCircle2, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Scale } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface NetWorthCardProps {
   totalValue: number;
-  confirmedValue?: number;
-  projectedValue?: number;
+  grossAssets: number;
   change: number;
   currency?: string;
   isBlurred?: boolean;
@@ -22,8 +21,7 @@ const currencySymbols: Record<string, string> = {
 
 export function NetWorthCard({ 
   totalValue, 
-  confirmedValue = 0, 
-  projectedValue = 0, 
+  grossAssets,
   change, 
   currency = 'EUR', 
   isBlurred = false 
@@ -38,8 +36,6 @@ export function NetWorthCard({
       maximumFractionDigits: 0,
     }).format(Math.abs(value));
   };
-
-  const hasBreakdown = confirmedValue > 0 || projectedValue > 0;
 
   return (
     <div className="animate-fade-in">
@@ -61,36 +57,34 @@ export function NetWorthCard({
         </div>
       </div>
       
-      {/* Confirmed vs Projected breakdown */}
-      {hasBreakdown && !isBlurred && (
+      {/* Gross Assets breakdown */}
+      {!isBlurred && (
         <div className="flex items-center gap-4 mt-3 text-sm">
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-1.5 text-positive">
-                <CheckCircle2 size={14} />
-                <span className="tabular-nums">{symbol}{formatValue(confirmedValue)}</span>
-                <span className="text-muted-foreground text-xs">confirmed</span>
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Wallet size={14} />
+                <span className="tabular-nums">{symbol}{formatValue(grossAssets)}</span>
+                <span className="text-xs">gross assets</span>
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Verified and committed values (certain + contractual)</p>
+              <p>Total assets before subtracting liabilities</p>
             </TooltipContent>
           </Tooltip>
           
-          {projectedValue > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Clock size={14} />
-                  <span className="tabular-nums">+{symbol}{formatValue(projectedValue)}</span>
-                  <span className="text-xs">projected</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Estimated and speculative values (probable + optional)</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1.5 text-foreground">
+                <Scale size={14} />
+                <span className="tabular-nums">{symbol}{formatValue(totalValue)}</span>
+                <span className="text-xs">net</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Gross assets minus all liabilities (including linked loans)</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       )}
     </div>
