@@ -306,6 +306,7 @@ export function EditCollectionDialog({ collection, open, onOpenChange }: EditCol
         brand={formData.brand}
         model={formData.model}
         country={formData.country}
+        notes={formData.notes}
         onImageGenerated={(url) => setFormData({ ...formData, image_url: url })}
       />
     </>

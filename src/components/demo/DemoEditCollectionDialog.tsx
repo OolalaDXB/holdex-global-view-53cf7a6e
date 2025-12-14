@@ -231,6 +231,7 @@ export function DemoEditCollectionDialog({ collection, open, onOpenChange }: Dem
         brand={formData.brand}
         model={formData.model}
         country={formData.country}
+        notes={collection.notes}
         onImageGenerated={(url) => setFormData({ ...formData, image_url: url })}
       />
     </Dialog>
