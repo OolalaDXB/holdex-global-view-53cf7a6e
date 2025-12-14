@@ -8,11 +8,10 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useDemo } from '@/contexts/DemoContext';
-import { FavoriteCitiesSelect, SimplifiedCity } from '@/components/settings/FavoriteCitiesSelect';
+import { FavoriteCitiesSelect } from '@/components/settings/FavoriteCitiesSelect';
 import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
 import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
-
-type City = SimplifiedCity;
+import { FavoriteCity } from '@/hooks/useProfile';
 
 const FISCAL_YEAR_OPTIONS = [
   { value: '01-01', label: 'January 1 (Default)' },
@@ -39,7 +38,7 @@ const DemoSettings = () => {
   const [monthlyIncomeCurrency, setMonthlyIncomeCurrency] = useState('EUR');
   
   // Preference states
-  const [favoriteCities, setFavoriteCities] = useState<City[]>([]);
+  const [favoriteCities, setFavoriteCities] = useState<FavoriteCity[]>([]);
   const [dashboardWidgets, setDashboardWidgets] = useState<string[]>([]);
   const [blurAmounts, setBlurAmounts] = useState(false);
   const [fiscalYearStart, setFiscalYearStart] = useState('01-01');

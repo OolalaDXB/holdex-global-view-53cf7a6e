@@ -4,14 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { FavoriteCity } from '@/hooks/useProfile';
 
-interface City {
-  name: string;
-  timezone: string;
+interface CityWithRegion extends FavoriteCity {
   region: string;
 }
 
-const AVAILABLE_CITIES: City[] = [
+const AVAILABLE_CITIES: CityWithRegion[] = [
   // Europe
   { name: 'London', timezone: 'Europe/London', region: 'Europe' },
   { name: 'Paris', timezone: 'Europe/Paris', region: 'Europe' },
@@ -112,15 +111,15 @@ const AVAILABLE_CITIES: City[] = [
 
 const REGIONS = ['Europe', 'Middle East', 'Asia Pacific', 'Africa', 'Americas', 'Caribbean'] as const;
 
-// Export a simpler City type for external use (without region)
-export interface SimplifiedCity {
-  name: string;
-  timezone: string;
-}
+// Re-export FavoriteCity for backwards compatibility
+export type { FavoriteCity } from '@/hooks/useProfile';
+
+// Keep SimplifiedCity as alias for backwards compatibility
+export type SimplifiedCity = FavoriteCity;
 
 interface FavoriteCitiesSelectProps {
-  value: SimplifiedCity[];
-  onChange: (cities: SimplifiedCity[]) => void;
+  value: FavoriteCity[];
+  onChange: (cities: FavoriteCity[]) => void;
   maxCities?: number;
 }
 
@@ -164,7 +163,7 @@ export const FavoriteCitiesSelect: React.FC<FavoriteCitiesSelectProps> = ({
         acc[region] = regionCities;
       }
       return acc;
-    }, {} as Record<string, City[]>);
+    }, {} as Record<string, CityWithRegion[]>);
   }, [availableCities, searchQuery]);
 
   return (
