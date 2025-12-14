@@ -9,16 +9,19 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { UserPlus, X } from 'lucide-react';
 import { useInvitePartner, useSharedAccess, useRevokeAccess } from '@/hooks/useSharedAccess';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface ShareAdvisorDialogProps {
   trigger?: React.ReactNode;
   className?: string;
+  showBadge?: boolean;
 }
 
-export function ShareAdvisorDialog({ trigger, className }: ShareAdvisorDialogProps) {
+export function ShareAdvisorDialog({ trigger, className, showBadge = true }: ShareAdvisorDialogProps) {
   const [open, setOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const { data: sharedAccess = [] } = useSharedAccess();
@@ -61,13 +64,23 @@ export function ShareAdvisorDialog({ trigger, className }: ShareAdvisorDialogPro
     }
   };
 
+  const pendingCount = sharedAccess.filter(s => s.status === 'pending').length;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm" className={className}>
+          <Button variant="outline" size="sm" className={cn("relative", className)}>
             <UserPlus className="h-4 w-4 mr-2" />
             Share with Advisor
+            {showBadge && pendingCount > 0 && (
+              <Badge 
+                variant="secondary" 
+                className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs bg-primary text-primary-foreground"
+              >
+                {pendingCount}
+              </Badge>
+            )}
           </Button>
         )}
       </DialogTrigger>

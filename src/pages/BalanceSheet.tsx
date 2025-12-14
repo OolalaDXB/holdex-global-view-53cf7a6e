@@ -21,6 +21,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { BalanceSheetStatement, BalanceSheetStatementRef } from '@/components/balance-sheet/BalanceSheetStatement';
 import { BalanceSheetComparison } from '@/components/balance-sheet/BalanceSheetComparison';
 import { DataStatusBadge } from '@/components/ui/data-status-badge';
+import { ShareAdvisorDialog } from '@/components/sharing/ShareAdvisorDialog';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -169,7 +170,7 @@ const BalanceSheetPage = () => {
       <div className="p-6 lg:p-10 print:p-0">
         {/* Controls Header */}
         <div className="max-w-[800px] mx-auto mb-8 print:hidden">
-          <div className="flex flex-wrap items-center gap-4 mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
             <DataStatusBadge
               label="FX"
               status={fxIsUnavailable ? 'unavailable' : fxIsStale ? 'stale' : 'live'}
@@ -178,6 +179,7 @@ const BalanceSheetPage = () => {
               isFetching={fxFetching}
               onRefresh={refetchFx}
             />
+            <ShareAdvisorDialog />
           </div>
           <div className="flex flex-wrap items-end gap-4 pb-6 border-b border-border">
             {/* Date Picker */}
