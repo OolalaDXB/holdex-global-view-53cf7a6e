@@ -57,7 +57,7 @@ const fetchNews = async (enabledSources: string[]): Promise<NewsItem[]> => {
   // Fallback headlines if feeds fail
   if (allNews.length === 0) {
     return [
-      { title: 'Markets update: Check your portfolio for the latest changes', link: '#', source: 'HOLDEX' },
+      { title: 'Markets update: Check your portfolio for the latest changes', link: '#', source: 'Verso' },
       { title: 'Currency markets remain volatile amid global uncertainty', link: '#', source: 'Markets' },
       { title: 'Digital assets see continued institutional interest', link: '#', source: 'Finance' },
     ];

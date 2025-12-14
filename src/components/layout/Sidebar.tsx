@@ -72,7 +72,7 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
   const displayName = isDemo 
     ? 'Lucas Soleil' 
     : (user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User');
-  const displayEmail = isDemo ? 'demo@holdex.app' : user?.email;
+  const displayEmail = isDemo ? 'demo@verso.app' : user?.email;
 
   return (
     <aside 
@@ -89,7 +89,7 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
         )}>
           {!collapsed && (
             <h1 className="font-serif text-2xl font-semibold tracking-wide" style={{ color: '#F5F5F5' }}>
-              VERSO
+              Verso
             </h1>
           )}
           {collapsed && (

@@ -31,7 +31,7 @@ export function WelcomeScreen({ userName }: WelcomeScreenProps) {
         </div>
         
         <h2 className="font-serif text-2xl md:text-3xl font-medium text-foreground mb-4">
-          Welcome to HOLDEX
+          Welcome to Verso
         </h2>
         
         <p className="text-muted-foreground max-w-md mx-auto mb-8">
