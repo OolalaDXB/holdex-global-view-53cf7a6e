@@ -9,20 +9,24 @@ import { EntityAvatar } from './EntityAvatar';
 
 interface EntityCardProps {
   entity: Entity;
+  displayName: string;
   assetCount: number;
   totalValue: number;
   currency: string;
   onEdit: () => void;
   onDelete: () => void;
+  onClick?: () => void;
 }
 
 export const EntityCard = ({
   entity,
+  displayName,
   assetCount,
   totalValue,
   currency,
   onEdit,
   onDelete,
+  onClick,
 }: EntityCardProps) => {
   const entityType = ENTITY_TYPES.find(t => t.value === entity.type);
   const isPersonal = entity.type === 'personal';
@@ -31,7 +35,10 @@ export const EntityCard = ({
   const { showHindu, showIslamic } = useComplianceMode();
 
   return (
-    <Card className="group hover:border-primary/30 transition-colors">
+    <Card 
+      className="group hover:border-primary/30 transition-colors cursor-pointer"
+      onClick={onClick}
+    >
       <CardContent className="p-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -39,10 +46,10 @@ export const EntityCard = ({
               avatarUrl={(entity as any).avatar_url} 
               entityType={entity.type}
               entityColor={entity.color}
-              name={entity.name}
+              name={displayName}
             />
             <div>
-              <h3 className="font-medium text-foreground">{entity.name}</h3>
+              <h3 className="font-medium text-foreground">{displayName}</h3>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
                 <Badge variant="outline" className="text-xs font-normal">
                   {entityType?.label || entity.type}
@@ -74,7 +81,10 @@ export const EntityCard = ({
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={onEdit}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
             >
               <Edit2 className="h-4 w-4" />
             </Button>
@@ -83,7 +93,10 @@ export const EntityCard = ({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-destructive hover:text-destructive"
-                onClick={onDelete}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
                 disabled={assetCount > 0}
               >
                 <Trash2 className="h-4 w-4" />

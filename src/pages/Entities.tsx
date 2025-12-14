@@ -10,9 +10,11 @@ import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { useProfile } from '@/hooks/useProfile';
 import { EntityCard } from '@/components/entities/EntityCard';
 import { EntityDialog } from '@/components/entities/EntityDialog';
 import { DeleteEntityDialog } from '@/components/entities/DeleteEntityDialog';
+import { EntityDetailDrawer } from '@/components/entities/EntityDetailDrawer';
 import { convertToEUR } from '@/lib/currency';
 import { toast } from '@/hooks/use-toast';
 
@@ -32,6 +34,7 @@ const Entities = () => {
   const { data: collections } = useCollections();
   const { data: liabilities } = useLiabilities();
   const { data: exchangeRates } = useExchangeRates();
+  const { data: profile } = useProfile();
 
   const createEntity = useCreateEntity();
   const updateEntity = useUpdateEntity();
@@ -40,6 +43,15 @@ const Entities = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEntity, setEditingEntity] = useState<Entity | null>(null);
   const [deletingEntity, setDeletingEntity] = useState<Entity | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
+
+  // Get display name for an entity (use profile name for personal entity)
+  const getEntityDisplayName = (entity: Entity) => {
+    if (entity.type === 'personal' && profile?.full_name) {
+      return profile.full_name;
+    }
+    return entity.name;
+  };
 
   // Helper to get entity's share from ownership_allocation
   const getEntityShareFromAllocation = (allocation: any[] | null, entityId: string): number => {
@@ -236,11 +248,13 @@ const Entities = () => {
                   <EntityCard
                     key={entity.id}
                     entity={entity}
+                    displayName={getEntityDisplayName(entity)}
                     assetCount={stats.assetCount}
                     totalValue={stats.totalValue}
                     currency={displayCurrency}
                     onEdit={() => setEditingEntity(entity)}
                     onDelete={() => setDeletingEntity(entity)}
+                    onClick={() => setSelectedEntity(entity)}
                   />
                 );
               })}
@@ -288,6 +302,22 @@ const Entities = () => {
         onConfirm={handleDelete}
         isLoading={deleteEntity.isPending}
         hasLinkedAssets={deletingEntity ? hasLinkedAssets(deletingEntity.id) : false}
+      />
+
+      <EntityDetailDrawer
+        open={!!selectedEntity}
+        onOpenChange={(open) => !open && setSelectedEntity(null)}
+        entity={selectedEntity}
+        displayName={selectedEntity ? getEntityDisplayName(selectedEntity) : ''}
+        assets={assets || []}
+        collections={collections || []}
+        liabilities={liabilities || []}
+        exchangeRates={(exchangeRates as unknown as Record<string, number>) || {}}
+        displayCurrency={displayCurrency}
+        onEdit={() => {
+          setEditingEntity(selectedEntity);
+          setSelectedEntity(null);
+        }}
       />
     </AppLayout>
   );
