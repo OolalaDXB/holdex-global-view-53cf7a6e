@@ -78,7 +78,7 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
     <aside 
       className={cn(
         "fixed left-0 top-0 z-40 h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300",
-        collapsed ? "w-16" : "w-64"
+        collapsed ? "w-16" : "w-[200px]"
       )}
     >
       <div className="flex h-full flex-col">
@@ -88,12 +88,12 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
           collapsed ? "justify-center" : "justify-between"
         )}>
           {!collapsed && (
-            <h1 className="font-serif text-2xl font-semibold tracking-wide" style={{ color: '#F5F5F5' }}>
+            <h1 className="font-serif text-3xl font-semibold tracking-wide" style={{ color: '#F5F5F5' }}>
               Verso
             </h1>
           )}
           {collapsed && (
-            <span className="font-serif text-xl font-semibold" style={{ color: '#F5F5F5' }}>V</span>
+            <span className="font-serif text-2xl font-semibold" style={{ color: '#F5F5F5' }}>V</span>
           )}
           <button
             onClick={toggle}
