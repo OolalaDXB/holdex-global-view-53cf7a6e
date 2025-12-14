@@ -79,13 +79,13 @@ export function LoanScheduleDialog({
   useEffect(() => {
     if (existingSchedule) {
       setFormData({
-        loan_type: existingSchedule.loan_type,
+        loan_type: (existingSchedule.loan_type || 'amortizing') as 'amortizing' | 'bullet' | 'balloon' | 'interest_only',
         principal_amount: existingSchedule.principal_amount.toString(),
         interest_rate: existingSchedule.interest_rate?.toString() || '0',
-        rate_type: existingSchedule.rate_type,
+        rate_type: (existingSchedule.rate_type || 'fixed') as 'fixed' | 'variable' | 'capped',
         term_months: existingSchedule.term_months?.toString() || '180',
         start_date: new Date(existingSchedule.start_date),
-        payment_frequency: existingSchedule.payment_frequency,
+        payment_frequency: (existingSchedule.payment_frequency || 'monthly') as 'monthly' | 'quarterly' | 'semi_annual' | 'annual',
       });
       setCalculatedPayment(existingSchedule.monthly_payment);
     }

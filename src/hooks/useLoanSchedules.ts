@@ -1,48 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
-export interface LoanSchedule {
-  id: string;
-  liability_id: string;
-  user_id: string;
-  loan_type: 'amortizing' | 'bullet' | 'balloon' | 'interest_only';
-  principal_amount: number;
-  interest_rate: number | null;
-  rate_type: 'fixed' | 'variable' | 'capped';
-  start_date: string;
-  end_date: string | null;
-  term_months: number | null;
-  payment_frequency: 'monthly' | 'quarterly' | 'semi_annual' | 'annual';
-  monthly_payment: number | null;
-  total_interest: number | null;
-  total_cost: number | null;
-  payments_made: number;
-  next_payment_date: string | null;
-  remaining_principal: number | null;
-  imported_schedule: any | null;
-  is_imported: boolean;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface LoanPayment {
-  id: string;
-  loan_schedule_id: string;
-  user_id: string;
-  payment_number: number;
-  payment_date: string;
-  principal_amount: number | null;
-  interest_amount: number | null;
-  total_amount: number | null;
-  remaining_principal: number | null;
-  status: 'scheduled' | 'paid' | 'late' | 'missed';
-  actual_payment_date: string | null;
-  actual_amount: number | null;
-  notes: string | null;
-  created_at: string;
-}
+export type LoanSchedule = Tables<'loan_schedules'>;
+export type LoanPayment = Tables<'loan_payments'>;
+export type LoanScheduleInsert = TablesInsert<'loan_schedules'>;
+export type LoanPaymentInsert = TablesInsert<'loan_payments'>;
 
 export interface AmortizationEntry {
   payment_number: number;
