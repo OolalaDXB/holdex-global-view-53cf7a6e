@@ -107,26 +107,53 @@ const Dashboard = () => {
 
   const netWorthEUR = totalAssetsEUR + totalCollectionsEUR - totalLiabilitiesEUR;
   
-  // Calculate confirmed vs projected breakdown based on certainty
+  // Calculate certainty breakdown by level
+  const certaintyLevels = ['certain', 'contractual', 'probable', 'optional'] as const;
+  
+  const assetsBreakdownEUR = certaintyLevels.reduce((acc, level) => {
+    acc[level] = filteredAssets
+      .filter(a => (a.certainty || 'certain') === level)
+      .reduce((sum, asset) => sum + convertToEUR(getAssetValue(asset), asset.currency, rates), 0);
+    // Add collections to 'certain' level (they don't have certainty field)
+    if (level === 'certain') {
+      acc[level] += filteredCollections.reduce((sum, item) => 
+        sum + convertToEUR(item.current_value, item.currency, rates), 0);
+    }
+    return acc;
+  }, {} as Record<typeof certaintyLevels[number], number>);
+
+  const liabilitiesBreakdownEUR = certaintyLevels.reduce((acc, level) => {
+    acc[level] = liabilities
+      .filter(l => (l.certainty || 'certain') === level)
+      .reduce((sum, item) => sum + convertToEUR(item.current_balance, item.currency, rates), 0);
+    return acc;
+  }, {} as Record<typeof certaintyLevels[number], number>);
+
   // Confirmed = certain + contractual, Projected = probable + optional
-  const confirmedAssetsEUR = filteredAssets
-    .filter(a => ['certain', 'contractual'].includes(a.certainty || 'certain'))
-    .reduce((sum, asset) => sum + convertToEUR(getAssetValue(asset), asset.currency, rates), 0);
-  
-  const confirmedCollectionsEUR = filteredCollections
-    .reduce((sum, item) => sum + convertToEUR(item.current_value, item.currency, rates), 0);
-  
-  const confirmedLiabilitiesEUR = liabilities
-    .filter(l => ['certain', 'contractual'].includes(l.certainty || 'certain'))
-    .reduce((sum, item) => sum + convertToEUR(item.current_balance, item.currency, rates), 0);
-  
-  const confirmedNetWorthEUR = confirmedAssetsEUR + confirmedCollectionsEUR - confirmedLiabilitiesEUR;
+  const confirmedAssetsEUR = assetsBreakdownEUR.certain + assetsBreakdownEUR.contractual;
+  const confirmedLiabilitiesEUR = liabilitiesBreakdownEUR.certain + liabilitiesBreakdownEUR.contractual;
+  const confirmedNetWorthEUR = confirmedAssetsEUR - confirmedLiabilitiesEUR;
   const projectedNetWorthEUR = netWorthEUR - confirmedNetWorthEUR;
   
   // Convert to display currency
   const netWorth = convertFromEUR(netWorthEUR, displayCurrency, rates);
   const confirmedNetWorth = convertFromEUR(confirmedNetWorthEUR, displayCurrency, rates);
   const projectedNetWorth = convertFromEUR(projectedNetWorthEUR, displayCurrency, rates);
+
+  // Convert breakdown to display currency for widget
+  const assetsBreakdown = {
+    certain: convertFromEUR(assetsBreakdownEUR.certain, displayCurrency, rates),
+    contractual: convertFromEUR(assetsBreakdownEUR.contractual, displayCurrency, rates),
+    probable: convertFromEUR(assetsBreakdownEUR.probable, displayCurrency, rates),
+    optional: convertFromEUR(assetsBreakdownEUR.optional, displayCurrency, rates),
+  };
+  
+  const liabilitiesBreakdown = {
+    certain: convertFromEUR(liabilitiesBreakdownEUR.certain, displayCurrency, rates),
+    contractual: convertFromEUR(liabilitiesBreakdownEUR.contractual, displayCurrency, rates),
+    probable: convertFromEUR(liabilitiesBreakdownEUR.probable, displayCurrency, rates),
+    optional: convertFromEUR(liabilitiesBreakdownEUR.optional, displayCurrency, rates),
+  };
 
 
   // Calculate breakdowns (in display currency)
@@ -402,8 +429,8 @@ const Dashboard = () => {
             {/* Optional Widgets - Hidden by default, enable in Settings */}
             {showWidget('certainty_breakdown') && (
               <CertaintyBreakdownWidget
-                confirmedValue={confirmedNetWorth}
-                projectedValue={projectedNetWorth}
+                assetsBreakdown={assetsBreakdown}
+                liabilitiesBreakdown={liabilitiesBreakdown}
                 currency={displayCurrency}
                 isBlurred={isBlurred}
                 delay={150}
