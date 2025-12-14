@@ -119,11 +119,11 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
                 end={item.href === '/' || item.demoHref === '/demo'}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ease-out",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-primary" 
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    collapsed && "justify-center"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-1",
+                    collapsed && "justify-center hover:translate-x-0 hover:scale-105"
                   )
                 }
               >
@@ -148,11 +148,11 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
                 to={isDemo ? item.demoHref : item.href}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ease-out",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-primary" 
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    collapsed && "justify-center"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-1",
+                    collapsed && "justify-center hover:translate-x-0 hover:scale-105"
                   )
                 }
               >
@@ -177,11 +177,11 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
                 to={isDemo ? item.demoHref : item.href}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
+                    "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ease-out",
                     isActive
                       ? "bg-sidebar-accent text-sidebar-primary" 
-                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    collapsed && "justify-center"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-1",
+                    collapsed && "justify-center hover:translate-x-0 hover:scale-105"
                   )
                 }
               >
@@ -201,11 +201,11 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
             to={isDemo ? "/demo/settings" : "/settings"}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200",
+                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ease-out",
                 isActive 
                   ? "bg-sidebar-accent text-sidebar-primary" 
-                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                collapsed && "justify-center"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-1",
+                collapsed && "justify-center hover:translate-x-0 hover:scale-105"
               )
             }
           >
@@ -232,8 +232,8 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
             <Link
               to="/auth"
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200 w-full text-primary hover:bg-sidebar-accent",
-                collapsed && "justify-center"
+                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ease-out w-full text-primary hover:bg-sidebar-accent hover:translate-x-1",
+                collapsed && "justify-center hover:translate-x-0 hover:scale-105"
               )}
             >
               <LogIn size={20} strokeWidth={1.5} />
@@ -243,8 +243,8 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
             <button
               onClick={handleSignOut}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-200 w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                collapsed && "justify-center"
+                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 ease-out w-full text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:translate-x-1",
+                collapsed && "justify-center hover:translate-x-0 hover:scale-105"
               )}
             >
               <LogOut size={20} strokeWidth={1.5} />
