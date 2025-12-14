@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useLiabilities, Liability, LIABILITY_TYPES, getLiabilityTypeInfo } from '@/hooks/useLiabilities';
 import { useLoanSchedule } from '@/hooks/useLoanSchedules';
+import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { LoanScheduleSection } from '@/components/liabilities/LoanScheduleSection';
 import { MonthlyPaymentSummary } from '@/components/liabilities/MonthlyPaymentSummary';
 import { LoanComparisonTool } from '@/components/liabilities/LoanComparisonTool';
@@ -11,6 +12,7 @@ import { LiabilityDialog } from '@/components/liabilities/LiabilityDialog';
 import { DeleteLiabilityDialog } from '@/components/liabilities/DeleteLiabilityDialog';
 import { DocumentsSection } from '@/components/documents/DocumentsSection';
 import { LiabilityIcon } from '@/components/liabilities/LiabilityIcon';
+import { DataStatusBadge } from '@/components/ui/data-status-badge';
 
 import { formatCurrency } from '@/lib/currency';
 import { getCountryFlag } from '@/hooks/useCountries';
@@ -169,6 +171,14 @@ function LiabilityCard({
 
 const LiabilitiesPage = () => {
   const { data: liabilities = [], isLoading } = useLiabilities();
+  const { 
+    data: exchangeRates, 
+    isStale: fxIsStale, 
+    isUnavailable: fxIsUnavailable, 
+    cacheTimestamp: fxCacheTimestamp,
+    isFetching: fxFetching,
+    refetch: refetchFx 
+  } = useExchangeRates();
   const [editingLiability, setEditingLiability] = useState<Liability | null>(null);
   const [deletingLiability, setDeletingLiability] = useState<Liability | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -197,20 +207,32 @@ const LiabilitiesPage = () => {
   return (
     <AppLayout>
       <div className="p-8 lg:p-12 max-w-5xl">
-        <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div>
-            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Liabilities</h1>
-            <p className="text-muted-foreground">
-              Manage your loans, mortgages, and payment schedules.
-            </p>
+        <header className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div>
+              <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Liabilities</h1>
+              <p className="text-muted-foreground">
+                Manage your loans, mortgages, and payment schedules.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <LoanPayoffCalculator />
+              <LoanComparisonTool />
+              <Button onClick={() => setShowAddDialog(true)} variant="outline" size="sm">
+                <Plus className="h-4 w-4 mr-1" />
+                Add Liability
+              </Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <LoanPayoffCalculator />
-            <LoanComparisonTool />
-            <Button onClick={() => setShowAddDialog(true)} variant="outline" size="sm">
-              <Plus className="h-4 w-4 mr-1" />
-              Add Liability
-            </Button>
+          <div className="flex flex-wrap items-center gap-4 mt-3">
+            <DataStatusBadge
+              label="FX"
+              status={fxIsUnavailable ? 'unavailable' : fxIsStale ? 'stale' : 'live'}
+              lastUpdated={exchangeRates?.lastUpdated}
+              cacheTimestamp={fxCacheTimestamp}
+              isFetching={fxFetching}
+              onRefresh={refetchFx}
+            />
           </div>
         </header>
 

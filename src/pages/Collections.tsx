@@ -12,6 +12,7 @@ import { Search, LayoutGrid, List, Rows3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { DataStatusBadge } from '@/components/ui/data-status-badge';
 
 type ViewMode = 'grid' | 'list' | 'compact';
 
@@ -44,7 +45,14 @@ const CollectionsPage = () => {
   const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
   
   const { data: collections = [], isLoading } = useCollections();
-  const { data: exchangeRates } = useExchangeRates();
+  const { 
+    data: exchangeRates, 
+    isStale: fxIsStale, 
+    isUnavailable: fxIsUnavailable, 
+    cacheTimestamp: fxCacheTimestamp,
+    isFetching: fxFetching,
+    refetch: refetchFx 
+  } = useExchangeRates();
   const { displayCurrency } = useCurrency();
   
   const rates = exchangeRates?.rates || fallbackRates;
@@ -74,8 +82,22 @@ const CollectionsPage = () => {
     <AppLayout>
       <div className="p-8 lg:p-12 max-w-7xl">
         <header className="mb-8">
-          <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Collections</h1>
-          <p className="text-muted-foreground">Your curated collection of fine objects and alternative investments.</p>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Collections</h1>
+              <p className="text-muted-foreground">Your curated collection of fine objects and alternative investments.</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 mt-3">
+            <DataStatusBadge
+              label="FX"
+              status={fxIsUnavailable ? 'unavailable' : fxIsStale ? 'stale' : 'live'}
+              lastUpdated={exchangeRates?.lastUpdated}
+              cacheTimestamp={fxCacheTimestamp}
+              isFetching={fxFetching}
+              onRefresh={refetchFx}
+            />
+          </div>
         </header>
 
         {/* Search and Filters */}
