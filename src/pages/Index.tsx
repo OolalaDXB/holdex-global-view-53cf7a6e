@@ -484,11 +484,6 @@ const Dashboard = () => {
               isBlurred={isBlurred}
             />
             <div className="flex items-center gap-2">
-              <CertaintySummary 
-                assetsBreakdown={assetsBreakdown}
-                totalAssets={netWorth}
-              />
-              <CertaintyMiniChart data={netWorthHistoryData} />
               <BlurToggle />
               <ViewToggle config={viewConfig} onChange={setViewConfig} />
               <CurrencySwitcher />
