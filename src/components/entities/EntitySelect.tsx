@@ -8,6 +8,7 @@ import { CountrySelect } from '@/components/ui/country-select';
 import { useEntities, useCreateEntity, ENTITY_TYPES } from '@/hooks/useEntities';
 import { Loader2, User, Plus, Users } from 'lucide-react';
 import { SharedOwnershipSelect, formatOwnershipAllocation } from './SharedOwnershipSelect';
+import { EntityAvatar } from './EntityAvatar';
 
 const QUICK_ENTITY_TYPES = [
   { value: 'partner', label: 'Partner', color: '#9B6B6B' },
@@ -147,7 +148,13 @@ export const EntitySelect = ({
     if (entity.type === 'personal') {
       return (
         <div className="flex items-center gap-2">
-          <User className="h-4 w-4 text-primary" />
+          <EntityAvatar 
+            avatarUrl={(entity as any).avatar_url}
+            entityType={entity.type}
+            entityColor={entity.color}
+            name={entity.name}
+            size="sm"
+          />
           <span>Personal (me)</span>
         </div>
       );
@@ -156,11 +163,13 @@ export const EntitySelect = ({
     const typeInfo = ENTITY_TYPES.find(t => t.value === entity.type);
     return (
       <div className="flex items-center gap-2">
-        <span 
-          className="w-2 h-2 rounded-full"
-          style={{ backgroundColor: entity.color || '#C4785A' }}
+        <EntityAvatar 
+          avatarUrl={(entity as any).avatar_url}
+          entityType={entity.type}
+          entityColor={entity.color}
+          name={entity.name}
+          size="sm"
         />
-        <span>{entity.icon || typeInfo?.icon}</span>
         <span>{entity.name}</span>
         {entity.ownership_percentage && entity.ownership_percentage < 100 && (
           <span className="text-muted-foreground text-xs">({entity.ownership_percentage}%)</span>
@@ -200,7 +209,13 @@ export const EntitySelect = ({
           {personalEntity && (
             <SelectItem value={personalEntity.id}>
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-primary" />
+                <EntityAvatar 
+                  avatarUrl={(personalEntity as any).avatar_url}
+                  entityType={personalEntity.type}
+                  entityColor={personalEntity.color}
+                  name={personalEntity.name}
+                  size="sm"
+                />
                 <span className="font-medium">Personal (me)</span>
                 <span className="text-muted-foreground text-xs">(100%)</span>
               </div>
@@ -214,15 +229,16 @@ export const EntitySelect = ({
           
           {/* Other entities: partners, companies, trusts, etc. */}
           {otherEntities.map((entity) => {
-            const typeInfo = ENTITY_TYPES.find(t => t.value === entity.type);
             return (
               <SelectItem key={entity.id} value={entity.id}>
                 <div className="flex items-center gap-2">
-                  <span 
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: entity.color || '#C4785A' }}
+                  <EntityAvatar 
+                    avatarUrl={(entity as any).avatar_url}
+                    entityType={entity.type}
+                    entityColor={entity.color}
+                    name={entity.name}
+                    size="sm"
                   />
-                  <span>{entity.icon || typeInfo?.icon}</span>
                   <span>{entity.name}</span>
                   {entity.ownership_percentage && entity.ownership_percentage < 100 && (
                     <span className="text-muted-foreground text-xs">({entity.ownership_percentage}%)</span>

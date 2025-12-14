@@ -389,6 +389,7 @@ export type Database = {
       }
       entities: {
         Row: {
+          avatar_url: string | null
           beneficiaries: Json | null
           color: string | null
           coparceners: Json | null
@@ -423,6 +424,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           beneficiaries?: Json | null
           color?: string | null
           coparceners?: Json | null
@@ -457,6 +459,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           beneficiaries?: Json | null
           color?: string | null
           coparceners?: Json | null
