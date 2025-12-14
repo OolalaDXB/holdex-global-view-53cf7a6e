@@ -66,15 +66,20 @@ export default function DemoReceivablesPage() {
   return (
     <AppLayout isDemo>
       <div className="p-8 lg:p-12 max-w-7xl">
-        <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Receivables</h1>
-            <p className="text-muted-foreground">Track money owed to you (Demo)</p>
+        <header className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Receivables</h1>
+              <p className="text-muted-foreground">Track money owed to you (Demo)</p>
+            </div>
+            <Button disabled>
+              <Plus size={16} className="mr-2" />
+              Add Receivable
+            </Button>
           </div>
-          <Button disabled>
-            <Plus size={16} className="mr-2" />
-            Add Receivable
-          </Button>
+          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
+            <span>Using demo exchange rates</span>
+          </div>
         </header>
 
         {/* Summary Cards */}

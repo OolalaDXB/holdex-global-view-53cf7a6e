@@ -79,6 +79,9 @@ const DemoCollectionsPage = () => {
         <header className="mb-8">
           <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Collections</h1>
           <p className="text-muted-foreground">Your curated collection of fine objects and alternative investments.</p>
+          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
+            <span>Using demo exchange rates</span>
+          </div>
         </header>
 
         {/* Search and Filters */}
