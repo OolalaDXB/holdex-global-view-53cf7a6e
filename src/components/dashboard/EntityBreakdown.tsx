@@ -25,6 +25,13 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
   const { displayCurrency } = useCurrency();
   const rates = exchangeRates?.rates || fallbackRates;
 
+  // Helper to get entity's share from ownership_allocation
+  const getEntityShareFromAllocation = (allocation: any[] | null, entityId: string): number => {
+    if (!allocation || !Array.isArray(allocation)) return 0;
+    const entry = allocation.find((a: any) => a.entity_id === entityId);
+    return entry ? (entry.percentage || 0) / 100 : 0;
+  };
+
   // Calculate value per entity
   const entityValues: Record<string, { assets: number; collections: number; liabilities: number; net: number }> = {};
   
@@ -36,27 +43,55 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
   // Add "Unassigned" for items without entity
   entityValues['unassigned'] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
 
-  // Sum assets
+  // Sum assets (considering ownership_allocation for shared assets)
   assets.forEach(asset => {
     const eurValue = convertToEUR(asset.current_value, asset.currency, rates);
-    const entityId = asset.entity_id || 'unassigned';
-    if (!entityValues[entityId]) {
-      entityValues[entityId] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
+    const allocation = asset.ownership_allocation as any[] | null;
+    
+    if (allocation && Array.isArray(allocation) && allocation.length > 0) {
+      // Shared ownership - distribute value according to allocation
+      allocation.forEach((alloc: any) => {
+        const entityId = alloc.entity_id;
+        const share = (alloc.percentage || 0) / 100;
+        if (!entityValues[entityId]) {
+          entityValues[entityId] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
+        }
+        entityValues[entityId].assets += eurValue * share;
+      });
+    } else {
+      // Direct ownership via entity_id
+      const entityId = asset.entity_id || 'unassigned';
+      if (!entityValues[entityId]) {
+        entityValues[entityId] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
+      }
+      entityValues[entityId].assets += eurValue;
     }
-    entityValues[entityId].assets += eurValue;
   });
 
-  // Sum collections
+  // Sum collections (considering ownership_allocation)
   collections.forEach(collection => {
     const eurValue = convertToEUR(collection.current_value, collection.currency, rates);
-    const entityId = collection.entity_id || 'unassigned';
-    if (!entityValues[entityId]) {
-      entityValues[entityId] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
+    const allocation = collection.ownership_allocation as any[] | null;
+    
+    if (allocation && Array.isArray(allocation) && allocation.length > 0) {
+      allocation.forEach((alloc: any) => {
+        const entityId = alloc.entity_id;
+        const share = (alloc.percentage || 0) / 100;
+        if (!entityValues[entityId]) {
+          entityValues[entityId] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
+        }
+        entityValues[entityId].collections += eurValue * share;
+      });
+    } else {
+      const entityId = collection.entity_id || 'unassigned';
+      if (!entityValues[entityId]) {
+        entityValues[entityId] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
+      }
+      entityValues[entityId].collections += eurValue;
     }
-    entityValues[entityId].collections += eurValue;
   });
 
-  // Sum liabilities
+  // Sum liabilities (still use entity_id only)
   liabilities.forEach(liability => {
     const eurValue = convertToEUR(liability.current_balance, liability.currency, rates);
     const entityId = liability.entity_id || 'unassigned';
