@@ -73,12 +73,12 @@ export function NetWorthCard({
                 showGross ? "text-foreground font-medium" : "text-muted-foreground"
               )}>Gross</span>
               <div className={cn(
-                "relative w-8 h-4 rounded-full transition-colors",
+                "relative w-7 h-[18px] rounded-full transition-colors flex items-center px-0.5",
                 "bg-secondary border border-border"
               )}>
                 <div className={cn(
-                  "absolute top-0.5 w-3 h-3 rounded-full bg-primary transition-all duration-200",
-                  showGross ? "left-0.5" : "left-[calc(100%-14px)]"
+                  "w-3.5 h-3.5 rounded-full bg-primary transition-all duration-200",
+                  showGross ? "translate-x-0" : "translate-x-[10px]"
                 )} />
               </div>
               <span className={cn(
