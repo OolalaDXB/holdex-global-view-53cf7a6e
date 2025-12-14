@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
@@ -12,13 +12,15 @@ import { useProfile } from '@/hooks/useProfile';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
-import { Search, X, LayoutGrid, List, ArrowUpDown, Plus, Rows3, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Search, X, LayoutGrid, List, ArrowUpDown, Plus, Rows3, SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DataStatusBadge } from '@/components/ui/data-status-badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
+const STORAGE_KEY = 'assets-page-preferences';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 type SortOption = 'name' | 'value-desc' | 'value-asc' | 'date-desc' | 'date-asc';
@@ -70,38 +72,85 @@ const AssetsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const entityFilter = searchParams.get('entity');
   
-  const [filter, setFilter] = useState<FilterType>('all');
+  // Load saved preferences from localStorage
+  const savedPrefs = useMemo(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  }, []);
+  
+  const [filter, setFilter] = useState<FilterType>(savedPrefs.filter || 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
   
   // Sorting and view
-  const [sortBy, setSortBy] = useState<SortOption>('value-desc');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
+  const [sortBy, setSortBy] = useState<SortOption>(savedPrefs.sortBy || 'value-desc');
+  const [viewMode, setViewMode] = useState<ViewMode>(savedPrefs.viewMode || 'grid');
+  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>(savedPrefs.certaintyFilter || 'all');
   
   // Real Estate filters
-  const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>('all');
-  const [tenureTypeFilter, setTenureTypeFilter] = useState<string>('all');
-  const [minRooms, setMinRooms] = useState('');
-  const [minSize, setMinSize] = useState('');
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState<string>(savedPrefs.propertyTypeFilter || 'all');
+  const [tenureTypeFilter, setTenureTypeFilter] = useState<string>(savedPrefs.tenureTypeFilter || 'all');
+  const [minRooms, setMinRooms] = useState(savedPrefs.minRooms || '');
+  const [minSize, setMinSize] = useState(savedPrefs.minSize || '');
   
   // Investment filters
-  const [platformFilter, setPlatformFilter] = useState<string>('all');
-  const [performanceFilter, setPerformanceFilter] = useState<string>('all');
+  const [platformFilter, setPlatformFilter] = useState<string>(savedPrefs.platformFilter || 'all');
+  const [performanceFilter, setPerformanceFilter] = useState<string>(savedPrefs.performanceFilter || 'all');
   
   // Crypto filters
-  const [tickerFilter, setTickerFilter] = useState<string>('all');
+  const [tickerFilter, setTickerFilter] = useState<string>(savedPrefs.tickerFilter || 'all');
   
   // Bank filters
-  const [institutionFilter, setInstitutionFilter] = useState<string>('all');
+  const [institutionFilter, setInstitutionFilter] = useState<string>(savedPrefs.institutionFilter || 'all');
   
   // Business filters
-  const [countryFilter, setCountryFilter] = useState<string>('all');
-  const [ownershipFilter, setOwnershipFilter] = useState<string>('all');
+  const [countryFilter, setCountryFilter] = useState<string>(savedPrefs.countryFilter || 'all');
+  const [ownershipFilter, setOwnershipFilter] = useState<string>(savedPrefs.ownershipFilter || 'all');
   
   // Filters panel
   const [filtersOpen, setFiltersOpen] = useState(false);
+  
+  // Persist preferences to localStorage
+  useEffect(() => {
+    const prefs = {
+      filter,
+      sortBy,
+      viewMode,
+      certaintyFilter,
+      propertyTypeFilter,
+      tenureTypeFilter,
+      minRooms,
+      minSize,
+      platformFilter,
+      performanceFilter,
+      tickerFilter,
+      institutionFilter,
+      countryFilter,
+      ownershipFilter,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+  }, [filter, sortBy, viewMode, certaintyFilter, propertyTypeFilter, tenureTypeFilter, minRooms, minSize, platformFilter, performanceFilter, tickerFilter, institutionFilter, countryFilter, ownershipFilter]);
+  
+  // Clear all filters function
+  const clearAllFilters = () => {
+    setCertaintyFilter('all');
+    setPropertyTypeFilter('all');
+    setTenureTypeFilter('all');
+    setMinRooms('');
+    setMinSize('');
+    setPlatformFilter('all');
+    setPerformanceFilter('all');
+    setTickerFilter('all');
+    setInstitutionFilter('all');
+    setCountryFilter('all');
+    setOwnershipFilter('all');
+    setViewMode('grid');
+  };
   
   const { data: assets = [], isLoading } = useAssets();
   const { data: entities = [] } = useEntities();
@@ -572,6 +621,21 @@ const AssetsPage = () => {
                         </SelectContent>
                       </Select>
                     </div>
+                  </div>
+                )}
+
+                {/* Clear all filters button */}
+                {activeFilterCount > 0 && (
+                  <div className="pt-3 border-t border-border">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={clearAllFilters}
+                      className="h-8 text-muted-foreground hover:text-foreground"
+                    >
+                      <RotateCcw size={14} className="mr-2" />
+                      Clear all filters
+                    </Button>
                   </div>
                 )}
               </div>
