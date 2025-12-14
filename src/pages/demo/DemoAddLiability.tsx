@@ -43,6 +43,7 @@ const DemoAddLiabilityPage = () => {
     linked_asset_id: '',
     entity_id: '',
     notes: '',
+    certainty: 'certain', // Liabilities default to certain
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,6 +77,7 @@ const DemoAddLiabilityPage = () => {
       monthly_rental: null,
       bank_ownership_percentage: null,
       residual_value: null,
+      certainty: formData.certainty,
     });
     
     toast.success('Liability added successfully');

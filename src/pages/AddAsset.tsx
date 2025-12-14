@@ -24,7 +24,7 @@ import { useEntities } from '@/hooks/useEntities';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { useGeocode } from '@/hooks/useGeocode';
 import { cn } from '@/lib/utils';
-import { CertaintyLevel } from '@/lib/certainty';
+import { CertaintyLevel, getDefaultCertainty } from '@/lib/certainty';
 import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 type Step = 'category' | 'type' | 'form';
@@ -144,6 +144,9 @@ const AddAssetPage = () => {
 
   const handleTypeSelect = (type: string) => {
     setSelectedType(type);
+    // Auto-suggest certainty based on type (only if not already manually set)
+    const suggestedCertainty = getDefaultCertainty(type, { propertyStatus: formData.propertyStatus });
+    setFormData(prev => ({ ...prev, certainty: suggestedCertainty }));
     setStep('form');
   };
 
@@ -454,20 +457,22 @@ const AddAssetPage = () => {
 
                 {/* Certainty field */}
                 {selectedType !== 'liability' && (
-                  <div className="space-y-2">
-                    <Label>Certainty</Label>
-                    <CertaintySelect
-                      value={formData.certainty}
-                      onValueChange={(value: CertaintyLevel) => setFormData({ ...formData, certainty: value })}
-                    />
-                  </div>
+                  <CertaintySelect
+                    value={formData.certainty}
+                    onValueChange={(value: CertaintyLevel) => setFormData({ ...formData, certainty: value })}
+                    showLabel={true}
+                  />
                 )}
                 {selectedType === 'real-estate' && (
                   <div className="space-y-2">
                     <Label>Property Status</Label>
                     <Select 
                       value={formData.propertyStatus} 
-                      onValueChange={(value) => setFormData({ ...formData, propertyStatus: value })}
+                      onValueChange={(value) => {
+                        // Update certainty when property status changes
+                        const newCertainty = getDefaultCertainty('real-estate', { propertyStatus: value });
+                        setFormData({ ...formData, propertyStatus: value, certainty: newCertainty });
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue />

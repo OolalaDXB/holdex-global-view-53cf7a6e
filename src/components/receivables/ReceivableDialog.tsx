@@ -20,7 +20,7 @@ import { useCreateReceivable, useUpdateReceivable, Receivable } from '@/hooks/us
 import { useAssets } from '@/hooks/useAssets';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CertaintyLevel } from '@/lib/certainty';
+import { CertaintyLevel, getDefaultCertainty } from '@/lib/certainty';
 import { useCurrencyList } from '@/hooks/useCurrencyList';
 
 interface ReceivableDialogProps {
@@ -202,7 +202,14 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
 
             <div className="space-y-2">
               <Label>Type</Label>
-              <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
+              <Select 
+                value={formData.type} 
+                onValueChange={(v) => {
+                  // Auto-suggest certainty based on type
+                  const suggestedCertainty = getDefaultCertainty(v, { recoveryProbability: formData.recovery_probability });
+                  setFormData({ ...formData, type: v, certainty: suggestedCertainty });
+                }}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {receivableTypes.map((t) => (
@@ -314,7 +321,15 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
 
             <div className="space-y-2">
               <Label>Recovery Probability</Label>
-              <Select value={formData.recovery_probability} onValueChange={(v) => setFormData({ ...formData, recovery_probability: v })}>
+              <Select 
+                value={formData.recovery_probability} 
+                onValueChange={(v) => {
+                  // Update certainty based on recovery probability for loans
+                  const isLoanType = formData.type === 'personal_loan' || formData.type === 'business_loan';
+                  const newCertainty = isLoanType ? getDefaultCertainty(formData.type, { recoveryProbability: v }) : formData.certainty;
+                  setFormData({ ...formData, recovery_probability: v, certainty: newCertainty });
+                }}
+              >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="certain">Certain</SelectItem>
@@ -324,6 +339,12 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
                 </SelectContent>
               </Select>
             </div>
+
+            <CertaintySelect
+              value={formData.certainty}
+              onValueChange={(v) => setFormData({ ...formData, certainty: v })}
+              showLabel={true}
+            />
 
             <div className="space-y-2">
               <Label>Owner (optional)</Label>
