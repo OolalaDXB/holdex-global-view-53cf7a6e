@@ -95,9 +95,9 @@ const Demo = () => {
   );
   const filteredCollections = showCollections ? collections : [];
 
-  // Helper to check if certainty is confirmed (certain or likely)
+  // Helper to check if certainty is confirmed (certain or contractual)
   const isConfirmedCertainty = (certainty: string | null | undefined): boolean => {
-    return certainty === 'certain' || certainty === 'likely' || !certainty;
+    return certainty === 'certain' || certainty === 'contractual' || !certainty;
   };
 
   // Calculate totals using rates (in EUR)

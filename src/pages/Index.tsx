@@ -108,15 +108,16 @@ const Dashboard = () => {
   const netWorthEUR = totalAssetsEUR + totalCollectionsEUR - totalLiabilitiesEUR;
   
   // Calculate confirmed vs projected breakdown based on certainty
+  // Confirmed = certain + contractual, Projected = probable + optional
   const confirmedAssetsEUR = filteredAssets
-    .filter(a => ['certain', 'likely'].includes(a.certainty || 'certain'))
+    .filter(a => ['certain', 'contractual'].includes(a.certainty || 'certain'))
     .reduce((sum, asset) => sum + convertToEUR(getAssetValue(asset), asset.currency, rates), 0);
   
   const confirmedCollectionsEUR = filteredCollections
     .reduce((sum, item) => sum + convertToEUR(item.current_value, item.currency, rates), 0);
   
   const confirmedLiabilitiesEUR = liabilities
-    .filter(l => ['certain', 'likely'].includes(l.certainty || 'certain'))
+    .filter(l => ['certain', 'contractual'].includes(l.certainty || 'certain'))
     .reduce((sum, item) => sum + convertToEUR(item.current_balance, item.currency, rates), 0);
   
   const confirmedNetWorthEUR = confirmedAssetsEUR + confirmedCollectionsEUR - confirmedLiabilitiesEUR;
