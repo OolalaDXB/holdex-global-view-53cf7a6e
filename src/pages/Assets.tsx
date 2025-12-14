@@ -68,7 +68,7 @@ const AssetsPage = () => {
   
   const { data: assets = [], isLoading } = useAssets();
   const { data: entities = [] } = useEntities();
-  const { data: exchangeRates } = useExchangeRates();
+  const { data: exchangeRates, isStale: fxIsStale, isUnavailable: fxIsUnavailable, cacheTimestamp: fxCacheTimestamp, refetch: refetchFx, isFetching: fxFetching } = useExchangeRates();
   const { data: cryptoPrices, isLoading: cryptoLoading, dataUpdatedAt, isStale: cryptoIsStale, isUnavailable: cryptoIsUnavailable, cacheTimestamp, refetch: refetchCrypto, isFetching: cryptoFetching } = useCryptoPrices();
   const { data: profile } = useProfile();
   const { displayCurrency } = useCurrency();
@@ -189,41 +189,69 @@ const AssetsPage = () => {
           </div>
         )}
         
-        {hasCryptoAssets && (
-          <div className="flex items-center gap-2 mb-4 text-xs">
-            {cryptoIsUnavailable ? (
-              <span className="flex items-center gap-1 text-destructive">
-                <AlertTriangle size={12} />
-                Crypto prices unavailable - values may be inaccurate
-                <button 
-                  onClick={() => refetchCrypto()} 
-                  disabled={cryptoFetching}
-                  className="ml-1 hover:text-foreground transition-colors"
-                >
-                  <RefreshCw size={12} className={cryptoFetching ? 'animate-spin' : ''} />
-                </button>
-              </span>
-            ) : cryptoIsStale ? (
-              <span className="flex items-center gap-1 text-yellow-600">
-                <AlertTriangle size={12} />
-                Cached prices from {cacheTimestamp ? new Date(cacheTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'earlier'}
-                <button 
-                  onClick={() => refetchCrypto()} 
-                  disabled={cryptoFetching}
-                  className="ml-1 hover:text-foreground transition-colors"
-                  title="Retry fetching live prices"
-                >
-                  <RefreshCw size={12} className={cryptoFetching ? 'animate-spin' : ''} />
-                </button>
-              </span>
-            ) : lastCryptoUpdate && (
-              <span className="flex items-center gap-1 text-muted-foreground">
-                <RefreshCw size={12} className={cryptoLoading ? 'animate-spin' : ''} />
-                Digital asset prices updated at {lastCryptoUpdate}
-              </span>
-            )}
-          </div>
-        )}
+        {/* Status warnings */}
+        <div className="flex flex-wrap items-center gap-4 mb-4 text-xs">
+          {fxIsUnavailable ? (
+            <span className="flex items-center gap-1 text-destructive">
+              <AlertTriangle size={12} />
+              FX rates unavailable
+              <button 
+                onClick={() => refetchFx()} 
+                disabled={fxFetching}
+                className="ml-1 hover:text-foreground transition-colors"
+              >
+                <RefreshCw size={12} className={fxFetching ? 'animate-spin' : ''} />
+              </button>
+            </span>
+          ) : fxIsStale && (
+            <span className="flex items-center gap-1 text-yellow-600">
+              <AlertTriangle size={12} />
+              Cached FX from {fxCacheTimestamp ? new Date(fxCacheTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'earlier'}
+              <button 
+                onClick={() => refetchFx()} 
+                disabled={fxFetching}
+                className="ml-1 hover:text-foreground transition-colors"
+              >
+                <RefreshCw size={12} className={fxFetching ? 'animate-spin' : ''} />
+              </button>
+            </span>
+          )}
+          
+          {hasCryptoAssets && (
+            <>
+              {cryptoIsUnavailable ? (
+                <span className="flex items-center gap-1 text-destructive">
+                  <AlertTriangle size={12} />
+                  Crypto prices unavailable
+                  <button 
+                    onClick={() => refetchCrypto()} 
+                    disabled={cryptoFetching}
+                    className="ml-1 hover:text-foreground transition-colors"
+                  >
+                    <RefreshCw size={12} className={cryptoFetching ? 'animate-spin' : ''} />
+                  </button>
+                </span>
+              ) : cryptoIsStale ? (
+                <span className="flex items-center gap-1 text-yellow-600">
+                  <AlertTriangle size={12} />
+                  Cached crypto from {cacheTimestamp ? new Date(cacheTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'earlier'}
+                  <button 
+                    onClick={() => refetchCrypto()} 
+                    disabled={cryptoFetching}
+                    className="ml-1 hover:text-foreground transition-colors"
+                  >
+                    <RefreshCw size={12} className={cryptoFetching ? 'animate-spin' : ''} />
+                  </button>
+                </span>
+              ) : lastCryptoUpdate && (
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <RefreshCw size={12} className={cryptoLoading ? 'animate-spin' : ''} />
+                  Crypto: {lastCryptoUpdate}
+                </span>
+              )}
+            </>
+          )}
+        </div>
 
         {/* Search and Filters */}
         <div className="space-y-4 mb-8">
