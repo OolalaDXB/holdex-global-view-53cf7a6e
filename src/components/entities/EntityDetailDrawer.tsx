@@ -35,7 +35,9 @@ import {
   Wine,
   Disc3,
   Sparkles,
+  UserPlus,
 } from 'lucide-react';
+import { ShareAdvisorDialog } from '@/components/sharing/ShareAdvisorDialog';
 import { formatCurrency, convertToEUR, convertFromEUR } from '@/lib/currency';
 import { EntityAvatar } from './EntityAvatar';
 import { LiabilityIcon, getLiabilityIcon } from '@/components/liabilities/LiabilityIcon';
@@ -380,6 +382,14 @@ export const EntityDetailDrawer = ({
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View all assets
               </Button>
+              <ShareAdvisorDialog
+                trigger={
+                  <Button variant="ghost" className="justify-start text-muted-foreground">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Share with Advisor
+                  </Button>
+                }
+              />
             </div>
           </div>
         </div>
