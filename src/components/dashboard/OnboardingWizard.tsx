@@ -23,7 +23,7 @@ import {
   Car, 
   Palette,
   Wine,
-  BarChart3,
+  Disc3,
   ChevronRight,
   ChevronLeft,
   Check,
@@ -53,7 +53,7 @@ const collectionTypes = [
   { id: 'vehicle', label: 'Vehicle', icon: Car, description: 'Cars and motorcycles' },
   { id: 'art', label: 'Art', icon: Palette, description: 'Paintings and sculptures' },
   { id: 'wine', label: 'Wine', icon: Wine, description: 'Wine collection' },
-  { id: 'lp-position', label: 'LP Position', icon: BarChart3, description: 'Fund investments' },
+  { id: 'vinyl', label: 'Vinyls', icon: Disc3, description: 'Records and LPs' },
 ];
 
 export function OnboardingWizard({ userName }: OnboardingWizardProps) {
@@ -224,7 +224,7 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="border border-border bg-card p-6 text-left">
               <div className="mb-4">
-                <BarChart3 className="w-6 h-6 text-primary" strokeWidth={1.5} />
+                <TrendingUp className="w-6 h-6 text-primary" strokeWidth={1.5} />
               </div>
               <h3 className="font-medium text-foreground mb-1">Track Assets</h3>
               <p className="text-sm text-muted-foreground">
@@ -294,7 +294,7 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
                 Collections
               </h3>
               <p className="text-sm text-muted-foreground">
-                Watches, vehicles, art, jewelry, wine, LP positions
+                Watches, vehicles, art, jewelry, wine, vinyls
               </p>
             </button>
           </div>

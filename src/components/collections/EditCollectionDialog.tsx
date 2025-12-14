@@ -27,7 +27,7 @@ const categories = [
   { value: 'art', label: 'Art' },
   { value: 'jewelry', label: 'Jewelry' },
   { value: 'wine', label: 'Wine' },
-  { value: 'lp-position', label: 'LP Position' },
+  { value: 'vinyl', label: 'Vinyl' },
   { value: 'other', label: 'Other' },
 ];
 

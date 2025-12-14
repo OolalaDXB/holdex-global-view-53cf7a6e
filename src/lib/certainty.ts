@@ -35,10 +35,9 @@ export const getDefaultCertainty = (
   if (type === 'business') return 'probable';
   
   // Collections
-  if (type === 'watch' || type === 'vehicle' || type === 'art' || type === 'jewelry' || type === 'wine') {
+  if (type === 'watch' || type === 'vehicle' || type === 'art' || type === 'jewelry' || type === 'wine' || type === 'vinyl') {
     return 'probable';
   }
-  if (type === 'lp-position') return 'contractual';
   
   // Liabilities (all types)
   if (type === 'liability' || type === 'mortgage' || type === 'personal_loan' || type === 'vehicle_loan' ||

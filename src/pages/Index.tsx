@@ -266,7 +266,7 @@ const Dashboard = () => {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  // By currency (filtered) - apply ownership allocation
+  // By currency (filtered) - apply ownership allocation - include collections
   const currencyMapEUR: Record<string, number> = {};
   filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
@@ -276,6 +276,15 @@ const Dashboard = () => {
       personalEntityId
     );
     currencyMapEUR[asset.currency] = (currencyMapEUR[asset.currency] || 0) + (eurValue * ownershipShare);
+  });
+  // Add collections to currency breakdown
+  filteredCollections.forEach(item => {
+    const eurValue = convertToEUR(item.current_value, item.currency, rates);
+    const ownershipShare = getUserOwnershipShare(
+      item.ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    currencyMapEUR[item.currency] = (currencyMapEUR[item.currency] || 0) + (eurValue * ownershipShare);
   });
 
   const currencyBreakdown = Object.entries(currencyMapEUR)

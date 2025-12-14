@@ -12,7 +12,7 @@ import { DemoEditCollectionDialog } from '@/components/demo/DemoEditCollectionDi
 import { DemoDeleteCollectionDialog } from '@/components/demo/DemoDeleteCollectionDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'lp-position' | 'other';
+type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'vinyl' | 'other';
 type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
 const certaintyFilterOptions: { value: CertaintyFilter; label: string }[] = [
@@ -28,7 +28,7 @@ const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'art', label: 'Art' },
   { value: 'jewelry', label: 'Jewelry' },
   { value: 'wine', label: 'Wine' },
-  { value: 'lp-position', label: 'LP Positions' },
+  { value: 'vinyl', label: 'Vinyls' },
   { value: 'other', label: 'Other' },
 ];
 
