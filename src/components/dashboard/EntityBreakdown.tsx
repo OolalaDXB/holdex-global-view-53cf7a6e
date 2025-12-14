@@ -9,6 +9,7 @@ import { EntityIcon, getEntityIconName } from '@/components/entities/EntityIcon'
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { Package } from 'lucide-react';
+import { OwnershipAllocation } from '@/lib/types';
 
 interface EntityBreakdownProps {
   delay?: number;
@@ -25,13 +26,6 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
   const { displayCurrency } = useCurrency();
   const rates = exchangeRates?.rates || fallbackRates;
 
-  // Helper to get entity's share from ownership_allocation
-  const getEntityShareFromAllocation = (allocation: any[] | null, entityId: string): number => {
-    if (!allocation || !Array.isArray(allocation)) return 0;
-    const entry = allocation.find((a: any) => a.entity_id === entityId);
-    return entry ? (entry.percentage || 0) / 100 : 0;
-  };
-
   // Calculate value per entity
   const entityValues: Record<string, { assets: number; collections: number; liabilities: number; net: number }> = {};
   
@@ -43,16 +37,16 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
   // Add "Unassigned" for items without entity
   entityValues['unassigned'] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
 
-  // Sum assets (considering ownership_allocation for shared assets)
+  // Sum assets (considering parsed_ownership_allocation for shared assets)
   assets.forEach(asset => {
     const eurValue = convertToEUR(asset.current_value, asset.currency, rates);
-    const allocation = asset.ownership_allocation as any[] | null;
+    const allocation = asset.parsed_ownership_allocation;
     
-    if (allocation && Array.isArray(allocation) && allocation.length > 0) {
+    if (allocation && allocation.length > 0) {
       // Shared ownership - distribute value according to allocation
-      allocation.forEach((alloc: any) => {
+      allocation.forEach((alloc: OwnershipAllocation) => {
         const entityId = alloc.entity_id;
-        const share = (alloc.percentage || 0) / 100;
+        const share = alloc.percentage / 100;
         if (!entityValues[entityId]) {
           entityValues[entityId] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
         }
@@ -68,15 +62,15 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
     }
   });
 
-  // Sum collections (considering ownership_allocation)
+  // Sum collections (considering parsed_ownership_allocation)
   collections.forEach(collection => {
     const eurValue = convertToEUR(collection.current_value, collection.currency, rates);
-    const allocation = collection.ownership_allocation as any[] | null;
+    const allocation = collection.parsed_ownership_allocation;
     
-    if (allocation && Array.isArray(allocation) && allocation.length > 0) {
-      allocation.forEach((alloc: any) => {
+    if (allocation && allocation.length > 0) {
+      allocation.forEach((alloc: OwnershipAllocation) => {
         const entityId = alloc.entity_id;
-        const share = (alloc.percentage || 0) / 100;
+        const share = alloc.percentage / 100;
         if (!entityValues[entityId]) {
           entityValues[entityId] = { assets: 0, collections: 0, liabilities: 0, net: 0 };
         }

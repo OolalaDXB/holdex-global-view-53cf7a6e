@@ -7,6 +7,7 @@ import { Entity } from '@/hooks/useEntities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCryptoPrices } from '@/hooks/useCryptoPrices';
 import { convertToEUR } from '@/lib/currency';
+import { getUserOwnershipShare } from '@/lib/types';
 
 export type CertaintyFilter = 'all' | 'confirmed' | 'exclude_optional';
 
@@ -73,18 +74,6 @@ interface UseBalanceSheetOptions {
   asOfDate?: Date;
   personalEntityId?: string | null;
 }
-
-// Helper to calculate user's share based on ownership_allocation
-const getUserOwnershipShare = (
-  ownershipAllocation: { entity_id: string; percentage: number }[] | null | undefined,
-  personalEntityId: string | null
-): number => {
-  if (!ownershipAllocation || ownershipAllocation.length === 0) {
-    return 1; // Full ownership if no allocation
-  }
-  const myShare = ownershipAllocation.find(a => a.entity_id === personalEntityId);
-  return myShare ? myShare.percentage / 100 : 1;
-};
 
 export function useBalanceSheet({
   assets,
@@ -174,21 +163,15 @@ export function useBalanceSheet({
       return new Date(l.end_date) > oneYearFromNow;
     });
 
-    // Calculate totals with ownership allocation applied
+    // Calculate totals with parsed ownership allocation applied
     const sumAssets = (items: Asset[]) => items.reduce((sum, a) => {
       const value = toBaseCurrency(a.current_value, a.currency, a.ticker);
-      const share = getUserOwnershipShare(
-        a.ownership_allocation as { entity_id: string; percentage: number }[] | null,
-        personalEntityId || null
-      );
+      const share = getUserOwnershipShare(a.parsed_ownership_allocation, personalEntityId || null);
       return sum + (value * share);
     }, 0);
     const sumCollections = (items: Collection[]) => items.reduce((sum, c) => {
       const value = toBaseCurrency(c.current_value, c.currency);
-      const share = getUserOwnershipShare(
-        c.ownership_allocation as { entity_id: string; percentage: number }[] | null,
-        personalEntityId || null
-      );
+      const share = getUserOwnershipShare(c.parsed_ownership_allocation, personalEntityId || null);
       return sum + (value * share);
     }, 0);
     const sumLiabilities = (items: Liability[]) => items.reduce((sum, l) => 
@@ -236,20 +219,14 @@ export function useBalanceSheet({
       allAssetsFiltered.forEach(a => {
         const cert = (a.certainty || 'certain') as keyof typeof summary;
         const value = toBaseCurrency(a.current_value, a.currency, a.ticker);
-        const share = getUserOwnershipShare(
-          a.ownership_allocation as { entity_id: string; percentage: number }[] | null,
-          personalEntityId || null
-        );
+        const share = getUserOwnershipShare(a.parsed_ownership_allocation, personalEntityId || null);
         if (cert in summary) summary[cert] += value * share;
       });
       
       allCollectionsFiltered.forEach(c => {
-        const cert = ((c as any).certainty || 'probable') as keyof typeof summary;
+        const cert = (c.certainty || 'probable') as keyof typeof summary;
         const value = toBaseCurrency(c.current_value, c.currency);
-        const share = getUserOwnershipShare(
-          c.ownership_allocation as { entity_id: string; percentage: number }[] | null,
-          personalEntityId || null
-        );
+        const share = getUserOwnershipShare(c.parsed_ownership_allocation, personalEntityId || null);
         if (cert in summary) summary[cert] += value * share;
       });
       
