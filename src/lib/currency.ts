@@ -80,7 +80,7 @@ export const getCollectionIcon = (category: string): string => {
     'art': '🎨',
     'jewelry': '💎',
     'wine': '🍷',
-    'lp-position': '📊',
+    'vinyl': '💿',
     'other': '✨',
   };
   return icons[category] || '✨';

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Collection } from '@/hooks/useCollections';
 import { formatCurrency } from '@/lib/currency';
-import { Watch, Car, Palette, Gem, Wine, BarChart3, Sparkles } from 'lucide-react';
+import { Watch, Car, Palette, Gem, Wine, Disc3, Sparkles } from 'lucide-react';
 
 interface CollectionsGalleryProps {
   collections: Collection[];
@@ -14,7 +14,7 @@ const categoryIcons: Record<string, typeof Watch> = {
   'art': Palette,
   'jewelry': Gem,
   'wine': Wine,
-  'lp-position': BarChart3,
+  'vinyl': Disc3,
   'other': Sparkles,
 };
 

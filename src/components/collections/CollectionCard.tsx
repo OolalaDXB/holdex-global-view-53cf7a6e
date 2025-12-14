@@ -1,4 +1,4 @@
-import { Watch, Car, Palette, Gem, Wine, BarChart3, Sparkles, Pencil, Trash2 } from 'lucide-react';
+import { Watch, Car, Palette, Gem, Wine, Disc3, Sparkles, Pencil, Trash2 } from 'lucide-react';
 import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Collection } from '@/hooks/useCollections';
@@ -21,7 +21,7 @@ const categoryIcons: Record<string, typeof Watch> = {
   'art': Palette,
   'jewelry': Gem,
   'wine': Wine,
-  'lp-position': BarChart3,
+  'vinyl': Disc3,
   'other': Sparkles,
 };
 
@@ -31,7 +31,7 @@ const categoryLabels: Record<string, string> = {
   'art': 'Art',
   'jewelry': 'Jewelry',
   'wine': 'Wine',
-  'lp-position': 'LP Position',
+  'vinyl': 'Vinyl',
   'other': 'Other',
 };
 

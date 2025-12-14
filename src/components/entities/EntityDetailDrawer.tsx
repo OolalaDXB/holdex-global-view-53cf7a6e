@@ -33,7 +33,7 @@ import {
   Palette,
   Gem,
   Wine,
-  BarChart3,
+  Disc3,
   Sparkles,
 } from 'lucide-react';
 import { formatCurrency, convertToEUR, convertFromEUR } from '@/lib/currency';
@@ -71,7 +71,7 @@ const collectionTypeIcons: Record<string, typeof Watch> = {
   'art': Palette,
   'jewelry': Gem,
   'wine': Wine,
-  'lp-position': BarChart3,
+  'vinyl': Disc3,
   'other': Sparkles,
 };
 

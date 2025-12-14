@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { format } from 'date-fns';
 import { CalendarIcon, Moon, MapPin, Loader2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, TrendingDown, Watch, Car, Palette, Gem, Wine, BarChart3 } from 'lucide-react';
+import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, TrendingDown, Watch, Car, Palette, Gem, Wine, Disc3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,7 +45,7 @@ const collectionTypes = [
   { id: 'art', label: 'Art', icon: Palette, description: 'Paintings and sculptures' },
   { id: 'jewelry', label: 'Jewelry', icon: Gem, description: 'Fine jewelry' },
   { id: 'wine', label: 'Wine', icon: Wine, description: 'Wine collection' },
-  { id: 'lp-position', label: 'LP Position', icon: BarChart3, description: 'Fund investments' },
+  { id: 'vinyl', label: 'Vinyls', icon: Disc3, description: 'Records and LPs' },
 ];
 
 const AddAssetPage = () => {
