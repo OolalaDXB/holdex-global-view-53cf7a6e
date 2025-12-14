@@ -20,12 +20,15 @@ interface CryptoPricesResponse {
 interface UseCryptoPricesResult {
   data: CryptoPrices | null;
   isLoading: boolean;
+  isFetching: boolean;
   error: Error | null;
   status: CryptoPriceStatus;
   isStale: boolean;
   isUnavailable: boolean;
   message: string | null;
   dataUpdatedAt: number | undefined;
+  cacheTimestamp: number | null;
+  refetch: () => void;
 }
 
 export const useCryptoPrices = (): UseCryptoPricesResult => {
@@ -57,11 +60,14 @@ export const useCryptoPrices = (): UseCryptoPricesResult => {
   return {
     data: responseData?.prices || null,
     isLoading: query.isLoading,
+    isFetching: query.isFetching,
     error: query.error,
     status: responseData?.status || 'unavailable',
     isStale: responseData?.status === 'stale',
     isUnavailable: responseData?.status === 'unavailable' || !responseData?.prices,
     message: responseData?.message || null,
     dataUpdatedAt: query.dataUpdatedAt,
+    cacheTimestamp: responseData?.timestamp || null,
+    refetch: () => query.refetch(),
   };
 };
