@@ -1,6 +1,5 @@
 import { Building2, Landmark, TrendingUp, Bitcoin, Briefcase, Pencil, Trash2, TrendingDown, Flame, HardHat, Calendar, Moon, Lock, MapPin, ExternalLink } from 'lucide-react';
 import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
-import { Asset } from '@/hooks/useAssets';
 import { cn } from '@/lib/utils';
 import { getCountryFlag } from '@/hooks/useCountries';
 import { InstitutionLogo } from '@/components/ui/institution-logo';
@@ -9,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useComplianceMode } from '@/hooks/useComplianceMode';
 import { CertaintyBadge } from '@/components/ui/certainty-badge';
+
 const LIQUIDITY_STATUS_LABELS: Record<string, string> = {
   restricted: 'Restricted',
   frozen: 'Frozen',
@@ -26,14 +26,59 @@ interface Entity {
   type: string;
 }
 
+// Base asset type that works with both Asset from Supabase and DemoAsset
+export interface BaseAsset {
+  id: string;
+  name: string;
+  type: string;
+  country: string;
+  currency: string;
+  current_value: number;
+  rental_income?: number | null;
+  purchase_value?: number | null;
+  purchase_date?: string | null;
+  ownership_percentage?: number | null;
+  institution?: string | null;
+  ticker?: string | null;
+  quantity?: number | null;
+  platform?: string | null;
+  reference_balance?: number | null;
+  reference_date?: string | null;
+  notes?: string | null;
+  image_url?: string | null;
+  entity_id?: string | null;
+  acquisition_type?: string | null;
+  acquisition_from?: string | null;
+  property_status?: string | null;
+  total_price?: number | null;
+  amount_paid?: number | null;
+  expected_delivery?: string | null;
+  developer?: string | null;
+  unit_number?: string | null;
+  project_name?: string | null;
+  is_shariah_compliant?: boolean | null;
+  shariah_certification?: string | null;
+  tenure_type?: string | null;
+  lease_end_date?: string | null;
+  liquidity_status?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  property_type?: string | null;
+  rooms?: number | null;
+  size_sqm?: number | null;
+  certainty?: string | null;
+  ownership_allocation?: unknown;
+}
+
 interface AssetCardProps {
-  asset: Asset;
+  asset: BaseAsset;
   rates?: Record<string, number>;
   cryptoPrices?: Record<string, CryptoPrice>;
   displayCurrency?: string;
   delay?: number;
-  onEdit?: (asset: Asset) => void;
-  onDelete?: (asset: Asset) => void;
+  onEdit?: (asset: BaseAsset) => void;
+  onDelete?: (asset: BaseAsset) => void;
   isBlurred?: boolean;
   entities?: Entity[];
   areaUnit?: 'sqm' | 'sqft';

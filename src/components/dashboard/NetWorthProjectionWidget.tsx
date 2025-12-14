@@ -1,13 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { formatCurrency } from '@/lib/currency';
 import { TrendingUp, Info } from 'lucide-react';
-
+import { RechartsTooltipProps } from '@/lib/types';
 interface NetWorthProjectionWidgetProps {
   currentNetWorth: number;
   currency: string;
@@ -62,9 +61,10 @@ export function NetWorthProjectionWidget({
     return `${(value / 1000).toFixed(0)}K`;
   };
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
+  const CustomTooltip = ({ active, payload }: RechartsTooltipProps): JSX.Element | null => {
+    if (active && payload && payload.length > 0) {
+      const data = payload[0]?.payload as { year: number; value: number } | undefined;
+      if (!data) return null;
       return (
         <div className="bg-card border border-border rounded-md px-3 py-2 shadow-lg">
           <p className="text-xs text-muted-foreground mb-1">

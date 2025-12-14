@@ -19,8 +19,8 @@ export function DemoDebtToIncomeWidget({ isBlurred = false, delay = 0 }: DemoDeb
   const rates = fallbackRates;
   
   // Demo profile has monthly income
-  const manualIncome = (profile as any)?.monthly_income || 15000;
-  const incomeCurrency = (profile as any)?.monthly_income_currency || 'EUR';
+  const manualIncome = profile?.monthly_income ?? 15000;
+  const incomeCurrency = profile?.monthly_income_currency ?? 'EUR';
   const manualIncomeEUR = convertToEUR(manualIncome, incomeCurrency, rates);
   
   // Calculate rental income from real estate assets

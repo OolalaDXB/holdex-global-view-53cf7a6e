@@ -2,7 +2,7 @@ import { AreaChart, Area, ResponsiveContainer, Tooltip } from 'recharts';
 import { useBlur } from '@/contexts/BlurContext';
 import { Json } from '@/integrations/supabase/types';
 import { CheckCircle2, TrendingUp } from 'lucide-react';
-
+import { RechartsTooltipProps } from '@/lib/types';
 interface CertaintyBreakdown {
   certain: number;
   contractual: number;
@@ -61,19 +61,21 @@ export function CertaintyMiniChart({ data }: CertaintyMiniChartProps) {
     parseCertaintyBreakdown(item.certainty_breakdown_assets)
   );
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length && !isBlurred) {
+  const CustomTooltip = ({ active, payload, label }: RechartsTooltipProps): JSX.Element | null => {
+    if (active && payload && payload.length > 0 && !isBlurred) {
+      const confirmedValue = payload[0]?.value ?? 0;
+      const projectedValue = payload[1]?.value ?? 0;
       return (
         <div className="bg-card border border-border rounded-md px-2 py-1.5 shadow-lg">
           <p className="text-[10px] text-muted-foreground mb-1">{label}</p>
           <div className="flex items-center gap-2 text-[10px]">
             <span className="flex items-center gap-0.5 text-positive">
               <CheckCircle2 size={8} />
-              {payload[0]?.value?.toFixed(0)}%
+              {confirmedValue.toFixed(0)}%
             </span>
             <span className="flex items-center gap-0.5 text-warning">
               <TrendingUp size={8} />
-              {payload[1]?.value?.toFixed(0)}%
+              {projectedValue.toFixed(0)}%
             </span>
           </div>
         </div>

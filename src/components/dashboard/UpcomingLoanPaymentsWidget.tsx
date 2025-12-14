@@ -1,10 +1,10 @@
 import { format, parseISO, isPast, differenceInDays } from 'date-fns';
-import { CalendarClock, AlertCircle, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { CalendarClock, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/currency';
 import { useAllUpcomingLoanPayments } from '@/hooks/useLoanSchedules';
 import { cn } from '@/lib/utils';
+import { LoanPaymentWithSchedule } from '@/lib/types';
 
 interface UpcomingLoanPaymentsWidgetProps {
   isBlurred?: boolean;
@@ -38,14 +38,14 @@ export function UpcomingLoanPaymentsWidget({ isBlurred = false }: UpcomingLoanPa
       </div>
       
       <div className="space-y-2">
-        {payments.slice(0, 3).map((payment: any) => {
+        {payments.slice(0, 3).map((payment: LoanPaymentWithSchedule) => {
           const paymentDate = parseISO(payment.payment_date);
           const daysUntil = differenceInDays(paymentDate, today);
           const isOverdue = isPast(paymentDate);
           const isDueSoon = daysUntil <= 7 && daysUntil >= 0;
           
-          const liabilityName = payment.loan_schedules?.liabilities?.name || 'Unknown';
-          const currency = payment.loan_schedules?.liabilities?.currency || 'EUR';
+          const liabilityName = payment.loan_schedules?.liabilities?.name ?? 'Unknown';
+          const currency = payment.loan_schedules?.liabilities?.currency ?? 'EUR';
           
           return (
             <div

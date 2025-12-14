@@ -25,11 +25,12 @@ export const useAIImageGeneration = () => {
       });
 
       if (error) throw error;
-      if (data.error) throw new Error(data.error);
+      if (data?.error) throw new Error(data.error);
       
-      return data.imageUrl;
-    } catch (err: any) {
-      setError(err.message);
+      return data?.imageUrl ?? null;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setError(errorMessage);
       return null;
     } finally {
       setIsGenerating(false);

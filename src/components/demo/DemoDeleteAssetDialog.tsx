@@ -8,12 +8,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Asset } from '@/hooks/useAssets';
+import { DemoAsset } from '@/data/demoData';
 import { useDemo } from '@/contexts/DemoContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface DemoDeleteAssetDialogProps {
-  asset: Asset | null;
+  asset: DemoAsset | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
