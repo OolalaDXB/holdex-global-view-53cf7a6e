@@ -4,6 +4,7 @@ import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { CertaintyTrendChart } from '@/components/dashboard/CertaintyTrendChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
+import { CertaintyBreakdown } from '@/components/dashboard/CertaintyBreakdown';
 import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
 import { ViewToggle, useViewConfig } from '@/components/dashboard/ViewToggle';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
@@ -432,6 +433,15 @@ const Dashboard = () => {
               
               <CollapsibleSection id="breakdown_entity" title="By Entity">
                 <EntityBreakdown delay={0} isBlurred={isBlurred} />
+              </CollapsibleSection>
+
+              <CollapsibleSection id="breakdown_certainty" title="By Certainty">
+                <CertaintyBreakdown 
+                  assetsBreakdown={assetsBreakdown}
+                  liabilitiesBreakdown={liabilitiesBreakdown}
+                  delay={0}
+                  isBlurred={isBlurred}
+                />
               </CollapsibleSection>
             </section>
             </CollapsibleProvider>
