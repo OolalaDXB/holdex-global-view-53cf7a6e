@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,8 +22,16 @@ export const LIABILITY_TYPES = [
   { value: 'other', label: 'Other', icon: 'CircleDashed' },
 ] as const;
 
-export const getLiabilityTypeInfo = (type: string) => 
-  LIABILITY_TYPES.find(t => t.value === type) || LIABILITY_TYPES[LIABILITY_TYPES.length - 1];
+export type LiabilityType = typeof LIABILITY_TYPES[number]['value'];
+
+interface LiabilityTypeInfo {
+  value: string;
+  label: string;
+  icon: string;
+}
+
+export const getLiabilityTypeInfo = (type: string): LiabilityTypeInfo => 
+  LIABILITY_TYPES.find(t => t.value === type) ?? LIABILITY_TYPES[LIABILITY_TYPES.length - 1];
 
 export const FINANCING_TYPES = [
   { value: 'conventional', label: 'Conventional', description: 'Standard interest-based financing', compliance: null },
@@ -36,10 +44,12 @@ export const FINANCING_TYPES = [
   { value: 'other_compliant', label: 'Other Compliant', description: 'Other ethical/religious compliant', compliance: 'all' },
 ] as const;
 
-export const isIslamicFinancing = (type: string) => 
+export type FinancingType = typeof FINANCING_TYPES[number]['value'];
+
+export const isIslamicFinancing = (type: string): boolean => 
   ['ijara', 'murabaha', 'diminishing_musharaka', 'istisna', 'qard_hassan'].includes(type);
 
-export const getFilteredFinancingTypes = (showIslamic: boolean, showJewish: boolean) => {
+export const getFilteredFinancingTypes = (showIslamic: boolean, showJewish: boolean): typeof FINANCING_TYPES[number][] => {
   return FINANCING_TYPES.filter(type => {
     if (type.compliance === null) return true; // Always show conventional
     if (type.compliance === 'islamic') return showIslamic;
@@ -49,31 +59,31 @@ export const getFilteredFinancingTypes = (showIslamic: boolean, showJewish: bool
   });
 };
 
-export const useLiabilities = () => {
+export const useLiabilities = (): UseQueryResult<Liability[], Error> => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['liabilities', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Liability[]> => {
       const { data, error } = await supabase
         .from('liabilities')
         .select('*')
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      return data as Liability[];
+      return data ?? [];
     },
     enabled: !!user,
   });
 };
 
-export const useCreateLiability = () => {
+export const useCreateLiability = (): UseMutationResult<Liability, Error, Omit<LiabilityInsert, 'user_id'>> => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (liability: Omit<LiabilityInsert, 'user_id'>) => {
+    mutationFn: async (liability: Omit<LiabilityInsert, 'user_id'>): Promise<Liability> => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
@@ -97,12 +107,14 @@ export const useCreateLiability = () => {
   });
 };
 
-export const useUpdateLiability = () => {
+type UpdateLiabilityParams = { id: string } & Partial<Omit<LiabilityInsert, 'user_id'>>;
+
+export const useUpdateLiability = (): UseMutationResult<Liability, Error, UpdateLiabilityParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string } & Partial<Omit<LiabilityInsert, 'user_id'>>) => {
+    mutationFn: async ({ id, ...updates }: UpdateLiabilityParams): Promise<Liability> => {
       const { data, error } = await supabase
         .from('liabilities')
         .update(updates)
@@ -125,12 +137,17 @@ export const useUpdateLiability = () => {
   });
 };
 
-export const useDeleteLiability = () => {
+interface DeleteLiabilityParams {
+  id: string;
+  name?: string;
+}
+
+export const useDeleteLiability = (): UseMutationResult<DeleteLiabilityParams, Error, DeleteLiabilityParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
+    mutationFn: async ({ id, name }: DeleteLiabilityParams): Promise<DeleteLiabilityParams> => {
       const { error } = await supabase
         .from('liabilities')
         .delete()

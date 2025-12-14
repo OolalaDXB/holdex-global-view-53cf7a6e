@@ -8,19 +8,26 @@ export const CERTAINTY_LEVELS = [
 
 export type CertaintyLevel = typeof CERTAINTY_LEVELS[number]['value'];
 
-export const getCertaintyBadge = (certainty: string | null) => {
+interface CertaintyBadge {
+  icon: string;
+  label: string;
+}
+
+export const getCertaintyBadge = (certainty: string | null | undefined): CertaintyBadge | null => {
   if (!certainty || certainty === 'certain') return null;
   const level = CERTAINTY_LEVELS.find(l => l.value === certainty);
   return level ? { icon: level.icon, label: level.label } : null;
 };
 
+interface DefaultCertaintyOptions {
+  propertyStatus?: string | null;
+  recoveryProbability?: string | null;
+}
+
 // Get default certainty based on asset type and optional property status
 export const getDefaultCertainty = (
   type: string,
-  options?: {
-    propertyStatus?: string;
-    recoveryProbability?: string;
-  }
+  options?: DefaultCertaintyOptions
 ): CertaintyLevel => {
   // Assets
   if (type === 'real-estate') {

@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
@@ -10,34 +10,36 @@ export type ReceivableUpdate = TablesUpdate<'receivables'>;
 export type ReceivablePayment = Tables<'receivable_payments'>;
 export type ReceivablePaymentInsert = TablesInsert<'receivable_payments'>;
 
-export function useReceivables() {
+export function useReceivables(): UseQueryResult<Receivable[], Error> {
   const { user } = useAuth();
   
   return useQuery({
     queryKey: ['receivables'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Receivable[]> => {
       const { data, error } = await supabase
         .from('receivables')
         .select('*')
         .order('due_date', { ascending: true });
       
       if (error) throw error;
-      return data as Receivable[];
+      return data ?? [];
     },
     enabled: !!user,
   });
 }
 
-export function useCreateReceivable() {
+export function useCreateReceivable(): UseMutationResult<Receivable, Error, Omit<ReceivableInsert, 'user_id'>> {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { logEvent } = useAuditLog();
   
   return useMutation({
-    mutationFn: async (receivable: Omit<ReceivableInsert, 'user_id'>) => {
+    mutationFn: async (receivable: Omit<ReceivableInsert, 'user_id'>): Promise<Receivable> => {
+      if (!user) throw new Error('Not authenticated');
+      
       const { data, error } = await supabase
         .from('receivables')
-        .insert({ ...receivable, user_id: user!.id })
+        .insert({ ...receivable, user_id: user.id })
         .select()
         .single();
       
@@ -56,12 +58,14 @@ export function useCreateReceivable() {
   });
 }
 
-export function useUpdateReceivable() {
+type UpdateReceivableParams = ReceivableUpdate & { id: string };
+
+export function useUpdateReceivable(): UseMutationResult<Receivable, Error, UpdateReceivableParams> {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
   
   return useMutation({
-    mutationFn: async ({ id, ...updates }: ReceivableUpdate & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: UpdateReceivableParams): Promise<Receivable> => {
       const { data, error } = await supabase
         .from('receivables')
         .update(updates)
@@ -84,12 +88,17 @@ export function useUpdateReceivable() {
   });
 }
 
-export function useDeleteReceivable() {
+interface DeleteReceivableParams {
+  id: string;
+  name?: string;
+}
+
+export function useDeleteReceivable(): UseMutationResult<DeleteReceivableParams, Error, DeleteReceivableParams> {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
   
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
+    mutationFn: async ({ id, name }: DeleteReceivableParams): Promise<DeleteReceivableParams> => {
       const { error } = await supabase
         .from('receivables')
         .delete()
@@ -110,10 +119,10 @@ export function useDeleteReceivable() {
   });
 }
 
-export function useReceivablePayments(receivableId: string) {
+export function useReceivablePayments(receivableId: string): UseQueryResult<ReceivablePayment[], Error> {
   return useQuery({
     queryKey: ['receivable_payments', receivableId],
-    queryFn: async () => {
+    queryFn: async (): Promise<ReceivablePayment[]> => {
       const { data, error } = await supabase
         .from('receivable_payments')
         .select('*')
@@ -121,21 +130,23 @@ export function useReceivablePayments(receivableId: string) {
         .order('payment_date', { ascending: false });
       
       if (error) throw error;
-      return data as ReceivablePayment[];
+      return data ?? [];
     },
     enabled: !!receivableId,
   });
 }
 
-export function useCreateReceivablePayment() {
+export function useCreateReceivablePayment(): UseMutationResult<ReceivablePayment, Error, Omit<ReceivablePaymentInsert, 'user_id'>> {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   
   return useMutation({
-    mutationFn: async (payment: Omit<ReceivablePaymentInsert, 'user_id'>) => {
+    mutationFn: async (payment: Omit<ReceivablePaymentInsert, 'user_id'>): Promise<ReceivablePayment> => {
+      if (!user) throw new Error('Not authenticated');
+      
       const { data, error } = await supabase
         .from('receivable_payments')
-        .insert({ ...payment, user_id: user!.id })
+        .insert({ ...payment, user_id: user.id })
         .select()
         .single();
       

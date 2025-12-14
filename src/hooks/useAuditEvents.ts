@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -8,7 +8,7 @@ export interface AuditEvent {
   action: string;
   entity_type: string;
   entity_id: string | null;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   ip_address: string | null;
   created_at: string;
 }
@@ -27,12 +27,12 @@ export const useAuditEvents = ({
   startDate,
   endDate,
   limit = 100,
-}: UseAuditEventsParams = {}) => {
+}: UseAuditEventsParams = {}): UseQueryResult<AuditEvent[], Error> => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['audit_events', user?.id, actionFilter, entityTypeFilter, startDate?.toISOString(), endDate?.toISOString(), limit],
-    queryFn: async () => {
+    queryFn: async (): Promise<AuditEvent[]> => {
       let query = supabase
         .from('audit_events')
         .select('*')
@@ -58,7 +58,7 @@ export const useAuditEvents = ({
       const { data, error } = await query;
 
       if (error) throw error;
-      return data as AuditEvent[];
+      return (data ?? []) as AuditEvent[];
     },
     enabled: !!user,
   });
@@ -71,7 +71,7 @@ export const AUDIT_ACTIONS = [
   { value: 'delete', label: 'Delete' },
   { value: 'download', label: 'Download' },
   { value: 'export_pdf', label: 'Export PDF' },
-];
+] as const;
 
 export const ENTITY_TYPE_LABELS: Record<string, string> = {
   asset: 'Asset',
@@ -98,4 +98,4 @@ export const ENTITY_TYPES = [
   { value: 'balance_sheet', label: 'Balance Sheet' },
   { value: 'loan_schedule', label: 'Loan Schedule' },
   { value: 'loan_payment', label: 'Loan Payment' },
-];
+] as const;
