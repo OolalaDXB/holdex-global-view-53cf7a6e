@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,12 +10,12 @@ export type Collection = Tables<'collections'> & {
 };
 export type CollectionInsert = TablesInsert<'collections'>;
 
-export const useCollections = () => {
+export const useCollections = (): UseQueryResult<Collection[], Error> => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['collections', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Collection[]> => {
       const { data, error } = await supabase
         .from('collections')
         .select('*')
@@ -25,19 +25,19 @@ export const useCollections = () => {
       return (data ?? []).map(collection => ({
         ...collection,
         parsed_ownership_allocation: parseOwnershipAllocation(collection.ownership_allocation),
-      })) as Collection[];
+      }));
     },
     enabled: !!user,
   });
 };
 
-export const useCreateCollection = () => {
+export const useCreateCollection = (): UseMutationResult<Tables<'collections'>, Error, Omit<CollectionInsert, 'user_id'>> => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (collection: Omit<CollectionInsert, 'user_id'>) => {
+    mutationFn: async (collection: Omit<CollectionInsert, 'user_id'>): Promise<Tables<'collections'>> => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
@@ -61,12 +61,14 @@ export const useCreateCollection = () => {
   });
 };
 
-export const useUpdateCollection = () => {
+type UpdateCollectionParams = Partial<Omit<Collection, 'parsed_ownership_allocation'>> & { id: string };
+
+export const useUpdateCollection = (): UseMutationResult<Tables<'collections'>, Error, UpdateCollectionParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<Collection> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: UpdateCollectionParams): Promise<Tables<'collections'>> => {
       const { data, error } = await supabase
         .from('collections')
         .update(updates)
@@ -89,12 +91,17 @@ export const useUpdateCollection = () => {
   });
 };
 
-export const useDeleteCollection = () => {
+interface DeleteCollectionParams {
+  id: string;
+  name?: string;
+}
+
+export const useDeleteCollection = (): UseMutationResult<DeleteCollectionParams, Error, DeleteCollectionParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
+    mutationFn: async ({ id, name }: DeleteCollectionParams): Promise<DeleteCollectionParams> => {
       const { error } = await supabase
         .from('collections')
         .delete()

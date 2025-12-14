@@ -167,7 +167,7 @@ const institutionDomains: Record<string, string> = {
   'Porsche Financial Services': 'porsche.com',
 };
 
-export const getInstitutionLogo = (institution: string): string | null => {
+export const getInstitutionLogo = (institution: string | null | undefined): string | null => {
   if (!institution) return null;
   
   // Check for exact match
@@ -197,12 +197,13 @@ export const getInstitutionLogo = (institution: string): string | null => {
 };
 
 // Fallback if logo fails to load - returns initials
-export const getLogoFallback = (institution: string): string => {
+export const getLogoFallback = (institution: string | null | undefined): string => {
   if (!institution) return '?';
   
   return institution
     .split(' ')
     .map(word => word[0])
+    .filter((char): char is string => char !== undefined)
     .join('')
     .toUpperCase()
     .slice(0, 2);

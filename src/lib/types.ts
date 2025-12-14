@@ -51,7 +51,7 @@ export const parseCoparceners = (data: unknown): Coparcener[] | null => {
 // Helper to get user's ownership share from parsed allocation
 export const getUserOwnershipShare = (
   allocation: OwnershipAllocation[] | null | undefined,
-  entityId: string | null
+  entityId: string | null | undefined
 ): number => {
   if (!allocation || allocation.length === 0) return 1;
   if (!entityId) return 1;

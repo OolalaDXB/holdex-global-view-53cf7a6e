@@ -12,11 +12,11 @@ export const fallbackRates: Record<string, number> = {
 export const convertToEUR = (
   amount: number, 
   currency: string, 
-  rates?: Record<string, number>
+  rates?: Record<string, number> | null
 ): number => {
   if (currency === 'EUR') return amount;
   
-  const activeRates = rates || fallbackRates;
+  const activeRates = rates ?? fallbackRates;
   const rate = activeRates[currency];
   
   if (!rate) return amount;
@@ -30,11 +30,11 @@ export const convertToEUR = (
 export const convertFromEUR = (
   amount: number,
   currency: string,
-  rates?: Record<string, number>
+  rates?: Record<string, number> | null
 ): number => {
   if (currency === 'EUR') return amount;
   
-  const activeRates = rates || fallbackRates;
+  const activeRates = rates ?? fallbackRates;
   const rate = activeRates[currency];
   
   if (!rate) return amount;
@@ -52,7 +52,7 @@ export const formatCurrency = (amount: number, currency: string = 'EUR'): string
     RUB: '₽',
   };
   
-  const symbol = symbols[currency] || currency + ' ';
+  const symbol = symbols[currency] ?? `${currency} `;
   const formatted = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
@@ -70,7 +70,7 @@ export const getAssetTypeIcon = (type: string): string => {
     'business': '🏢',
     'liability': '📉',
   };
-  return icons[type] || '📊';
+  return icons[type] ?? '📊';
 };
 
 export const getCollectionIcon = (category: string): string => {
@@ -83,5 +83,5 @@ export const getCollectionIcon = (category: string): string => {
     'vinyl': '💿',
     'other': '✨',
   };
-  return icons[category] || '✨';
+  return icons[category] ?? '✨';
 };

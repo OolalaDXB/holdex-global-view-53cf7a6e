@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,12 +10,12 @@ export type Asset = Tables<'assets'> & {
 };
 export type AssetInsert = TablesInsert<'assets'>;
 
-export const useAssets = () => {
+export const useAssets = (): UseQueryResult<Asset[], Error> => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['assets', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Asset[]> => {
       const { data, error } = await supabase
         .from('assets')
         .select('*')
@@ -25,19 +25,19 @@ export const useAssets = () => {
       return (data ?? []).map(asset => ({
         ...asset,
         parsed_ownership_allocation: parseOwnershipAllocation(asset.ownership_allocation),
-      })) as Asset[];
+      }));
     },
     enabled: !!user,
   });
 };
 
-export const useCreateAsset = () => {
+export const useCreateAsset = (): UseMutationResult<Tables<'assets'>, Error, Omit<AssetInsert, 'user_id'>> => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (asset: Omit<AssetInsert, 'user_id'>) => {
+    mutationFn: async (asset: Omit<AssetInsert, 'user_id'>): Promise<Tables<'assets'>> => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
@@ -61,12 +61,14 @@ export const useCreateAsset = () => {
   });
 };
 
-export const useUpdateAsset = () => {
+type UpdateAssetParams = Partial<Omit<Asset, 'parsed_ownership_allocation'>> & { id: string };
+
+export const useUpdateAsset = (): UseMutationResult<Tables<'assets'>, Error, UpdateAssetParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<Asset> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: UpdateAssetParams): Promise<Tables<'assets'>> => {
       const { data, error } = await supabase
         .from('assets')
         .update(updates)
@@ -89,12 +91,17 @@ export const useUpdateAsset = () => {
   });
 };
 
-export const useDeleteAsset = () => {
+interface DeleteAssetParams {
+  id: string;
+  name?: string;
+}
+
+export const useDeleteAsset = (): UseMutationResult<DeleteAssetParams, Error, DeleteAssetParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
+    mutationFn: async ({ id, name }: DeleteAssetParams): Promise<DeleteAssetParams> => {
       const { error } = await supabase
         .from('assets')
         .delete()

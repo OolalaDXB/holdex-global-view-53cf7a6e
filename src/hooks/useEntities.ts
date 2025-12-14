@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,9 +56,12 @@ export const TRUST_TYPES = [
 ] as const;
 
 export type EntityType = typeof ENTITY_TYPES[number]['value'];
+export type MatrimonialRegime = typeof MATRIMONIAL_REGIMES[number]['value'];
+export type LegalForm = typeof LEGAL_FORMS[number]['value'];
+export type TrustType = typeof TRUST_TYPES[number]['value'];
 
 // Filter entity types based on compliance mode
-export const getFilteredEntityTypes = (showHindu: boolean) => {
+export const getFilteredEntityTypes = (showHindu: boolean): typeof ENTITY_TYPES[number][] => {
   return ENTITY_TYPES.filter(type => {
     if (type.value === 'huf') return showHindu;
     return true;
@@ -66,19 +69,19 @@ export const getFilteredEntityTypes = (showHindu: boolean) => {
 };
 
 // Filter trust types based on compliance mode
-export const getFilteredTrustTypes = (showIslamic: boolean) => {
+export const getFilteredTrustTypes = (showIslamic: boolean): typeof TRUST_TYPES[number][] => {
   return TRUST_TYPES.filter(type => {
     if (type.compliance === 'islamic') return showIslamic;
     return true;
   });
 };
 
-export const useEntities = () => {
+export const useEntities = (): UseQueryResult<Entity[], Error> => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['entities', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Entity[]> => {
       const { data, error } = await supabase
         .from('entities')
         .select('*')
@@ -89,19 +92,19 @@ export const useEntities = () => {
         ...entity,
         parsed_beneficiaries: parseBeneficiaries(entity.beneficiaries),
         parsed_coparceners: parseCoparceners(entity.coparceners),
-      })) as Entity[];
+      }));
     },
     enabled: !!user,
   });
 };
 
-export const useCreateEntity = () => {
+export const useCreateEntity = (): UseMutationResult<Tables<'entities'>, Error, Omit<EntityInsert, 'user_id'>> => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (entity: Omit<EntityInsert, 'user_id'>) => {
+    mutationFn: async (entity: Omit<EntityInsert, 'user_id'>): Promise<Tables<'entities'>> => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
@@ -125,12 +128,14 @@ export const useCreateEntity = () => {
   });
 };
 
-export const useUpdateEntity = () => {
+type UpdateEntityParams = EntityUpdate & { id: string };
+
+export const useUpdateEntity = (): UseMutationResult<Tables<'entities'>, Error, UpdateEntityParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: EntityUpdate & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: UpdateEntityParams): Promise<Tables<'entities'>> => {
       const { data, error } = await supabase
         .from('entities')
         .update(updates)
@@ -153,12 +158,17 @@ export const useUpdateEntity = () => {
   });
 };
 
-export const useDeleteEntity = () => {
+interface DeleteEntityParams {
+  id: string;
+  name?: string;
+}
+
+export const useDeleteEntity = (): UseMutationResult<DeleteEntityParams, Error, DeleteEntityParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
+    mutationFn: async ({ id, name }: DeleteEntityParams): Promise<DeleteEntityParams> => {
       const { error } = await supabase
         .from('entities')
         .delete()
@@ -179,12 +189,17 @@ export const useDeleteEntity = () => {
   });
 };
 
-export const useEnsureDefaultEntity = () => {
+interface EnsureDefaultEntityResult {
+  ensureDefault: () => Promise<Tables<'entities'> | null>;
+  isLoading: boolean;
+}
+
+export const useEnsureDefaultEntity = (): EnsureDefaultEntityResult => {
   const { user } = useAuth();
   const createEntity = useCreateEntity();
   const { data: entities } = useEntities();
 
-  const ensureDefault = async () => {
+  const ensureDefault = async (): Promise<Tables<'entities'> | null> => {
     if (!user || !entities) return null;
     
     const personalEntity = entities.find(e => e.type === 'personal');
