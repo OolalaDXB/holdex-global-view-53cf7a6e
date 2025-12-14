@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 export type Document = Tables<'documents'>;
 export type DocumentInsert = TablesInsert<'documents'>;
@@ -84,6 +85,7 @@ export const useAllDocuments = () => {
 export const useCreateDocument = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async (document: Omit<DocumentInsert, 'user_id'>) => {
@@ -98,8 +100,14 @@ export const useCreateDocument = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      logEvent({
+        action: 'create',
+        entityType: 'document',
+        entityId: data.id,
+        metadata: { name: data.name, type: data.type },
+      });
     },
   });
 };
@@ -127,18 +135,26 @@ export const useUpdateDocument = () => {
 
 export const useDeleteDocument = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
       const { error } = await supabase
         .from('documents')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+      return { id, name };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
+      logEvent({
+        action: 'delete',
+        entityType: 'document',
+        entityId: data.id,
+        metadata: { name: data.name },
+      });
     },
   });
 };
