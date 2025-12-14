@@ -1,6 +1,5 @@
 import { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { cn } from '@/lib/utils';
 import { SidebarProvider, useSidebarContext } from '@/contexts/SidebarContext';
 
@@ -10,7 +9,6 @@ interface AppLayoutProps {
 }
 
 function AppLayoutContent({ children, isDemo = false }: AppLayoutProps) {
-  useKeyboardShortcuts(isDemo);
   const { collapsed } = useSidebarContext();
   
   return (

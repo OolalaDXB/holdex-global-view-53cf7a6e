@@ -432,8 +432,7 @@ const Dashboard = () => {
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
             <NetWorthCard 
               totalValue={netWorth} 
-              confirmedValue={confirmedNetWorth}
-              projectedValue={projectedNetWorth}
+              grossAssets={convertFromEUR(totalGrossEUR, displayCurrency, rates)}
               change={change} 
               currency={displayCurrency}
               isBlurred={isBlurred}
