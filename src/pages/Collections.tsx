@@ -9,8 +9,10 @@ import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'lp-position' | 'other';
+type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
 const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -23,9 +25,16 @@ const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'other', label: 'Other' },
 ];
 
+const certaintyFilterOptions: { value: CertaintyFilter; label: string }[] = [
+  { value: 'all', label: 'All Certainty' },
+  { value: 'certain', label: 'Certain Only' },
+  { value: 'exclude-optional', label: 'Exclude Optional' },
+];
+
 const CollectionsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
   
@@ -46,6 +55,13 @@ const CollectionsPage = () => {
         c.country.toLowerCase().includes(query) ||
         c.notes?.toLowerCase().includes(query)
       );
+    })
+    .filter(c => {
+      if (certaintyFilter === 'all') return true;
+      const cert = (c as any).certainty || 'probable';
+      if (certaintyFilter === 'certain') return cert === 'certain';
+      if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
+      return true;
     });
 
   return (
@@ -58,14 +74,28 @@ const CollectionsPage = () => {
 
         {/* Search and Filters */}
         <div className="space-y-4 mb-8">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search collections..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-secondary border-border"
-            />
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search collections..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 bg-secondary border-border"
+              />
+            </div>
+            
+            {/* Certainty filter */}
+            <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
+              <SelectTrigger className="w-40 h-9 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {certaintyFilterOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="flex flex-wrap gap-2">

@@ -13,7 +13,13 @@ import { DemoDeleteCollectionDialog } from '@/components/demo/DemoDeleteCollecti
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'lp-position' | 'other';
-type CertaintyFilter = 'all' | 'certain' | 'estimated' | 'projected';
+type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
+
+const certaintyFilterOptions: { value: CertaintyFilter; label: string }[] = [
+  { value: 'all', label: 'All Certainty' },
+  { value: 'certain', label: 'Certain Only' },
+  { value: 'exclude-optional', label: 'Exclude Optional' },
+];
 
 const filterOptions: { value: FilterType; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -38,7 +44,13 @@ const DemoCollectionsPage = () => {
 
   const filteredCollections = collections
     .filter(c => filter === 'all' || c.type === filter)
-    .filter(c => certaintyFilter === 'all' || (c as any).certainty === certaintyFilter)
+    .filter(c => {
+      if (certaintyFilter === 'all') return true;
+      const cert = (c as any).certainty || 'probable';
+      if (certaintyFilter === 'certain') return cert === 'certain';
+      if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
+      return true;
+    })
     .filter(c => {
       if (!searchQuery.trim()) return true;
       const query = searchQuery.toLowerCase();
@@ -82,14 +94,13 @@ const DemoCollectionsPage = () => {
             </div>
             
             <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
-              <SelectTrigger className="w-[160px] bg-secondary border-border">
-                <SelectValue placeholder="Certainty" />
+              <SelectTrigger className="w-40 h-9 text-sm">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Certainty</SelectItem>
-                <SelectItem value="certain">Confirmed</SelectItem>
-                <SelectItem value="estimated">Estimated</SelectItem>
-                <SelectItem value="projected">Projected</SelectItem>
+                {certaintyFilterOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
