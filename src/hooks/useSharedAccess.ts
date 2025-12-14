@@ -23,22 +23,67 @@ export const useSharedAccess = () => {
   });
 };
 
-// Hook to get invitations received by the current user
+// Hook to get invitations received by the current user (with owner profile info)
 export const useReceivedInvitations = () => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['received_invitations', user?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get invitations where shared_with_id matches current user
+      const { data: invitations, error } = await supabase
         .from('shared_access')
         .select('*')
         .eq('shared_with_id', user?.id || '');
 
       if (error) throw error;
-      return data as SharedAccess[];
+      
+      // Then fetch owner profiles for each invitation
+      if (invitations && invitations.length > 0) {
+        const ownerIds = [...new Set(invitations.map(inv => inv.owner_id))];
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, full_name, email')
+          .in('id', ownerIds);
+        
+        if (profilesError) throw profilesError;
+        
+        // Merge profile info into invitations
+        const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+        return invitations.map(inv => ({
+          ...inv,
+          owner_profile: profileMap.get(inv.owner_id) || null,
+        }));
+      }
+      
+      return invitations?.map(inv => ({ ...inv, owner_profile: null })) || [];
     },
     enabled: !!user,
+  });
+};
+
+// Extended type for invitations with owner profile
+export type ReceivedInvitation = SharedAccess & {
+  owner_profile: { id: string; full_name: string | null; email: string } | null;
+};
+
+// Hook to fetch a specific user's profile (for viewing shared portfolios)
+export const useSharedOwnerProfile = (ownerId: string | null) => {
+  return useQuery({
+    queryKey: ['shared_owner_profile', ownerId],
+    queryFn: async () => {
+      if (!ownerId) return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('id', ownerId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!ownerId,
   });
 };
 

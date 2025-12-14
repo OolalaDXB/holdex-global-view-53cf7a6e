@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
-import { useSharedAccess, useInvitePartner, useRevokeAccess, useReceivedInvitations, useRespondToInvitation } from '@/hooks/useSharedAccess';
+import { useSharedAccess, useInvitePartner, useRevokeAccess, useReceivedInvitations, useRespondToInvitation, ReceivedInvitation } from '@/hooks/useSharedAccess';
 import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
@@ -600,18 +600,20 @@ const SettingsPage = () => {
           {receivedInvitations.filter(inv => inv.status === 'pending').length > 0 && <Separator />}
 
           {/* Portfolios You Have Access To */}
-          {receivedInvitations.filter(inv => inv.status === 'accepted').length > 0 && (
+          {(receivedInvitations as ReceivedInvitation[]).filter(inv => inv.status === 'accepted').length > 0 && (
             <section>
               <h2 className="font-serif text-xl font-medium text-foreground mb-4">Shared Portfolios</h2>
               <p className="text-sm text-muted-foreground mb-4">
                 Portfolios you have read-only access to.
               </p>
               <div className="space-y-2">
-                {receivedInvitations.filter(inv => inv.status === 'accepted').map((invitation) => (
+                {(receivedInvitations as ReceivedInvitation[]).filter(inv => inv.status === 'accepted').map((invitation) => (
                   <div key={invitation.id} className="flex items-center justify-between py-2 px-3 bg-secondary rounded-md">
                     <div className="flex items-center gap-2">
                       <Eye size={16} className="text-muted-foreground" />
-                      <span className="text-sm text-foreground">Shared Portfolio</span>
+                      <span className="text-sm text-foreground">
+                        {invitation.owner_profile?.full_name || invitation.owner_profile?.email || 'Unknown User'}
+                      </span>
                       <span className="text-xs text-muted-foreground">(read-only)</span>
                     </div>
                     <Button
@@ -628,7 +630,7 @@ const SettingsPage = () => {
             </section>
           )}
 
-          {receivedInvitations.filter(inv => inv.status === 'accepted').length > 0 && <Separator />}
+          {(receivedInvitations as ReceivedInvitation[]).filter(inv => inv.status === 'accepted').length > 0 && <Separator />}
 
           {/* Sharing Section */}
           <section>
