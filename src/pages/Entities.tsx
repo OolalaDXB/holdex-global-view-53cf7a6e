@@ -41,36 +41,70 @@ const Entities = () => {
   const [editingEntity, setEditingEntity] = useState<Entity | null>(null);
   const [deletingEntity, setDeletingEntity] = useState<Entity | null>(null);
 
-  // Calculate stats per entity
+  // Helper to get entity's share from ownership_allocation
+  const getEntityShareFromAllocation = (allocation: any[] | null, entityId: string): number => {
+    if (!allocation || !Array.isArray(allocation)) return 0;
+    const entry = allocation.find((a: any) => a.entity_id === entityId);
+    return entry ? (entry.percentage || 0) / 100 : 0;
+  };
+
+  // Calculate stats per entity (considering ownership_allocation for shared assets)
   const entityStats = useMemo(() => {
     if (!entities) return {};
     
     const stats: Record<string, { assetCount: number; totalValue: number }> = {};
+    const rates = exchangeRates || {};
     
     entities.forEach((entity) => {
-      const entityAssets = assets?.filter(a => a.entity_id === entity.id) || [];
-      const entityCollections = collections?.filter(c => c.entity_id === entity.id) || [];
-      const entityLiabilities = liabilities?.filter(l => l.entity_id === entity.id) || [];
+      let assetCount = 0;
+      let assetsValue = 0;
+      let collectionsValue = 0;
+      let liabilitiesValue = 0;
 
-      const rates = exchangeRates || {};
-      
-      const assetsValue = entityAssets.reduce((sum, a) => {
+      // Process assets
+      assets?.forEach(a => {
         const valueInEur = convertToEUR(Number(a.current_value), a.currency, rates as Record<string, number>);
-        return sum + valueInEur;
-      }, 0);
+        const allocation = a.ownership_allocation as any[] | null;
+        
+        if (allocation && Array.isArray(allocation) && allocation.length > 0) {
+          // Shared ownership - check if this entity has a share
+          const share = getEntityShareFromAllocation(allocation, entity.id);
+          if (share > 0) {
+            assetCount += 1;
+            assetsValue += valueInEur * share;
+          }
+        } else if (a.entity_id === entity.id) {
+          // Direct ownership via entity_id
+          assetCount += 1;
+          assetsValue += valueInEur;
+        }
+      });
 
-      const collectionsValue = entityCollections.reduce((sum, c) => {
+      // Process collections
+      collections?.forEach(c => {
         const valueInEur = convertToEUR(Number(c.current_value), c.currency, rates as Record<string, number>);
-        return sum + valueInEur;
-      }, 0);
+        const allocation = c.ownership_allocation as any[] | null;
+        
+        if (allocation && Array.isArray(allocation) && allocation.length > 0) {
+          const share = getEntityShareFromAllocation(allocation, entity.id);
+          if (share > 0) {
+            assetCount += 1;
+            collectionsValue += valueInEur * share;
+          }
+        } else if (c.entity_id === entity.id) {
+          assetCount += 1;
+          collectionsValue += valueInEur;
+        }
+      });
 
-      const liabilitiesValue = entityLiabilities.reduce((sum, l) => {
+      // Process liabilities (still use entity_id only)
+      liabilities?.filter(l => l.entity_id === entity.id).forEach(l => {
         const valueInEur = convertToEUR(Number(l.current_balance), l.currency, rates as Record<string, number>);
-        return sum + valueInEur;
-      }, 0);
+        liabilitiesValue += valueInEur;
+      });
 
       stats[entity.id] = {
-        assetCount: entityAssets.length + entityCollections.length,
+        assetCount,
         totalValue: assetsValue + collectionsValue - liabilitiesValue,
       };
     });
