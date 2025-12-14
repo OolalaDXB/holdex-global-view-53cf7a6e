@@ -183,7 +183,7 @@ export function ImportScheduleDialog({
         payments_made: paidCount,
         next_payment_date: nextPayment?.payment_date || null,
         remaining_principal: nextPayment ? (parsedData[parsedData.indexOf(nextPayment) - 1]?.remaining_principal || totalPrincipal) : 0,
-        imported_schedule: parsedData,
+        imported_schedule: JSON.parse(JSON.stringify(parsedData)),
         is_imported: true,
         notes: `Imported from ${fileName}`,
       });
