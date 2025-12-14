@@ -325,21 +325,29 @@ const Dashboard = () => {
         assetId: asset.id,
         assetName: asset.name,
         assetValue: convertFromEUR(assetValueEUR, displayCurrency, rates),
+        liabilityId: liability.id,
         liabilityName: liability.name,
         liabilityBalance: convertFromEUR(liabilityBalanceEUR, displayCurrency, rates),
         equity: convertFromEUR(equityEUR, displayCurrency, rates),
         equityPercentage,
-        currency: displayCurrency,
+        currency: liability.currency,
+        originalAmount: liability.original_amount ?? undefined,
+        interestRate: liability.interest_rate ?? undefined,
+        startDate: liability.start_date ?? undefined,
       };
     }).filter(Boolean) as {
       assetId: string;
       assetName: string;
       assetValue: number;
+      liabilityId: string;
       liabilityName: string;
       liabilityBalance: number;
       equity: number;
       equityPercentage: number;
       currency: string;
+      originalAmount?: number;
+      interestRate?: number;
+      startDate?: string;
     }[];
   }, [assets, liabilities, rates, displayCurrency]);
 
