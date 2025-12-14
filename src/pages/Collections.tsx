@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { CollectionCard } from '@/components/collections/CollectionCard';
 import { EditCollectionDialog } from '@/components/collections/EditCollectionDialog';
@@ -8,13 +8,15 @@ import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
-import { Search, LayoutGrid, List, Rows3, ArrowUpDown, SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { Search, LayoutGrid, List, Rows3, ArrowUpDown, SlidersHorizontal, ChevronDown, RotateCcw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DataStatusBadge } from '@/components/ui/data-status-badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
+const STORAGE_KEY = 'collections-page-preferences';
 
 type ViewMode = 'grid' | 'list' | 'compact';
 type SortOption = 'name' | 'value-desc' | 'value-asc' | 'date-desc' | 'date-asc';
@@ -47,14 +49,36 @@ const sortOptions: { value: SortOption; label: string }[] = [
 ];
 
 const CollectionsPage = () => {
-  const [filter, setFilter] = useState<FilterType>('all');
+  // Load saved preferences from localStorage
+  const savedPrefs = useMemo(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  }, []);
+
+  const [filter, setFilter] = useState<FilterType>(savedPrefs.filter || 'all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [sortBy, setSortBy] = useState<SortOption>('value-desc');
+  const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>(savedPrefs.certaintyFilter || 'all');
+  const [viewMode, setViewMode] = useState<ViewMode>(savedPrefs.viewMode || 'grid');
+  const [sortBy, setSortBy] = useState<SortOption>(savedPrefs.sortBy || 'value-desc');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
+  
+  // Persist preferences to localStorage
+  useEffect(() => {
+    const prefs = { filter, sortBy, viewMode, certaintyFilter };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+  }, [filter, sortBy, viewMode, certaintyFilter]);
+  
+  // Clear all filters function
+  const clearAllFilters = () => {
+    setCertaintyFilter('all');
+    setViewMode('grid');
+  };
   
   const { data: collections = [], isLoading } = useCollections();
   const { 
@@ -215,6 +239,21 @@ const CollectionsPage = () => {
                     </ToggleGroup>
                   </div>
                 </div>
+
+                {/* Clear all filters button */}
+                {activeFilterCount > 0 && (
+                  <div className="pt-3 border-t border-border">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={clearAllFilters}
+                      className="h-8 text-muted-foreground hover:text-foreground"
+                    >
+                      <RotateCcw size={14} className="mr-2" />
+                      Clear all filters
+                    </Button>
+                  </div>
+                )}
               </div>
             </CollapsibleContent>
           </Collapsible>
