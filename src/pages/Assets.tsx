@@ -12,12 +12,13 @@ import { useProfile } from '@/hooks/useProfile';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
-import { Search, X, LayoutGrid, List, ArrowUpDown, Plus, Rows3 } from 'lucide-react';
+import { Search, X, LayoutGrid, List, ArrowUpDown, Plus, Rows3, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DataStatusBadge } from '@/components/ui/data-status-badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 type SortOption = 'name' | 'value-desc' | 'value-asc' | 'date-desc' | 'date-asc';
@@ -66,6 +67,9 @@ const AssetsPage = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
   
+  // Filters panel
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  
   const { data: assets = [], isLoading } = useAssets();
   const { data: entities = [] } = useEntities();
   const { data: exchangeRates, isStale: fxIsStale, isUnavailable: fxIsUnavailable, cacheTimestamp: fxCacheTimestamp, refetch: refetchFx, isFetching: fxFetching } = useExchangeRates();
@@ -86,6 +90,15 @@ const AssetsPage = () => {
     const entity = entities.find(e => e.id === entityId);
     return entity?.name || 'Unknown Entity';
   };
+
+  // Count active filters
+  const activeFilterCount = [
+    certaintyFilter !== 'all',
+    propertyTypeFilter !== 'all',
+    minRooms !== '',
+    minSize !== '',
+    viewMode !== 'grid',
+  ].filter(Boolean).length;
 
   const filteredAndSortedAssets = useMemo(() => {
     let result = assets
@@ -211,7 +224,7 @@ const AssetsPage = () => {
           )}
         </div>
 
-        {/* Search and Filters */}
+        {/* Simplified Header: Search + Sort + Filters button */}
         <div className="space-y-4 mb-8">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 max-w-sm">
@@ -239,32 +252,111 @@ const AssetsPage = () => {
               </Select>
             </div>
 
-            {/* Certainty filter */}
-            <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
-              <SelectTrigger className="w-40 h-9 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {certaintyFilterOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* View toggle */}
-            <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
-              <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3">
-                <LayoutGrid size={16} />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="list" aria-label="List view" className="px-3">
-                <List size={16} />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="compact" aria-label="Compact view" className="px-3">
-                <Rows3 size={16} />
-              </ToggleGroupItem>
-            </ToggleGroup>
+            {/* Filters button */}
+            <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9 gap-2">
+                  <SlidersHorizontal size={14} />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                  <ChevronDown size={14} className={cn("transition-transform", filtersOpen && "rotate-180")} />
+                </Button>
+              </CollapsibleTrigger>
+            </Collapsible>
           </div>
+
+          {/* Collapsible Filters Panel */}
+          <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <CollapsibleContent>
+              <div className="p-4 bg-secondary/50 rounded-lg border border-border space-y-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* Certainty filter */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Certainty:</span>
+                    <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
+                      <SelectTrigger className="w-40 h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {certaintyFilterOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* View toggle */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">View:</span>
+                    <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
+                      <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3 h-8">
+                        <LayoutGrid size={14} />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="list" aria-label="List view" className="px-3 h-8">
+                        <List size={14} />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="compact" aria-label="Compact view" className="px-3 h-8">
+                        <Rows3 size={14} />
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                </div>
+
+                {/* Property-specific filters */}
+                {(filter === 'all' || filter === 'real-estate') && (
+                  <div className="flex flex-wrap gap-4 pt-3 border-t border-border">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Property type:</span>
+                      <Select value={propertyTypeFilter} onValueChange={setPropertyTypeFilter}>
+                        <SelectTrigger className="w-32 h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All</SelectItem>
+                          <SelectItem value="apartment">Apartment</SelectItem>
+                          <SelectItem value="villa">Villa</SelectItem>
+                          <SelectItem value="studio">Studio</SelectItem>
+                          <SelectItem value="penthouse">Penthouse</SelectItem>
+                          <SelectItem value="townhouse">Townhouse</SelectItem>
+                          <SelectItem value="office">Office</SelectItem>
+                          <SelectItem value="land">Land</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Min rooms:</span>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={minRooms}
+                        onChange={(e) => setMinRooms(e.target.value)}
+                        className="w-16 h-8 text-sm"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Min size:</span>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={minSize}
+                        onChange={(e) => setMinSize(e.target.value)}
+                        className="w-20 h-8 text-sm"
+                        placeholder="0"
+                      />
+                      <span className="text-xs text-muted-foreground">{areaUnit === 'sqm' ? 'm²' : 'sq ft'}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
           
+          {/* Category filter pills */}
           <div className="flex flex-wrap gap-2">
             {filterOptions.map((option) => (
               <button
@@ -281,53 +373,6 @@ const AssetsPage = () => {
               </button>
             ))}
           </div>
-
-          {/* Property-specific filters */}
-          {(filter === 'all' || filter === 'real-estate') && (
-            <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Type:</span>
-                <Select value={propertyTypeFilter} onValueChange={setPropertyTypeFilter}>
-                  <SelectTrigger className="w-32 h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    <SelectItem value="apartment">Apartment</SelectItem>
-                    <SelectItem value="villa">Villa</SelectItem>
-                    <SelectItem value="studio">Studio</SelectItem>
-                    <SelectItem value="penthouse">Penthouse</SelectItem>
-                    <SelectItem value="townhouse">Townhouse</SelectItem>
-                    <SelectItem value="office">Office</SelectItem>
-                    <SelectItem value="land">Land</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Min rooms:</span>
-                <Input
-                  type="number"
-                  min="0"
-                  value={minRooms}
-                  onChange={(e) => setMinRooms(e.target.value)}
-                  className="w-16 h-8 text-sm"
-                  placeholder="0"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Min size:</span>
-                <Input
-                  type="number"
-                  min="0"
-                  value={minSize}
-                  onChange={(e) => setMinSize(e.target.value)}
-                  className="w-20 h-8 text-sm"
-                  placeholder="0"
-                />
-                <span className="text-xs text-muted-foreground">{areaUnit === 'sqm' ? 'm²' : 'sq ft'}</span>
-              </div>
-            </div>
-          )}
         </div>
 
         {isLoading ? (
