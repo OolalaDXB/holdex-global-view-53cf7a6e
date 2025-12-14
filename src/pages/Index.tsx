@@ -75,7 +75,7 @@ const Dashboard = () => {
   const { data: collections = [], isLoading: collectionsLoading } = useCollections();
   const { data: liabilities = [], isLoading: liabilitiesLoading } = useLiabilities();
   const { data: netWorthHistoryData = [] } = useNetWorthHistory();
-  const { data: exchangeRates, isLoading: ratesLoading, dataUpdatedAt: fxUpdatedAt } = useExchangeRates();
+  const { data: exchangeRates, isLoading: ratesLoading, isFetching: ratesFetching, isStale: fxIsStale, isUnavailable: fxIsUnavailable, cacheTimestamp: fxCacheTimestamp, refetch: refetchFx } = useExchangeRates();
   const { data: cryptoPrices, dataUpdatedAt: cryptoUpdatedAt, isStale: cryptoIsStale, isUnavailable: cryptoIsUnavailable, message: cryptoMessage, cacheTimestamp, refetch: refetchCrypto, isFetching: cryptoFetching } = useCryptoPrices();
   const saveSnapshot = useSaveSnapshot();
   const { displayCurrency, convertToDisplay, formatInDisplayCurrency } = useCurrency();
@@ -321,9 +321,6 @@ const Dashboard = () => {
     : 0;
 
   // Format last updated times
-  const fxLastUpdated = fxUpdatedAt 
-    ? new Date(fxUpdatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-    : null;
   const cryptoLastUpdated = cryptoUpdatedAt
     ? new Date(cryptoUpdatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     : null;
@@ -470,10 +467,37 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
-            {fxLastUpdated && (
+            {fxIsUnavailable ? (
+              <div className="flex items-center gap-1 text-destructive">
+                <AlertTriangle size={12} />
+                <span>FX rates unavailable</span>
+                <button 
+                  onClick={() => refetchFx()} 
+                  disabled={ratesFetching}
+                  className="ml-1 hover:text-foreground transition-colors"
+                >
+                  <RefreshCw size={12} className={ratesFetching ? 'animate-spin' : ''} />
+                </button>
+              </div>
+            ) : fxIsStale ? (
+              <div className="flex items-center gap-1 text-yellow-600">
+                <AlertTriangle size={12} />
+                <span>
+                  Cached FX from {fxCacheTimestamp ? new Date(fxCacheTimestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : 'earlier'}
+                </span>
+                <button 
+                  onClick={() => refetchFx()} 
+                  disabled={ratesFetching}
+                  className="ml-1 hover:text-foreground transition-colors"
+                  title="Retry fetching live rates"
+                >
+                  <RefreshCw size={12} className={ratesFetching ? 'animate-spin' : ''} />
+                </button>
+              </div>
+            ) : exchangeRates?.lastUpdated && (
               <div className="flex items-center gap-1">
                 <RefreshCw size={12} className={ratesLoading ? 'animate-spin' : ''} />
-                <span>FX: {fxLastUpdated}</span>
+                <span>FX: {new Date(exchangeRates.lastUpdated).toLocaleDateString()}</span>
               </div>
             )}
             {hasCrypto && (

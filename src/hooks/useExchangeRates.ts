@@ -1,48 +1,82 @@
 import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
-const API_KEY = '99f084bbea744d9c1125f5cd';
-const BASE_URL = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest`;
+type ExchangeRateStatus = 'live' | 'stale' | 'unavailable';
 
-interface ExchangeRateResponse {
-  result: string;
-  base_code: string;
-  conversion_rates: Record<string, number>;
-  time_last_update_utc: string;
+interface ExchangeRatesResponse {
+  rates: Record<string, number> | null;
+  baseCurrency: string;
+  lastUpdated: string | null;
+  timestamp: number;
+  status: ExchangeRateStatus;
+  message: string | null;
 }
 
 export interface ExchangeRates {
-  rates: Record<string, number>;
+  rates: Record<string, number> | null;
   baseCurrency: string;
-  lastUpdated: string;
+  lastUpdated: string | null;
+}
+
+interface UseExchangeRatesResult {
+  data: ExchangeRates | null;
+  isLoading: boolean;
+  isFetching: boolean;
+  error: Error | null;
+  status: ExchangeRateStatus;
+  isStale: boolean;
+  isUnavailable: boolean;
+  message: string | null;
+  dataUpdatedAt: number | undefined;
+  cacheTimestamp: number | null;
+  refetch: () => void;
 }
 
 // Fetch rates with EUR as base (for consistency with app)
-export const useExchangeRates = () => {
-  return useQuery({
+export const useExchangeRates = (): UseExchangeRatesResult => {
+  const query = useQuery({
     queryKey: ['exchange-rates'],
-    queryFn: async (): Promise<ExchangeRates> => {
-      const response = await fetch(`${BASE_URL}/EUR`);
+    queryFn: async (): Promise<ExchangeRatesResponse> => {
+      const { data, error } = await supabase.functions.invoke<ExchangeRatesResponse>('exchange-rates');
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch exchange rates');
-      }
-      
-      const data: ExchangeRateResponse = await response.json();
-      
-      if (data.result !== 'success') {
-        throw new Error('Exchange rate API returned an error');
+      if (error) {
+        console.error('Error fetching exchange rates:', error);
+        throw error;
       }
       
       return {
-        rates: data.conversion_rates,
-        baseCurrency: data.base_code,
-        lastUpdated: data.time_last_update_utc,
+        rates: data?.rates || null,
+        baseCurrency: data?.baseCurrency || 'EUR',
+        lastUpdated: data?.lastUpdated || null,
+        timestamp: data?.timestamp || Date.now(),
+        status: data?.status || 'unavailable',
+        message: data?.message || null,
       };
     },
     staleTime: 1000 * 60 * 60, // Cache for 1 hour
     gcTime: 1000 * 60 * 60 * 24, // Keep in cache for 24 hours
     refetchOnWindowFocus: false,
   });
+
+  const responseData = query.data;
+  
+  return {
+    data: responseData ? {
+      rates: responseData.rates,
+      baseCurrency: responseData.baseCurrency,
+      lastUpdated: responseData.lastUpdated,
+    } : null,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    error: query.error,
+    status: responseData?.status || 'unavailable',
+    isStale: responseData?.status === 'stale',
+    isUnavailable: responseData?.status === 'unavailable' || !responseData?.rates,
+    message: responseData?.message || null,
+    dataUpdatedAt: query.dataUpdatedAt,
+    cacheTimestamp: responseData?.timestamp || null,
+    refetch: () => query.refetch(),
+  };
 };
 
 // Convert amount from any currency to EUR using live rates
