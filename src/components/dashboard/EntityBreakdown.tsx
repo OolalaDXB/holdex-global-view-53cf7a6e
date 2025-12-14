@@ -95,7 +95,6 @@ export function EntityBreakdown({ delay = 0, isBlurred = false }: EntityBreakdow
       className="animate-fade-in" 
       style={{ animationDelay: `${delay}ms` }}
     >
-      <h3 className="font-serif text-lg font-medium text-foreground mb-4">By Entity</h3>
       <div className="space-y-3">
         {sortedEntities.map(([entityId, values], index) => {
           const entity = getEntity(entityId);
