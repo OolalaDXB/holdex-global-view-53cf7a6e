@@ -17,7 +17,8 @@ import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { FavoriteCitiesSelect, SimplifiedCity } from '@/components/settings/FavoriteCitiesSelect';
 import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
 import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
-import { X, Check, XCircle } from 'lucide-react';
+import { X, Check, XCircle, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 type City = SimplifiedCity;
 
@@ -29,6 +30,7 @@ const FISCAL_YEAR_OPTIONS = [
 ];
 
 const SettingsPage = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const { data: profile, isLoading: profileLoading } = useProfile();
@@ -596,6 +598,37 @@ const SettingsPage = () => {
           )}
 
           {receivedInvitations.filter(inv => inv.status === 'pending').length > 0 && <Separator />}
+
+          {/* Portfolios You Have Access To */}
+          {receivedInvitations.filter(inv => inv.status === 'accepted').length > 0 && (
+            <section>
+              <h2 className="font-serif text-xl font-medium text-foreground mb-4">Shared Portfolios</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Portfolios you have read-only access to.
+              </p>
+              <div className="space-y-2">
+                {receivedInvitations.filter(inv => inv.status === 'accepted').map((invitation) => (
+                  <div key={invitation.id} className="flex items-center justify-between py-2 px-3 bg-secondary rounded-md">
+                    <div className="flex items-center gap-2">
+                      <Eye size={16} className="text-muted-foreground" />
+                      <span className="text-sm text-foreground">Shared Portfolio</span>
+                      <span className="text-xs text-muted-foreground">(read-only)</span>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/?view=${invitation.owner_id}`)}
+                      className="h-7 px-3"
+                    >
+                      View Portfolio
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {receivedInvitations.filter(inv => inv.status === 'accepted').length > 0 && <Separator />}
 
           {/* Sharing Section */}
           <section>
