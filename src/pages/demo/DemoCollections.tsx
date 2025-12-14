@@ -39,8 +39,9 @@ const DemoCollectionsPage = () => {
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
   
-  const { collections } = useDemo();
+  const { collections, profile } = useDemo();
   const rates = fallbackRates;
+  const displayCurrency = profile.base_currency;
 
   const filteredCollections = collections
     .filter(c => filter === 'all' || c.type === filter)
@@ -129,7 +130,8 @@ const DemoCollectionsPage = () => {
             <CollectionCard 
               key={collection.id} 
               collection={collection as any} 
-              rates={rates} 
+              rates={rates}
+              displayCurrency={displayCurrency}
               delay={index * 50}
               onEdit={(c) => setEditingCollection(c as any)}
               onDelete={(c) => setDeletingCollection(c as any)}
