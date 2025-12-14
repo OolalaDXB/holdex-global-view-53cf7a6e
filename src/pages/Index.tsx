@@ -35,7 +35,7 @@ import { useNetWorthHistory } from '@/hooks/useNetWorthHistory';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCryptoPrices } from '@/hooks/useCryptoPrices';
 import { useSaveSnapshot } from '@/hooks/useNetWorthSnapshot';
-import { useProfile } from '@/hooks/useProfile';
+import { useProfile, FavoriteCity } from '@/hooks/useProfile';
 import { useSharedOwnerProfile } from '@/hooks/useSharedAccess';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useBlur } from '@/contexts/BlurContext';
@@ -45,10 +45,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getCountryFlag } from '@/hooks/useCountries';
 
-interface City {
-  name: string;
-  timezone: string;
-}
 
 // Helper to calculate user's share of an asset/collection based on ownership_allocation
 const getUserOwnershipShare = (
@@ -87,9 +83,9 @@ const Dashboard = () => {
   const { isBlurred, formatBlurred } = useBlur();
 
   // Get user preferences - default to minimal dashboard
-  const favoriteCities: City[] = (profile as any)?.favorite_cities || [];
-  const dashboardWidgets: string[] = (profile as any)?.dashboard_widgets || [];
-  const newsSources: string[] = (profile as any)?.news_sources || ['bloomberg', 'reuters'];
+  const favoriteCities: FavoriteCity[] = profile?.favorite_cities || [];
+  const dashboardWidgets: string[] = profile?.dashboard_widgets || [];
+  const newsSources: string[] = profile?.news_sources || ['bloomberg', 'reuters'];
 
   const isLoading = assetsLoading || collectionsLoading || liabilitiesLoading;
   const rates = exchangeRates?.rates || fallbackRates;
@@ -384,7 +380,7 @@ const Dashboard = () => {
 
   // Show welcome screen for first-time users
   if (!hasData) {
-    const userName = (profile as any)?.full_name?.split(' ')[0] || undefined;
+    const userName = profile?.full_name?.split(' ')[0] || undefined;
     return (
       <AppLayout>
         <OnboardingWizard userName={userName} />
@@ -606,7 +602,7 @@ const Dashboard = () => {
               <NetWorthProjectionWidget 
                 currentNetWorth={netWorth}
                 currency={displayCurrency}
-                monthlyIncome={(profile as any)?.monthly_income || 0}
+                monthlyIncome={profile?.monthly_income || 0}
                 isBlurred={isBlurred}
                 delay={180}
               />

@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Sun, Moon, Cloud, CloudRain, CloudSnow, CloudSun, CloudLightning, CloudFog } from 'lucide-react';
 import { useWeather } from '@/hooks/useWeather';
-
-interface City {
-  name: string;
-  timezone: string;
-}
+import { FavoriteCity } from '@/hooks/useProfile';
 
 interface WorldClocksWidgetProps {
-  cities: City[];
+  cities: FavoriteCity[];
   showWeather?: boolean;
 }
 
