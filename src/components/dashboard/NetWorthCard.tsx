@@ -73,7 +73,7 @@ export function NetWorthCard({
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Certain and likely values</p>
+              <p>Verified and committed values (certain + contractual)</p>
             </TooltipContent>
           </Tooltip>
           
@@ -82,12 +82,12 @@ export function NetWorthCard({
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Clock size={14} />
-                  <span className="tabular-nums">{symbol}{formatValue(projectedValue)}</span>
+                  <span className="tabular-nums">+{symbol}{formatValue(projectedValue)}</span>
                   <span className="text-xs">projected</span>
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Optional and uncertain values</p>
+                <p>Estimated and speculative values (probable + optional)</p>
               </TooltipContent>
             </Tooltip>
           )}
