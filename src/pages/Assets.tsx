@@ -11,7 +11,7 @@ import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { useProfile } from '@/hooks/useProfile';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
-import { RefreshCw, Search, X, LayoutGrid, List, ArrowUpDown, Plus } from 'lucide-react';
+import { RefreshCw, Search, X, LayoutGrid, List, ArrowUpDown, Plus, Rows3 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,7 +19,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 type SortOption = 'name' | 'value-desc' | 'value-asc' | 'date-desc' | 'date-asc';
-type ViewMode = 'grid' | 'list';
+type ViewMode = 'grid' | 'list' | 'compact';
 type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
 const filterOptions: { value: FilterType; label: string }[] = [
@@ -241,6 +241,9 @@ const AssetsPage = () => {
               <ToggleGroupItem value="list" aria-label="List view" className="px-3">
                 <List size={16} />
               </ToggleGroupItem>
+              <ToggleGroupItem value="compact" aria-label="Compact view" className="px-3">
+                <Rows3 size={16} />
+              </ToggleGroupItem>
             </ToggleGroup>
           </div>
           
@@ -315,11 +318,13 @@ const AssetsPage = () => {
           </div>
         ) : (
           <>
-            {/* Assets Grid/List */}
+            {/* Assets Grid/List/Compact */}
             <div className={cn(
               viewMode === 'grid' 
                 ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
-                : "flex flex-col gap-3"
+                : viewMode === 'compact'
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
+                  : "flex flex-col gap-3"
             )}>
               {filteredAndSortedAssets.map((asset, index) => (
                 <AssetCard 
@@ -332,6 +337,7 @@ const AssetsPage = () => {
                   onDelete={setDeletingAsset}
                   entities={entities}
                   areaUnit={areaUnit}
+                  compact={viewMode === 'compact'}
                 />
               ))}
             </div>

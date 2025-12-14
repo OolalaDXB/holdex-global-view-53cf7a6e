@@ -37,6 +37,7 @@ interface AssetCardProps {
   isBlurred?: boolean;
   entities?: Entity[];
   areaUnit?: 'sqm' | 'sqft';
+  compact?: boolean;
 }
 
 const typeIcons: Record<string, typeof Building2> = {
@@ -74,7 +75,7 @@ const propertyTypeLabels: Record<string, string> = {
   'penthouse': 'Penthouse',
 };
 
-export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete, isBlurred = false, entities = [], areaUnit = 'sqm' }: AssetCardProps) {
+export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR', delay = 0, onEdit, onDelete, isBlurred = false, entities = [], areaUnit = 'sqm', compact = false }: AssetCardProps) {
   const Icon = typeIcons[asset.type] || TrendingUp;
   const activeRates = rates || fallbackRates;
   const { showIslamic } = useComplianceMode();
@@ -202,6 +203,65 @@ export function AssetCard({ asset, rates, cryptoPrices, displayCurrency = 'EUR',
   };
 
   const ownershipDisplay = getOwnershipDisplay();
+
+  // Compact mode: simplified card
+  if (compact) {
+    return (
+      <div 
+        className={cn(
+          "asset-card animate-fade-in group relative p-3",
+          isSignificantPositive && "ring-1 ring-positive/30",
+          isSignificantNegative && "ring-1 ring-negative/30"
+        )}
+        style={{ animationDelay: `${delay}ms` }}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="w-8 h-8 rounded-md flex items-center justify-center bg-primary/10 flex-shrink-0">
+              <Icon size={16} strokeWidth={1.5} className="text-primary" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <h4 className="font-medium text-foreground text-sm truncate">{asset.name}</h4>
+                <CertaintyBadge certainty={asset.certainty} showLabel={false} />
+              </div>
+              <p className="text-xs text-muted-foreground truncate">
+                {asset.type !== 'crypto' && countryFlag} {typeLabels[asset.type] || asset.type}
+              </p>
+            </div>
+          </div>
+          <div className="text-right flex-shrink-0">
+            <span className="text-sm font-semibold tabular-nums text-foreground">
+              {isBlurred ? '•••••' : formatCurrency(displayCurrencyValue, displayCurrency)}
+            </span>
+          </div>
+        </div>
+        
+        {(onEdit || onDelete) && (
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {onEdit && (
+              <button
+                onClick={() => onEdit(asset)}
+                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                title="Edit"
+              >
+                <Pencil size={12} />
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={() => onDelete(asset)}
+                className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                title="Delete"
+              >
+                <Trash2 size={12} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div 
