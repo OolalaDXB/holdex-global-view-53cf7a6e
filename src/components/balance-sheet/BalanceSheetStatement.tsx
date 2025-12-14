@@ -115,11 +115,11 @@ export const BalanceSheetStatement = forwardRef<BalanceSheetStatementRef, Balanc
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e5e5e5;">
             <div style="display: flex; align-items: center; gap: 12px;">
               <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #C4785A 0%, #9B5E45 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                <span style="color: white; font-weight: 700; font-size: 18px; font-family: 'Playfair Display', serif;">H</span>
+                <span style="color: white; font-weight: 700; font-size: 18px; font-family: 'Playfair Display', serif;">V</span>
               </div>
               <div>
-                <div style="font-size: 18px; font-weight: 600; color: #1A1A1A; font-family: 'Playfair Display', serif; letter-spacing: 0.05em;">HOLDEX</div>
-                <div style="font-size: 10px; color: #666666; letter-spacing: 0.1em; text-transform: uppercase;">Wealth Management</div>
+                <div style="font-size: 18px; font-weight: 600; color: #1A1A1A; font-family: 'Playfair Display', serif; letter-spacing: 0.05em;">Verso</div>
+                <div style="font-size: 10px; color: #666666; letter-spacing: 0.1em; text-transform: uppercase;">Wealth Clarity</div>
               </div>
             </div>
             <div style="text-align: right;">
@@ -165,7 +165,7 @@ export const BalanceSheetStatement = forwardRef<BalanceSheetStatementRef, Balanc
           pointer-events: none;
           white-space: nowrap;
         `;
-        watermark.textContent = 'HOLDEX';
+        watermark.textContent = 'Verso';
         wrapper.appendChild(watermark);
         
         // Add footer with confidentiality notice
@@ -186,7 +186,7 @@ export const BalanceSheetStatement = forwardRef<BalanceSheetStatementRef, Balanc
         
         const opt = {
           margin: [10, 10, 10, 10],
-          filename: `holdex-balance-sheet-${format(asOfDate, 'yyyy-MM-dd')}.pdf`,
+          filename: `verso-balance-sheet-${format(asOfDate, 'yyyy-MM-dd')}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { 
             scale: 2,
@@ -617,7 +617,7 @@ export const BalanceSheetStatement = forwardRef<BalanceSheetStatementRef, Balanc
           This statement is prepared for informational purposes only and does not constitute financial advice.
         </p>
         <p className="text-[9px] text-muted-foreground/40 mt-1 print:text-gray-400">
-          Generated on {format(new Date(), 'MMMM d, yyyy')} • HOLDEX
+          Generated on {format(new Date(), 'MMMM d, yyyy')} • Verso
         </p>
       </div>
     </div>

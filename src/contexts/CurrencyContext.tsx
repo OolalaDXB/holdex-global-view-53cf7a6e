@@ -17,7 +17,7 @@ interface CurrencyContextType {
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
-const DISPLAY_CURRENCY_KEY = 'holdex-display-currency';
+const DISPLAY_CURRENCY_KEY = 'verso-display-currency';
 
 // Currency symbols mapping
 const currencySymbols: Record<string, string> = {

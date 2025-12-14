@@ -152,7 +152,7 @@ const AuthPage = () => {
         } else {
           toast({
             title: "Account created",
-            description: "Welcome to HOLDEX. You are now signed in.",
+            description: "Welcome to Verso. You are now signed in.",
           });
         }
       }
@@ -181,11 +181,11 @@ const AuthPage = () => {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-12">
-          <h1 className="font-serif text-3xl font-medium text-foreground tracking-wide">
-            HOLDEX
+          <h1 className="font-serif text-3xl font-medium tracking-wide" style={{ color: '#F5F5F5' }}>
+            Verso
           </h1>
           <p className="text-muted-foreground text-sm mt-2">
-            Your global wealth, one view.
+            Wealth Clarity
           </p>
         </div>
 

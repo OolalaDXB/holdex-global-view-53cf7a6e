@@ -209,7 +209,7 @@ const SettingsPage = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `holdex-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `verso-export-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 
