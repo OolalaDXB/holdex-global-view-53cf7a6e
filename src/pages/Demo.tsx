@@ -35,9 +35,24 @@ const currencySymbols: Record<string, string> = {
   RUB: '₽',
 };
 
+// Helper to get user's ownership share from ownership_allocation
+const getUserOwnershipShare = (
+  ownershipAllocation: { entity_id: string; percentage: number }[] | null,
+  personalEntityId: string | undefined
+): number => {
+  if (!ownershipAllocation || ownershipAllocation.length === 0) return 1;
+  if (!personalEntityId) return 1;
+  
+  const personalShare = ownershipAllocation.find(a => a.entity_id === personalEntityId);
+  return personalShare ? personalShare.percentage / 100 : 1;
+};
+
 const Demo = () => {
   const { toast } = useToast();
   const { assets, collections, liabilities, netWorthHistory, profile, entities } = useDemo();
+  
+  // Get personal entity ID for ownership calculations
+  const personalEntityId = entities.find(e => e.type === 'personal')?.id;
   
   // Get currencies from demo profile
   const currencies = [profile.base_currency, profile.secondary_currency_1, profile.secondary_currency_2].filter(
@@ -96,17 +111,30 @@ const Demo = () => {
   );
   const filteredCollections = showCollections ? collections : [];
 
-  // Calculate certainty breakdown by level
+  // Calculate certainty breakdown by level - with ownership allocation
   const certaintyLevels = ['certain', 'contractual', 'probable', 'optional'] as const;
   
   const assetsBreakdownEUR = certaintyLevels.reduce((acc, level) => {
     acc[level] = filteredAssets
       .filter(a => ((a as any).certainty || 'certain') === level)
-      .reduce((sum, asset) => sum + convertToEUR(getAssetValue(asset), asset.currency, rates), 0);
+      .reduce((sum, asset) => {
+        const eurValue = convertToEUR(getAssetValue(asset), asset.currency, rates);
+        const ownershipShare = getUserOwnershipShare(
+          (asset as any).ownership_allocation as { entity_id: string; percentage: number }[] | null,
+          personalEntityId
+        );
+        return sum + (eurValue * ownershipShare);
+      }, 0);
     // Add collections to 'certain' level (they don't have certainty field)
     if (level === 'certain') {
-      acc[level] += filteredCollections.reduce((sum, item) => 
-        sum + convertToEUR(item.current_value, item.currency, rates), 0);
+      acc[level] += filteredCollections.reduce((sum, item) => {
+        const eurValue = convertToEUR(item.current_value, item.currency, rates);
+        const ownershipShare = getUserOwnershipShare(
+          (item as any).ownership_allocation as { entity_id: string; percentage: number }[] | null,
+          personalEntityId
+        );
+        return sum + (eurValue * ownershipShare);
+      }, 0);
     }
     return acc;
   }, {} as Record<typeof certaintyLevels[number], number>);
@@ -118,16 +146,24 @@ const Demo = () => {
     return acc;
   }, {} as Record<typeof certaintyLevels[number], number>);
 
-  // Calculate totals using rates (in EUR)
+  // Calculate totals using rates (in EUR) - with ownership allocation
   const totalAssetsEUR = filteredAssets.reduce((sum, asset) => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    return sum + eurValue;
+    const ownershipShare = getUserOwnershipShare(
+      (asset as any).ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    return sum + (eurValue * ownershipShare);
   }, 0);
 
   const totalCollectionsEUR = filteredCollections.reduce((sum, item) => {
     const eurValue = convertToEUR(item.current_value, item.currency, rates);
-    return sum + eurValue;
+    const ownershipShare = getUserOwnershipShare(
+      (item as any).ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    return sum + (eurValue * ownershipShare);
   }, 0);
 
   const totalLiabilitiesEUR = liabilities.reduce((sum, item) => {
@@ -162,22 +198,27 @@ const Demo = () => {
     optional: convertFromEUR(liabilitiesBreakdownEUR.optional, displayCurrency, rates),
   };
 
-  // Calculate breakdowns
+  // Calculate breakdowns - with ownership allocation
   const typeBreakdownEUR: Record<string, number> = { 
     'Real Estate': 0, 
     'Investments': 0, 
     'Business': 0, 
-    'Collections': showCollections ? totalCollectionsEUR : 0, 
+    'Collections': totalCollectionsEUR, 
     'Cash': 0 
   };
 
   filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    if (asset.type === 'real-estate') typeBreakdownEUR['Real Estate'] += eurValue;
-    else if (asset.type === 'investment' || asset.type === 'crypto') typeBreakdownEUR['Investments'] += eurValue;
-    else if (asset.type === 'business') typeBreakdownEUR['Business'] += eurValue;
-    else if (asset.type === 'bank') typeBreakdownEUR['Cash'] += eurValue;
+    const ownershipShare = getUserOwnershipShare(
+      (asset as any).ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    const adjustedValue = eurValue * ownershipShare;
+    if (asset.type === 'real-estate') typeBreakdownEUR['Real Estate'] += adjustedValue;
+    else if (asset.type === 'investment' || asset.type === 'crypto') typeBreakdownEUR['Investments'] += adjustedValue;
+    else if (asset.type === 'business') typeBreakdownEUR['Business'] += adjustedValue;
+    else if (asset.type === 'bank') typeBreakdownEUR['Cash'] += adjustedValue;
   });
 
   const totalGrossEUR = totalAssetsEUR + totalCollectionsEUR;
@@ -195,16 +236,24 @@ const Demo = () => {
     item.percentage = totalGrossEUR > 0 ? (eurValue / totalGrossEUR) * 100 : 0;
   });
 
-  // By country
+  // By country - with ownership allocation
   const countryMapEUR: Record<string, number> = {};
   filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    countryMapEUR[asset.country] = (countryMapEUR[asset.country] || 0) + eurValue;
+    const ownershipShare = getUserOwnershipShare(
+      (asset as any).ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    countryMapEUR[asset.country] = (countryMapEUR[asset.country] || 0) + (eurValue * ownershipShare);
   });
   filteredCollections.forEach(item => {
     const eurValue = convertToEUR(item.current_value, item.currency, rates);
-    countryMapEUR[item.country] = (countryMapEUR[item.country] || 0) + eurValue;
+    const ownershipShare = getUserOwnershipShare(
+      (item as any).ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    countryMapEUR[item.country] = (countryMapEUR[item.country] || 0) + (eurValue * ownershipShare);
   });
 
   const assetsByCountry = Object.entries(countryMapEUR)
@@ -216,12 +265,25 @@ const Demo = () => {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  // By currency
+  // By currency - with ownership allocation - include collections
   const currencyMapEUR: Record<string, number> = {};
   filteredAssets.forEach(asset => {
     const value = getAssetValue(asset);
     const eurValue = convertToEUR(value, asset.currency, rates);
-    currencyMapEUR[asset.currency] = (currencyMapEUR[asset.currency] || 0) + eurValue;
+    const ownershipShare = getUserOwnershipShare(
+      (asset as any).ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    currencyMapEUR[asset.currency] = (currencyMapEUR[asset.currency] || 0) + (eurValue * ownershipShare);
+  });
+  // Add collections to currency breakdown
+  filteredCollections.forEach(item => {
+    const eurValue = convertToEUR(item.current_value, item.currency, rates);
+    const ownershipShare = getUserOwnershipShare(
+      (item as any).ownership_allocation as { entity_id: string; percentage: number }[] | null,
+      personalEntityId
+    );
+    currencyMapEUR[item.currency] = (currencyMapEUR[item.currency] || 0) + (eurValue * ownershipShare);
   });
 
   const currencyBreakdown = Object.entries(currencyMapEUR)
