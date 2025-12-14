@@ -96,6 +96,7 @@ const AddAssetPage = () => {
     referenceDate: null as Date | null,
     entityId: undefined as string | null | undefined, // Will be set to default on mount
     certainty: 'certain',
+    ownershipAllocation: null as { entity_id: string; percentage: number }[] | null,
     // Off-plan fields
     propertyStatus: 'owned',
     projectName: '',
@@ -216,6 +217,7 @@ const AddAssetPage = () => {
           image_url: imageUrl,
           entity_id: formData.entityId === undefined ? defaultEntityId : formData.entityId,
           certainty: formData.certainty,
+          ownership_allocation: formData.ownershipAllocation,
           // Off-plan fields
           property_status: selectedType === 'real-estate' ? formData.propertyStatus : null,
           project_name: formData.projectName || null,
@@ -624,6 +626,8 @@ const AddAssetPage = () => {
                   <EntitySelect
                     value={formData.entityId === undefined ? defaultEntityId : formData.entityId}
                     onChange={(value) => setFormData({ ...formData, entityId: value })}
+                    ownershipAllocation={formData.ownershipAllocation}
+                    onOwnershipAllocationChange={(allocation) => setFormData({ ...formData, ownershipAllocation: allocation })}
                     placeholder="Select owner"
                   />
                 </div>

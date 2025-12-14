@@ -57,6 +57,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
     reference_date: null as Date | null,
     entity_id: null as string | null,
     certainty: 'certain',
+    ownership_allocation: null as { entity_id: string; percentage: number }[] | null,
     is_shariah_compliant: false,
     shariah_certification: '',
     // UK tenure
@@ -93,6 +94,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         reference_date: asset.reference_date ? new Date(asset.reference_date) : null,
         entity_id: asset.entity_id || null,
         certainty: asset.certainty || 'certain',
+        ownership_allocation: (asset.ownership_allocation as { entity_id: string; percentage: number }[] | null) || null,
         is_shariah_compliant: asset.is_shariah_compliant || false,
         shariah_certification: asset.shariah_certification || '',
         tenure_type: (asset as any).tenure_type || 'freehold',
@@ -131,6 +133,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         reference_date: formData.reference_date ? format(formData.reference_date, 'yyyy-MM-dd') : null,
         entity_id: formData.entity_id,
         certainty: formData.certainty,
+        ownership_allocation: formData.ownership_allocation,
         is_shariah_compliant: formData.is_shariah_compliant,
         shariah_certification: formData.shariah_certification || null,
         tenure_type: asset.type === 'real-estate' ? formData.tenure_type : null,
@@ -303,6 +306,8 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
                     <EntitySelect
                       value={formData.entity_id}
                       onChange={(value) => setFormData({ ...formData, entity_id: value })}
+                      ownershipAllocation={formData.ownership_allocation}
+                      onOwnershipAllocationChange={(allocation) => setFormData({ ...formData, ownership_allocation: allocation })}
                       placeholder="Select owner"
                     />
                   </div>

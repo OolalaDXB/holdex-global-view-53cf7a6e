@@ -47,6 +47,9 @@ const BalanceSheetPage = () => {
     certaintyFilter === 'confirmed' ? 'confirmed' :
     certaintyFilter === 'projected' ? 'exclude_optional' : 'all';
 
+  // Find personal entity for ownership calculations
+  const personalEntity = entities.find(e => e.type === 'personal');
+
   const balanceSheet = useBalanceSheet({
     assets,
     collections,
@@ -56,6 +59,7 @@ const BalanceSheetPage = () => {
     baseCurrency: displayCurrency,
     entityFilter: entityFilter === 'all' ? null : entityFilter,
     certaintyFilter: hookCertaintyFilter,
+    personalEntityId: personalEntity?.id || null,
   });
 
   // Find the closest historical snapshot to the compare date
