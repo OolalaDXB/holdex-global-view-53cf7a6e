@@ -181,11 +181,11 @@ const AuthPage = () => {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-12">
-          <h1 className="font-serif text-3xl font-medium tracking-wide" style={{ color: '#F5F5F5' }}>
+          <h1 className="font-serif text-5xl font-medium tracking-wide" style={{ color: '#F5F5F5' }}>
             Verso
           </h1>
           <p className="text-muted-foreground text-sm mt-2">
-            Wealth Clarity
+            See what you own
           </p>
         </div>
 
