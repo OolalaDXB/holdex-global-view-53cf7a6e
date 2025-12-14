@@ -5,6 +5,7 @@ import { EditCollectionDialog } from '@/components/collections/EditCollectionDia
 import { DeleteCollectionDialog } from '@/components/collections/DeleteCollectionDialog';
 import { useCollections, Collection } from '@/hooks/useCollections';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Search, LayoutGrid, List, Rows3 } from 'lucide-react';
@@ -44,6 +45,7 @@ const CollectionsPage = () => {
   
   const { data: collections = [], isLoading } = useCollections();
   const { data: exchangeRates } = useExchangeRates();
+  const { displayCurrency } = useCurrency();
   
   const rates = exchangeRates?.rates || fallbackRates;
 
@@ -151,7 +153,8 @@ const CollectionsPage = () => {
                 <CollectionCard 
                   key={collection.id} 
                   collection={collection} 
-                  rates={rates} 
+                  rates={rates}
+                  displayCurrency={displayCurrency}
                   delay={index * 50}
                   onEdit={setEditingCollection}
                   onDelete={setDeletingCollection}

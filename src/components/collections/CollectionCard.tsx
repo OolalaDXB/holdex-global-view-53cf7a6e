@@ -1,5 +1,5 @@
 import { Watch, Car, Palette, Gem, Wine, Disc3, Sparkles, Pencil, Trash2 } from 'lucide-react';
-import { formatCurrency, convertToEUR, fallbackRates } from '@/lib/currency';
+import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Collection } from '@/hooks/useCollections';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { getCountryFlag } from '@/hooks/useCountries';
 interface CollectionCardProps {
   collection: Collection;
   rates?: Record<string, number>;
+  displayCurrency?: string;
   delay?: number;
   onEdit?: (collection: Collection) => void;
   onDelete?: (collection: Collection) => void;
@@ -35,10 +36,11 @@ const categoryLabels: Record<string, string> = {
   'other': 'Other',
 };
 
-export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete, compact = false }: CollectionCardProps) {
+export function CollectionCard({ collection, rates, displayCurrency = 'EUR', delay = 0, onEdit, onDelete, compact = false }: CollectionCardProps) {
   const Icon = categoryIcons[collection.type] || Sparkles;
   const activeRates = rates || fallbackRates;
   const eurValue = convertToEUR(collection.current_value, collection.currency, activeRates);
+  const displayCurrencyValue = convertFromEUR(eurValue, displayCurrency, activeRates);
   const appreciation = collection.purchase_value 
     ? ((collection.current_value - collection.purchase_value) / collection.purchase_value) * 100 
     : 0;
@@ -78,7 +80,7 @@ export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete,
           </div>
           <div className="text-right flex-shrink-0">
             <span className="text-sm font-semibold tabular-nums text-foreground">
-              {formatCurrency(collection.current_value, collection.currency)}
+              {formatCurrency(displayCurrencyValue, displayCurrency)}
             </span>
             {appreciation !== 0 && (
               <p className={cn(
@@ -191,11 +193,11 @@ export function CollectionCard({ collection, rates, delay = 0, onEdit, onDelete,
 
         <div className="flex items-baseline justify-between">
           <span className="text-lg font-semibold text-foreground tabular-nums">
-            {formatCurrency(collection.current_value, collection.currency)}
+            {formatCurrency(displayCurrencyValue, displayCurrency)}
           </span>
-          {collection.currency !== 'EUR' && (
+          {collection.currency !== displayCurrency && (
             <span className="text-sm text-muted-foreground tabular-nums">
-              ≈ {formatCurrency(eurValue, 'EUR')}
+              {formatCurrency(collection.current_value, collection.currency)}
             </span>
           )}
         </div>

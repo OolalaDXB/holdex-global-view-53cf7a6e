@@ -5,6 +5,7 @@ import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
 import { CertaintyTrendChart } from '@/components/dashboard/CertaintyTrendChart';
 import { BreakdownBar } from '@/components/dashboard/BreakdownBar';
 import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
+import { DemoEntityBreakdown } from '@/components/dashboard/DemoEntityBreakdown';
 import { CollapsibleSection, CollapsibleProvider, ExpandCollapseAllButton } from '@/components/dashboard/CollapsibleSection';
 import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { DemoDebtToIncomeWidget } from '@/components/dashboard/DemoDebtToIncomeWidget';
@@ -441,6 +442,10 @@ const Demo = () => {
                 <CurrencyBreakdown items={currencyBreakdown} delay={0} />
               </CollapsibleSection>
             )}
+
+            <CollapsibleSection id="demo_breakdown_entity" title="By Entity">
+              <DemoEntityBreakdown displayCurrency={displayCurrency} delay={0} />
+            </CollapsibleSection>
           </section>
         </CollapsibleProvider>
 
