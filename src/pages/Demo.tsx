@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { NetWorthCard } from '@/components/dashboard/NetWorthCard';
 import { NetWorthChart } from '@/components/dashboard/NetWorthChart';
@@ -10,6 +10,7 @@ import { CollapsibleSection, CollapsibleProvider, ExpandCollapseAllButton } from
 import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { DemoDebtToIncomeWidget } from '@/components/dashboard/DemoDebtToIncomeWidget';
 import { DemoNetWorthProjectionWidget } from '@/components/dashboard/DemoNetWorthProjectionWidget';
+import { PropertyEquityWidget } from '@/components/dashboard/PropertyEquityWidget';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
 import { ViewToggle, ViewConfig } from '@/components/dashboard/ViewToggle';
 import { AssetCard } from '@/components/assets/AssetCard';
@@ -313,6 +314,41 @@ const Demo = () => {
     .sort((a, b) => new Date(b.updated_at || '').getTime() - new Date(a.updated_at || '').getTime())
     .slice(0, 5);
 
+  // Property equity calculation - find assets with linked liabilities
+  const propertyEquityData = useMemo(() => {
+    const linkedLiabilities = liabilities.filter(l => l.linked_asset_id);
+    
+    return linkedLiabilities.map(liability => {
+      const asset = assets.find(a => a.id === liability.linked_asset_id);
+      if (!asset) return null;
+      
+      const assetValueEUR = convertToEUR(asset.current_value, asset.currency, rates);
+      const liabilityBalanceEUR = convertToEUR(liability.current_balance, liability.currency, rates);
+      const equityEUR = assetValueEUR - liabilityBalanceEUR;
+      const equityPercentage = assetValueEUR > 0 ? (equityEUR / assetValueEUR) * 100 : 0;
+      
+      return {
+        assetId: asset.id,
+        assetName: asset.name,
+        assetValue: convertFromEUR(assetValueEUR, displayCurrency, rates),
+        liabilityName: liability.name,
+        liabilityBalance: convertFromEUR(liabilityBalanceEUR, displayCurrency, rates),
+        equity: convertFromEUR(equityEUR, displayCurrency, rates),
+        equityPercentage,
+        currency: displayCurrency,
+      };
+    }).filter(Boolean) as {
+      assetId: string;
+      assetName: string;
+      assetValue: number;
+      liabilityName: string;
+      liabilityBalance: number;
+      equity: number;
+      equityPercentage: number;
+      currency: string;
+    }[];
+  }, [assets, liabilities, rates, displayCurrency]);
+
   // Chart data
   const chartData = netWorthHistory.map(item => ({
     month: new Date(item.snapshot_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -360,6 +396,7 @@ const Demo = () => {
             <NetWorthCard 
               totalValue={netWorth} 
               grossAssets={convertFromEUR(totalGrossEUR, displayCurrency, rates)}
+              totalLiabilities={convertFromEUR(totalLiabilitiesEUR, displayCurrency, rates)}
               change={change} 
               currency={displayCurrency} 
             />
@@ -457,6 +494,17 @@ const Demo = () => {
         </CollapsibleProvider>
 
         {/* Optional widgets shown in demo to showcase features */}
+        
+        {/* Property Equity Widget */}
+        {propertyEquityData.length > 0 && (
+          <section className="mb-8 animate-fade-in" style={{ animationDelay: '145ms' }}>
+            <PropertyEquityWidget 
+              properties={propertyEquityData}
+              displayCurrency={displayCurrency}
+            />
+          </section>
+        )}
+
         <CertaintyBreakdownWidget
           assetsBreakdown={assetsBreakdown}
           liabilitiesBreakdown={liabilitiesBreakdown}
