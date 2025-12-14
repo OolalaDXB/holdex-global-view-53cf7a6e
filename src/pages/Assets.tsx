@@ -9,6 +9,7 @@ import { useEntities } from '@/hooks/useEntities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCryptoPrices, fallbackCryptoPrices } from '@/hooks/useCryptoPrices';
 import { useProfile } from '@/hooks/useProfile';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { RefreshCw, Search, X, LayoutGrid, List, ArrowUpDown, Plus, Rows3 } from 'lucide-react';
@@ -69,6 +70,7 @@ const AssetsPage = () => {
   const { data: exchangeRates } = useExchangeRates();
   const { data: cryptoPrices, isLoading: cryptoLoading, dataUpdatedAt } = useCryptoPrices();
   const { data: profile } = useProfile();
+  const { displayCurrency } = useCurrency();
   
   const rates = exchangeRates?.rates || fallbackRates;
   const prices = cryptoPrices || fallbackCryptoPrices;
@@ -332,6 +334,7 @@ const AssetsPage = () => {
                   asset={asset} 
                   rates={rates}
                   cryptoPrices={prices}
+                  displayCurrency={displayCurrency}
                   delay={index * 50}
                   onEdit={setEditingAsset}
                   onDelete={setDeletingAsset}
