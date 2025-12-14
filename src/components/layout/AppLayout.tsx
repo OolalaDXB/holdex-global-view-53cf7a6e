@@ -16,8 +16,8 @@ function AppLayoutContent({ children, isDemo = false }: AppLayoutProps) {
       <Sidebar isDemo={isDemo} />
       <main 
         className={cn(
-          "transition-all duration-300 ease-in-out",
-          collapsed ? "pl-16" : "pl-64"
+          "transition-all duration-300 ease-in-out min-h-screen",
+          collapsed ? "ml-16" : "ml-[200px]"
         )}
       >
         <div className="min-h-screen">
