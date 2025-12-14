@@ -25,7 +25,7 @@ export function DeleteCollectionDialog({ collection, open, onOpenChange }: Delet
     if (!collection) return;
 
     try {
-      await deleteCollection.mutateAsync(collection.id);
+      await deleteCollection.mutateAsync({ id: collection.id, name: collection.name });
       toast({
         title: "Collection deleted",
         description: `${collection.name} has been removed from your collection.`,

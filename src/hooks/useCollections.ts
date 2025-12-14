@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { OwnershipAllocation, parseOwnershipAllocation } from '@/lib/types';
+import { useAuditLog } from './useAuditLog';
 
 export type Collection = Tables<'collections'> & {
   parsed_ownership_allocation?: OwnershipAllocation[] | null;
@@ -33,6 +34,7 @@ export const useCollections = () => {
 export const useCreateCollection = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async (collection: Omit<CollectionInsert, 'user_id'>) => {
@@ -47,14 +49,21 @@ export const useCreateCollection = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      logEvent({
+        action: 'create',
+        entityType: 'collection',
+        entityId: data.id,
+        metadata: { name: data.name, type: data.type },
+      });
     },
   });
 };
 
 export const useUpdateCollection = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Collection> & { id: string }) => {
@@ -68,26 +77,40 @@ export const useUpdateCollection = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      logEvent({
+        action: 'update',
+        entityType: 'collection',
+        entityId: data.id,
+        metadata: { name: data.name, type: data.type },
+      });
     },
   });
 };
 
 export const useDeleteCollection = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
       const { error } = await supabase
         .from('collections')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+      return { id, name };
     },
-    onSuccess: () => {
+    onSuccess: ({ id, name }) => {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
+      logEvent({
+        action: 'delete',
+        entityType: 'collection',
+        entityId: id,
+        metadata: { name },
+      });
     },
   });
 };
