@@ -416,6 +416,7 @@ export function DemoEditAssetDialog({ asset, open, onOpenChange }: DemoEditAsset
         name={formData.name}
         brand={formData.institution}
         country={formData.country}
+        notes={asset.notes}
         onImageGenerated={(url) => setFormData({ ...formData, image_url: url })}
       />
     </Dialog>

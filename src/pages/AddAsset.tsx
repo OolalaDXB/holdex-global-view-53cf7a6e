@@ -1062,6 +1062,7 @@ const AddAssetPage = () => {
         assetType={selectedType || 'other'}
         name={formData.name}
         country={formData.country}
+        notes={formData.notes}
         onImageGenerated={setImageUrl}
       />
     </AppLayout>

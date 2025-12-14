@@ -625,6 +625,7 @@ export function EditAssetDialog({ asset, open, onOpenChange }: EditAssetDialogPr
         assetType={asset.type}
         name={formData.name}
         country={formData.country}
+        notes={asset.notes || undefined}
         onImageGenerated={(url) => setFormData({ ...formData, image_url: url })}
       />
     </>

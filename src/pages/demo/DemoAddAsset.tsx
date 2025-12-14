@@ -685,6 +685,7 @@ const DemoAddAssetPage = () => {
               name={formData.name}
               brand={formData.institution}
               country={formData.country}
+              notes={formData.notes}
               onImageGenerated={(url) => setFormData({ ...formData, image_url: url })}
             />
           </div>
