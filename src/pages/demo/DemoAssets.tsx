@@ -15,6 +15,7 @@ const demoCryptoPrices = {
 };
 import { cn } from '@/lib/utils';
 import { Search, Info, Ruler, LayoutGrid, List, ArrowUpDown, Plus } from 'lucide-react';
+import { DemoDataBadge } from '@/components/ui/demo-data-badge';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -174,8 +175,9 @@ const DemoAssetsPage = () => {
               </Button>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
-            <span>Using demo exchange rates</span>
+          <div className="flex flex-wrap items-center gap-4 mt-3">
+            <DemoDataBadge label="FX: Demo rates" />
+            <DemoDataBadge label="Crypto: Demo prices" />
           </div>
         </header>
 

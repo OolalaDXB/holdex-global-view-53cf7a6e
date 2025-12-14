@@ -20,6 +20,7 @@ import { CertaintyBadge } from '@/components/ui/certainty-badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { ChevronDown, ChevronUp, Pencil, Trash2, Plus, Search, TrendingDown } from 'lucide-react';
+import { DemoDataBadge } from '@/components/ui/demo-data-badge';
 
 type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 type TypeFilter = 'all' | string;
@@ -376,8 +377,8 @@ const DemoLiabilitiesPage = () => {
               </Button>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
-            <span>Using demo exchange rates</span>
+          <div className="flex flex-wrap items-center gap-4 mt-3">
+            <DemoDataBadge label="FX: Demo rates" />
           </div>
         </header>
 

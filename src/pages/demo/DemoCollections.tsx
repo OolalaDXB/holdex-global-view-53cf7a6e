@@ -6,6 +6,7 @@ import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
 import { Search, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { DemoDataBadge } from '@/components/ui/demo-data-badge';
 import { Badge } from '@/components/ui/badge';
 import { Collection } from '@/hooks/useCollections';
 import { DemoEditCollectionDialog } from '@/components/demo/DemoEditCollectionDialog';
@@ -79,8 +80,8 @@ const DemoCollectionsPage = () => {
         <header className="mb-8">
           <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Collections</h1>
           <p className="text-muted-foreground">Your curated collection of fine objects and alternative investments.</p>
-          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
-            <span>Using demo exchange rates</span>
+          <div className="flex flex-wrap items-center gap-4 mt-3">
+            <DemoDataBadge label="FX: Demo rates" />
           </div>
         </header>
 

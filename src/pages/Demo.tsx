@@ -31,7 +31,8 @@ const demoCryptoPrices: Record<string, { price: number; change24h: number }> = {
   DOGE: { price: 0.35, change24h: 4.2 },
   MATIC: { price: 0.5, change24h: 2.1 },
 };
-import { RefreshCw, Camera, Info } from 'lucide-react';
+import { Camera, Info } from 'lucide-react';
+import { DemoDataBadge } from '@/components/ui/demo-data-badge';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -402,15 +403,9 @@ const Demo = () => {
               </Tooltip>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <RefreshCw size={12} />
-              <span>FX: Demo rates</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <RefreshCw size={12} />
-              <span>Crypto: Demo prices</span>
-            </div>
+          <div className="flex flex-wrap items-center gap-4 mt-3">
+            <DemoDataBadge label="FX: Demo rates" />
+            <DemoDataBadge label="Crypto: Demo prices" />
           </div>
         </header>
 
