@@ -12,6 +12,7 @@ import { formatCurrency } from '@/lib/currency';
 import { differenceInDays, format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { CertaintyBadge } from '@/components/ui/certainty-badge';
+import { DemoDataBadge } from '@/components/ui/demo-data-badge';
 import { cn } from '@/lib/utils';
 
 type FilterType = 'all' | 'loans' | 'deposits' | 'expenses' | 'overdue';
@@ -77,8 +78,8 @@ export default function DemoReceivablesPage() {
               Add Receivable
             </Button>
           </div>
-          <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-muted-foreground">
-            <span>Using demo exchange rates</span>
+          <div className="flex flex-wrap items-center gap-4 mt-3">
+            <DemoDataBadge label="FX: Demo rates" />
           </div>
         </header>
 
