@@ -16,6 +16,7 @@ import { BlurToggle } from '@/components/dashboard/BlurToggle';
 import { PendingReceivablesWidget } from '@/components/dashboard/PendingReceivablesWidget';
 import { UpcomingLoanPaymentsWidget } from '@/components/dashboard/UpcomingLoanPaymentsWidget';
 import { EntityBreakdown } from '@/components/dashboard/EntityBreakdown';
+import { CertaintySummary } from '@/components/dashboard/CertaintySummary';
 import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakdownWidget';
 import { DebtToIncomeWidget } from '@/components/dashboard/DebtToIncomeWidget';
 import { NetWorthProjectionWidget } from '@/components/dashboard/NetWorthProjectionWidget';
@@ -339,6 +340,10 @@ const Dashboard = () => {
               isBlurred={isBlurred}
             />
             <div className="flex items-center gap-2">
+              <CertaintySummary 
+                assetsBreakdown={assetsBreakdown}
+                totalAssets={netWorth}
+              />
               <BlurToggle />
               <ViewToggle config={viewConfig} onChange={setViewConfig} />
               <CurrencySwitcher />
