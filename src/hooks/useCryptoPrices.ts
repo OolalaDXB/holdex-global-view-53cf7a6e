@@ -49,9 +49,9 @@ export const useCryptoPrices = (): UseCryptoPricesResult => {
         message: data?.message || null,
       };
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
-    refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
+    staleTime: 1000 * 60 * 50, // Cache for 50 minutes
+    gcTime: 1000 * 60 * 60, // Keep in cache for 1 hour
+    refetchInterval: 1000 * 60 * 50, // Auto-refresh every 50 minutes
     refetchOnWindowFocus: false,
   });
 
