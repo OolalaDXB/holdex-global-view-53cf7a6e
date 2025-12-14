@@ -1,4 +1,5 @@
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { RechartsTooltipProps } from '@/lib/types';
 
 interface ChartDataPoint {
   month: string;
@@ -19,7 +20,7 @@ export function NetWorthChart({ data, isBlurred = false }: NetWorthChartProps) {
     return `€${(value / 1000).toFixed(0)}K`;
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: RechartsTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border rounded-md px-3 py-2 shadow-lg">

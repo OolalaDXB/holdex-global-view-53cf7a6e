@@ -2,6 +2,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } f
 import { useBlur } from '@/contexts/BlurContext';
 import { formatCurrency } from '@/lib/currency';
 import { Json } from '@/integrations/supabase/types';
+import { RechartsTooltipProps } from '@/lib/types';
 
 interface CertaintyBreakdown {
   certain: number;
@@ -83,12 +84,12 @@ export function CertaintyTrendChart({ data, displayCurrency, convertFromEUR }: C
     return `${(value / 1000).toFixed(0)}K`;
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: RechartsTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-card border border-border rounded-md px-3 py-2 shadow-lg">
           <p className="text-xs text-muted-foreground mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <div key={index} className="flex items-center gap-2">
               <div 
                 className="w-2 h-2 rounded-full" 

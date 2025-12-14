@@ -8,6 +8,7 @@ import { formatCurrency, convertToEUR, convertFromEUR, fallbackRates } from '@/l
 import { useDemo } from '@/contexts/DemoContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { TrendingUp, Info } from 'lucide-react';
+import { RechartsTooltipProps } from '@/lib/types';
 
 interface DemoNetWorthProjectionWidgetProps {
   isBlurred?: boolean;
@@ -29,7 +30,7 @@ export function DemoNetWorthProjectionWidget({
   const currentNetWorthEUR = totalAssetsEUR + totalCollectionsEUR - totalLiabilitiesEUR;
   const currentNetWorth = convertFromEUR(currentNetWorthEUR, displayCurrency, rates);
 
-  const monthlyIncome = (profile as any)?.monthly_income || 18500;
+  const monthlyIncome = profile?.monthly_income ?? 18500;
 
   const [savingsRate, setSavingsRate] = useState(20);
   const [returnRate, setReturnRate] = useState(7);
@@ -60,9 +61,9 @@ export function DemoNetWorthProjectionWidget({
   const finalValue = projectionData[projectionData.length - 1]?.value || currentNetWorth;
   const growthPercent = currentNetWorth > 0 ? ((finalValue - currentNetWorth) / currentNetWorth) * 100 : 0;
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: RechartsTooltipProps) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const data = payload[0].payload as { year: number; value: number };
       return (
         <div className="bg-card border border-border rounded-md px-3 py-2 shadow-lg">
           <p className="text-xs text-muted-foreground mb-1">

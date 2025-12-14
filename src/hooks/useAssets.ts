@@ -2,8 +2,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { OwnershipAllocation, parseOwnershipAllocation } from '@/lib/types';
 
-export type Asset = Tables<'assets'>;
+export type Asset = Tables<'assets'> & {
+  parsed_ownership_allocation?: OwnershipAllocation[] | null;
+};
 export type AssetInsert = TablesInsert<'assets'>;
 
 export const useAssets = () => {
@@ -18,7 +21,10 @@ export const useAssets = () => {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      return data as Asset[];
+      return (data ?? []).map(asset => ({
+        ...asset,
+        parsed_ownership_allocation: parseOwnershipAllocation(asset.ownership_allocation),
+      })) as Asset[];
     },
     enabled: !!user,
   });
