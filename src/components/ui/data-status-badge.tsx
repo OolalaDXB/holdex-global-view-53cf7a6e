@@ -75,16 +75,24 @@ export function DataStatusBadge({
     );
   }
 
-  // Live status
-  if (!lastUpdated) return null;
+  // Live status - use cacheTimestamp (when data was fetched) for display
+  const displayTime = cacheTimestamp || lastUpdated;
+  if (!displayTime) return null;
 
   return (
     <div className={cn("flex items-center gap-1 text-muted-foreground text-xs", className)}>
-      <RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />
+      {onRefresh && (
+        <button 
+          onClick={onRefresh} 
+          disabled={isFetching}
+          className="hover:text-foreground transition-colors"
+          title={`Refresh ${label.toLowerCase()}`}
+        >
+          <RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />
+        </button>
+      )}
       <span>
-        {label}: {typeof lastUpdated === 'string' && lastUpdated.includes('T') 
-          ? formatDate(lastUpdated) 
-          : formatTime(lastUpdated)}
+        {label}: {formatTime(displayTime)}
       </span>
     </div>
   );
