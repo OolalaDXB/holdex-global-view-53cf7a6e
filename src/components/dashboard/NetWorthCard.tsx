@@ -97,17 +97,24 @@ export function NetWorthCard({
         <h2 className="wealth-value text-foreground">
           {isBlurred ? '•••••' : `${displayValue < 0 ? '-' : ''}${symbol}${formatValue(displayValue)}`}
         </h2>
-        <div className={cn(
-          "flex items-center gap-1 text-sm font-medium",
-          isPositive ? "text-positive" : "text-negative"
-        )}>
-          {isPositive ? (
-            <TrendingUp size={16} strokeWidth={1.5} />
-          ) : (
-            <TrendingDown size={16} strokeWidth={1.5} />
-          )}
-          <span>{isPositive ? '+' : ''}{displayChange.toFixed(1)}% MTD</span>
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={cn(
+              "flex items-center gap-1 text-sm font-medium cursor-default",
+              isPositive ? "text-positive" : "text-negative"
+            )}>
+              {isPositive ? (
+                <TrendingUp size={16} strokeWidth={1.5} />
+              ) : (
+                <TrendingDown size={16} strokeWidth={1.5} />
+              )}
+              <span>{isPositive ? '+' : ''}{displayChange.toFixed(1)}% MTD</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Month-To-Date evolution</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
       
       {/* Compact summary row */}
