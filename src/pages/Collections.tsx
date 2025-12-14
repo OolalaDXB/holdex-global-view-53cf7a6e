@@ -8,14 +8,16 @@ import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { fallbackRates } from '@/lib/currency';
 import { cn } from '@/lib/utils';
-import { Search, LayoutGrid, List, Rows3 } from 'lucide-react';
+import { Search, LayoutGrid, List, Rows3, ArrowUpDown, SlidersHorizontal, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DataStatusBadge } from '@/components/ui/data-status-badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type ViewMode = 'grid' | 'list' | 'compact';
-
+type SortOption = 'name' | 'value-desc' | 'value-asc' | 'date-desc' | 'date-asc';
 type FilterType = 'all' | 'watch' | 'vehicle' | 'art' | 'jewelry' | 'wine' | 'vinyl' | 'other';
 type CertaintyFilter = 'all' | 'certain' | 'exclude-optional';
 
@@ -36,11 +38,21 @@ const certaintyFilterOptions: { value: CertaintyFilter; label: string }[] = [
   { value: 'exclude-optional', label: 'Exclude Optional' },
 ];
 
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'value-desc', label: 'Value (High to Low)' },
+  { value: 'value-asc', label: 'Value (Low to High)' },
+  { value: 'name', label: 'Name (A-Z)' },
+  { value: 'date-desc', label: 'Newest First' },
+  { value: 'date-asc', label: 'Oldest First' },
+];
+
 const CollectionsPage = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [certaintyFilter, setCertaintyFilter] = useState<CertaintyFilter>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [sortBy, setSortBy] = useState<SortOption>('value-desc');
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [deletingCollection, setDeletingCollection] = useState<Collection | null>(null);
   
@@ -56,6 +68,12 @@ const CollectionsPage = () => {
   const { displayCurrency } = useCurrency();
   
   const rates = exchangeRates?.rates || fallbackRates;
+
+  // Count active filters
+  const activeFilterCount = [
+    certaintyFilter !== 'all',
+    viewMode !== 'grid',
+  ].filter(Boolean).length;
 
   const filteredCollections = collections
     .filter(c => filter === 'all' || c.type === filter)
@@ -76,6 +94,22 @@ const CollectionsPage = () => {
       if (certaintyFilter === 'certain') return cert === 'certain';
       if (certaintyFilter === 'exclude-optional') return cert !== 'optional';
       return true;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'value-desc':
+          return b.current_value - a.current_value;
+        case 'value-asc':
+          return a.current_value - b.current_value;
+        case 'date-desc':
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        case 'date-asc':
+          return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+        default:
+          return 0;
+      }
     });
 
   return (
@@ -100,9 +134,9 @@ const CollectionsPage = () => {
           </div>
         </header>
 
-        {/* Search and Filters */}
+        {/* Simplified Header: Search + Sort + Filters button */}
         <div className="space-y-4 mb-8">
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-wrap gap-3 items-center">
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -112,33 +146,80 @@ const CollectionsPage = () => {
                 className="pl-9 bg-secondary border-border"
               />
             </div>
-            
-            {/* Certainty filter */}
-            <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
-              <SelectTrigger className="w-40 h-9 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {certaintyFilterOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
 
-            {/* View toggle */}
-            <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
-              <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3">
-                <LayoutGrid size={16} />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="list" aria-label="List view" className="px-3">
-                <List size={16} />
-              </ToggleGroupItem>
-              <ToggleGroupItem value="compact" aria-label="Compact view" className="px-3">
-                <Rows3 size={16} />
-              </ToggleGroupItem>
-            </ToggleGroup>
+            {/* Sort dropdown */}
+            <div className="flex items-center gap-2">
+              <ArrowUpDown size={14} className="text-muted-foreground" />
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                <SelectTrigger className="w-44 h-9 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {sortOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {/* Filters button */}
+            <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9 gap-2">
+                  <SlidersHorizontal size={14} />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary text-primary-foreground rounded-full">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                  <ChevronDown size={14} className={cn("transition-transform", filtersOpen && "rotate-180")} />
+                </Button>
+              </CollapsibleTrigger>
+            </Collapsible>
           </div>
+
+          {/* Collapsible Filters Panel */}
+          <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+            <CollapsibleContent>
+              <div className="p-4 bg-secondary/50 rounded-lg border border-border space-y-4">
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* Certainty filter */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Certainty:</span>
+                    <Select value={certaintyFilter} onValueChange={(v) => setCertaintyFilter(v as CertaintyFilter)}>
+                      <SelectTrigger className="w-40 h-8 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {certaintyFilterOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* View toggle */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">View:</span>
+                    <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
+                      <ToggleGroupItem value="grid" aria-label="Grid view" className="px-3 h-8">
+                        <LayoutGrid size={14} />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="list" aria-label="List view" className="px-3 h-8">
+                        <List size={14} />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="compact" aria-label="Compact view" className="px-3 h-8">
+                        <Rows3 size={14} />
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
           
+          {/* Category filter pills */}
           <div className="flex flex-wrap gap-2">
             {filterOptions.map((option) => (
               <button
