@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,18 +22,20 @@ export const DOCUMENT_TYPES = [
 
 export type DocumentType = typeof DOCUMENT_TYPES[number]['value'];
 
-export const useDocuments = (filters?: {
+interface DocumentFilters {
   assetId?: string;
   collectionId?: string;
   liabilityId?: string;
   entityId?: string;
   receivableId?: string;
-}) => {
+}
+
+export const useDocuments = (filters?: DocumentFilters): UseQueryResult<Document[], Error> => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['documents', user?.id, filters],
-    queryFn: async () => {
+    queryFn: async (): Promise<Document[]> => {
       let query = supabase
         .from('documents')
         .select('*')
@@ -58,37 +60,37 @@ export const useDocuments = (filters?: {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data as Document[];
+      return data ?? [];
     },
     enabled: !!user,
   });
 };
 
-export const useAllDocuments = () => {
+export const useAllDocuments = (): UseQueryResult<Document[], Error> => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['documents', 'all', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<Document[]> => {
       const { data, error } = await supabase
         .from('documents')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Document[];
+      return data ?? [];
     },
     enabled: !!user,
   });
 };
 
-export const useCreateDocument = () => {
+export const useCreateDocument = (): UseMutationResult<Document, Error, Omit<DocumentInsert, 'user_id'>> => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (document: Omit<DocumentInsert, 'user_id'>) => {
+    mutationFn: async (document: Omit<DocumentInsert, 'user_id'>): Promise<Document> => {
       if (!user) throw new Error('Not authenticated');
 
       const { data, error } = await supabase
@@ -112,11 +114,13 @@ export const useCreateDocument = () => {
   });
 };
 
-export const useUpdateDocument = () => {
+type UpdateDocumentParams = Partial<Document> & { id: string };
+
+export const useUpdateDocument = (): UseMutationResult<Document, Error, UpdateDocumentParams> => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<Document> & { id: string }) => {
+    mutationFn: async ({ id, ...updates }: UpdateDocumentParams): Promise<Document> => {
       const { data, error } = await supabase
         .from('documents')
         .update(updates)
@@ -133,12 +137,17 @@ export const useUpdateDocument = () => {
   });
 };
 
-export const useDeleteDocument = () => {
+interface DeleteDocumentParams {
+  id: string;
+  name?: string;
+}
+
+export const useDeleteDocument = (): UseMutationResult<DeleteDocumentParams, Error, DeleteDocumentParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
+    mutationFn: async ({ id, name }: DeleteDocumentParams): Promise<DeleteDocumentParams> => {
       const { error } = await supabase
         .from('documents')
         .delete()
@@ -159,7 +168,12 @@ export const useDeleteDocument = () => {
   });
 };
 
-export const useDocumentUpload = () => {
+interface DocumentUploadResult {
+  uploadDocument: (file: File, documentId: string) => Promise<string>;
+  deleteDocument: (fileUrl: string) => Promise<void>;
+}
+
+export const useDocumentUpload = (): DocumentUploadResult => {
   const { user } = useAuth();
 
   const uploadDocument = async (file: File, documentId: string): Promise<string> => {
@@ -174,7 +188,7 @@ export const useDocumentUpload = () => {
       throw new Error('File must be PDF, JPG, PNG, or WebP');
     }
 
-    const ext = file.name.split('.').pop();
+    const ext = file.name.split('.').pop() ?? 'bin';
     const filename = `${user.id}/${documentId}-${Date.now()}.${ext}`;
 
     const { data, error } = await supabase.storage
@@ -204,7 +218,9 @@ export const useDocumentUpload = () => {
     if (urlParts.length < 2) return;
     
     const pathWithParams = urlParts[1];
-    const path = pathWithParams.split('?')[0];
+    const path = pathWithParams?.split('?')[0];
+
+    if (!path) return;
 
     const { error } = await supabase.storage
       .from('documents')
@@ -216,7 +232,9 @@ export const useDocumentUpload = () => {
   return { uploadDocument, deleteDocument };
 };
 
-export const getExpiryStatus = (expiryDate: string | null): 'expired' | 'expiring' | 'valid' | null => {
+export type ExpiryStatus = 'expired' | 'expiring' | 'valid' | null;
+
+export const getExpiryStatus = (expiryDate: string | null | undefined): ExpiryStatus => {
   if (!expiryDate) return null;
   
   const expiry = new Date(expiryDate);

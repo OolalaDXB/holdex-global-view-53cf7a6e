@@ -1,78 +1,91 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Tables, TablesInsert } from '@/integrations/supabase/types';
+import { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuditLog } from './useAuditLog';
 
 export type SharedAccess = Tables<'shared_access'>;
 
-export const useSharedAccess = () => {
+export const useSharedAccess = (): UseQueryResult<SharedAccess[], Error> => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['shared_access', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<SharedAccess[]> => {
+      if (!user?.id) return [];
+      
       const { data, error } = await supabase
         .from('shared_access')
         .select('*')
-        .eq('owner_id', user?.id || '');
+        .eq('owner_id', user.id);
 
       if (error) throw error;
-      return data as SharedAccess[];
-    },
-    enabled: !!user,
-  });
-};
-
-// Hook to get invitations received by the current user (with owner profile info)
-export const useReceivedInvitations = () => {
-  const { user } = useAuth();
-
-  return useQuery({
-    queryKey: ['received_invitations', user?.id],
-    queryFn: async () => {
-      // First get invitations where shared_with_id matches current user
-      const { data: invitations, error } = await supabase
-        .from('shared_access')
-        .select('*')
-        .eq('shared_with_id', user?.id || '');
-
-      if (error) throw error;
-      
-      // Then fetch owner profiles for each invitation
-      if (invitations && invitations.length > 0) {
-        const ownerIds = [...new Set(invitations.map(inv => inv.owner_id))];
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('id, full_name, email')
-          .in('id', ownerIds);
-        
-        if (profilesError) throw profilesError;
-        
-        // Merge profile info into invitations
-        const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-        return invitations.map(inv => ({
-          ...inv,
-          owner_profile: profileMap.get(inv.owner_id) || null,
-        }));
-      }
-      
-      return invitations?.map(inv => ({ ...inv, owner_profile: null })) || [];
+      return data ?? [];
     },
     enabled: !!user,
   });
 };
 
 // Extended type for invitations with owner profile
+interface OwnerProfile {
+  id: string;
+  full_name: string | null;
+  email: string;
+}
+
 export type ReceivedInvitation = SharedAccess & {
-  owner_profile: { id: string; full_name: string | null; email: string } | null;
+  owner_profile: OwnerProfile | null;
+};
+
+// Hook to get invitations received by the current user (with owner profile info)
+export const useReceivedInvitations = (): UseQueryResult<ReceivedInvitation[], Error> => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['received_invitations', user?.id],
+    queryFn: async (): Promise<ReceivedInvitation[]> => {
+      if (!user?.id) return [];
+      
+      // First get invitations where shared_with_id matches current user
+      const { data: invitations, error } = await supabase
+        .from('shared_access')
+        .select('*')
+        .eq('shared_with_id', user.id);
+
+      if (error) throw error;
+      
+      if (!invitations || invitations.length === 0) {
+        return [];
+      }
+      
+      // Then fetch owner profiles for each invitation
+      const ownerIds = [...new Set(invitations.map(inv => inv.owner_id))];
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', ownerIds);
+      
+      if (profilesError) throw profilesError;
+      
+      // Merge profile info into invitations
+      const profileMap = new Map<string, OwnerProfile>(
+        profiles?.map(p => [p.id, p]) ?? []
+      );
+      
+      return invitations.map(inv => ({
+        ...inv,
+        owner_profile: profileMap.get(inv.owner_id) ?? null,
+      }));
+    },
+    enabled: !!user,
+  });
 };
 
 // Hook to fetch a specific user's profile (for viewing shared portfolios)
-export const useSharedOwnerProfile = (ownerId: string | null) => {
+export const useSharedOwnerProfile = (ownerId: string | null | undefined): UseQueryResult<OwnerProfile | null, Error> => {
   return useQuery({
     queryKey: ['shared_owner_profile', ownerId],
-    queryFn: async () => {
+    queryFn: async (): Promise<OwnerProfile | null> => {
       if (!ownerId) return null;
       
       const { data, error } = await supabase
@@ -88,13 +101,13 @@ export const useSharedOwnerProfile = (ownerId: string | null) => {
   });
 };
 
-export const useInvitePartner = () => {
+export const useInvitePartner = (): UseMutationResult<SharedAccess, Error, string> => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (email: string) => {
+    mutationFn: async (email: string): Promise<SharedAccess> => {
       if (!user) throw new Error('Not authenticated');
       
       const { data, error } = await supabase
@@ -122,12 +135,12 @@ export const useInvitePartner = () => {
   });
 };
 
-export const useRevokeAccess = () => {
+export const useRevokeAccess = (): UseMutationResult<string, Error, string> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (id: string): Promise<string> => {
       const { error } = await supabase
         .from('shared_access')
         .delete()
@@ -147,13 +160,18 @@ export const useRevokeAccess = () => {
   });
 };
 
+interface RespondToInvitationParams {
+  id: string;
+  status: 'accepted' | 'declined';
+}
+
 // Hook to accept or decline an invitation
-export const useRespondToInvitation = () => {
+export const useRespondToInvitation = (): UseMutationResult<RespondToInvitationParams, Error, RespondToInvitationParams> => {
   const queryClient = useQueryClient();
   const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: 'accepted' | 'declined' }) => {
+    mutationFn: async ({ id, status }: RespondToInvitationParams): Promise<RespondToInvitationParams> => {
       const { error } = await supabase
         .from('shared_access')
         .update({ status })

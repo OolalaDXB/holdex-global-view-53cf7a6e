@@ -11,6 +11,13 @@ import { getUserOwnershipShare } from '@/lib/types';
 
 export type CertaintyFilter = 'all' | 'confirmed' | 'exclude_optional';
 
+interface CertaintySummary {
+  certain: number;
+  contractual: number;
+  probable: number;
+  optional: number;
+}
+
 interface BalanceSheetData {
   // Assets
   currentAssets: {
@@ -60,6 +67,12 @@ interface BalanceSheetData {
     mortgages: Liability[];
     longTermLoans: Liability[];
   };
+
+  // Certainty summary
+  certaintySummary: {
+    assets: CertaintySummary;
+    liabilities: CertaintySummary;
+  };
 }
 
 interface UseBalanceSheetOptions {
@@ -75,13 +88,16 @@ interface UseBalanceSheetOptions {
   personalEntityId?: string | null;
 }
 
+interface CryptoPriceData {
+  price: number;
+  change24h: number;
+}
+
 export function useBalanceSheet({
   assets,
   collections,
   liabilities,
   receivables,
-  entities,
-  baseCurrency,
   entityFilter,
   certaintyFilter,
   personalEntityId,
@@ -89,20 +105,20 @@ export function useBalanceSheet({
   const exchangeRatesQuery = useExchangeRates();
   const cryptoPricesQuery = useCryptoPrices();
 
-  const rates = exchangeRatesQuery.data?.rates || {};
-  const cryptoPrices = cryptoPricesQuery.data || {};
+  const rates = exchangeRatesQuery.data?.rates ?? {};
+  const cryptoPrices: Record<string, CryptoPriceData> = cryptoPricesQuery.data ?? {};
 
   return useMemo(() => {
     // Filter by entity
-    const filterByEntity = <T extends { entity_id?: string | null }>(items: T[]) => {
+    const filterByEntity = <T extends { entity_id?: string | null }>(items: T[]): T[] => {
       if (!entityFilter) return items;
       return items.filter(item => item.entity_id === entityFilter);
     };
 
     // Filter by certainty
-    const filterByCertainty = <T extends { certainty?: string | null }>(items: T[], defaultCertainty: string) => {
+    const filterByCertainty = <T extends { certainty?: string | null }>(items: T[], defaultCertainty: string): T[] => {
       return items.filter(item => {
-        const certainty = (item as any).certainty || defaultCertainty;
+        const certainty = item.certainty ?? defaultCertainty;
         if (certaintyFilter === 'all') return true;
         if (certaintyFilter === 'confirmed') return certainty === 'certain' || certainty === 'contractual';
         if (certaintyFilter === 'exclude_optional') return certainty !== 'optional';
@@ -111,11 +127,13 @@ export function useBalanceSheet({
     };
 
     // Convert value to base currency
-    const toBaseCurrency = (value: number, currency: string, ticker?: string | null) => {
+    const toBaseCurrency = (value: number, currency: string, ticker?: string | null): number => {
       // Handle crypto
-      if (ticker && cryptoPrices[ticker.toUpperCase()]) {
+      if (ticker) {
         const cryptoPrice = cryptoPrices[ticker.toUpperCase()];
-        return convertToEUR(value * cryptoPrice.price, 'USD', rates);
+        if (cryptoPrice) {
+          return convertToEUR(value * cryptoPrice.price, 'USD', rates);
+        }
       }
       return convertToEUR(value, currency, rates);
     };
@@ -164,19 +182,22 @@ export function useBalanceSheet({
     });
 
     // Calculate totals with parsed ownership allocation applied
-    const sumAssets = (items: Asset[]) => items.reduce((sum, a) => {
+    const sumAssets = (items: Asset[]): number => items.reduce((sum, a) => {
       const value = toBaseCurrency(a.current_value, a.currency, a.ticker);
-      const share = getUserOwnershipShare(a.parsed_ownership_allocation, personalEntityId || null);
+      const share = getUserOwnershipShare(a.parsed_ownership_allocation, personalEntityId ?? null);
       return sum + (value * share);
     }, 0);
-    const sumCollections = (items: Collection[]) => items.reduce((sum, c) => {
+
+    const sumCollections = (items: Collection[]): number => items.reduce((sum, c) => {
       const value = toBaseCurrency(c.current_value, c.currency);
-      const share = getUserOwnershipShare(c.parsed_ownership_allocation, personalEntityId || null);
+      const share = getUserOwnershipShare(c.parsed_ownership_allocation, personalEntityId ?? null);
       return sum + (value * share);
     }, 0);
-    const sumLiabilities = (items: Liability[]) => items.reduce((sum, l) => 
+
+    const sumLiabilities = (items: Liability[]): number => items.reduce((sum, l) => 
       sum + toBaseCurrency(l.current_balance, l.currency), 0);
-    const sumReceivables = (items: Receivable[]) => items.reduce((sum, r) => 
+
+    const sumReceivables = (items: Receivable[]): number => items.reduce((sum, r) => 
       sum + toBaseCurrency(r.current_balance, r.currency), 0);
 
     // Current Assets
@@ -213,25 +234,25 @@ export function useBalanceSheet({
     const allLiabilitiesFiltered = filterByEntity(liabilities);
     const allReceivablesFiltered = filterByEntity(receivables);
 
-    const calcAssetCertaintySummary = () => {
-      const summary = { certain: 0, contractual: 0, probable: 0, optional: 0 };
+    const calcAssetCertaintySummary = (): CertaintySummary => {
+      const summary: CertaintySummary = { certain: 0, contractual: 0, probable: 0, optional: 0 };
       
       allAssetsFiltered.forEach(a => {
-        const cert = (a.certainty || 'certain') as keyof typeof summary;
+        const cert = (a.certainty ?? 'certain') as keyof CertaintySummary;
         const value = toBaseCurrency(a.current_value, a.currency, a.ticker);
-        const share = getUserOwnershipShare(a.parsed_ownership_allocation, personalEntityId || null);
+        const share = getUserOwnershipShare(a.parsed_ownership_allocation, personalEntityId ?? null);
         if (cert in summary) summary[cert] += value * share;
       });
       
       allCollectionsFiltered.forEach(c => {
-        const cert = (c.certainty || 'probable') as keyof typeof summary;
+        const cert = (c.certainty ?? 'probable') as keyof CertaintySummary;
         const value = toBaseCurrency(c.current_value, c.currency);
-        const share = getUserOwnershipShare(c.parsed_ownership_allocation, personalEntityId || null);
+        const share = getUserOwnershipShare(c.parsed_ownership_allocation, personalEntityId ?? null);
         if (cert in summary) summary[cert] += value * share;
       });
       
       allReceivablesFiltered.forEach(r => {
-        const cert = (r.certainty || 'contractual') as keyof typeof summary;
+        const cert = (r.certainty ?? 'contractual') as keyof CertaintySummary;
         const value = toBaseCurrency(r.current_balance, r.currency);
         if (cert in summary) summary[cert] += value;
       });
@@ -239,11 +260,11 @@ export function useBalanceSheet({
       return summary;
     };
 
-    const calcLiabilityCertaintySummary = () => {
-      const summary = { certain: 0, contractual: 0, probable: 0, optional: 0 };
+    const calcLiabilityCertaintySummary = (): CertaintySummary => {
+      const summary: CertaintySummary = { certain: 0, contractual: 0, probable: 0, optional: 0 };
       
       allLiabilitiesFiltered.forEach(l => {
-        const cert = (l.certainty || 'certain') as keyof typeof summary;
+        const cert = (l.certainty ?? 'certain') as keyof CertaintySummary;
         const value = toBaseCurrency(l.current_balance, l.currency);
         if (cert in summary) summary[cert] += value;
       });

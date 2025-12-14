@@ -1,16 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 
 export type NetWorthHistory = Tables<'net_worth_history'>;
 
-export const useNetWorthHistory = () => {
+export const useNetWorthHistory = (): UseQueryResult<NetWorthHistory[], Error> => {
   const { user } = useAuth();
 
   return useQuery({
     queryKey: ['net_worth_history', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<NetWorthHistory[]> => {
       const { data, error } = await supabase
         .from('net_worth_history')
         .select('*')
@@ -18,7 +18,7 @@ export const useNetWorthHistory = () => {
         .limit(12);
 
       if (error) throw error;
-      return data as NetWorthHistory[];
+      return data ?? [];
     },
     enabled: !!user,
   });

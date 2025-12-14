@@ -8,10 +8,10 @@ interface SidebarContextType {
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
-export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+export function SidebarProvider({ children }: { children: ReactNode }): JSX.Element {
+  const [collapsed, setCollapsed] = useState<boolean>(false);
 
-  const toggle = () => setCollapsed(prev => !prev);
+  const toggle = (): void => setCollapsed(prev => !prev);
 
   return (
     <SidebarContext.Provider value={{ collapsed, setCollapsed, toggle }}>
@@ -20,7 +20,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useSidebarContext() {
+export function useSidebarContext(): SidebarContextType {
   const context = useContext(SidebarContext);
   if (context === undefined) {
     throw new Error('useSidebarContext must be used within a SidebarProvider');
