@@ -15,6 +15,7 @@ export interface AuditEvent {
 
 interface UseAuditEventsParams {
   actionFilter?: string;
+  entityTypeFilter?: string;
   startDate?: Date;
   endDate?: Date;
   limit?: number;
@@ -22,6 +23,7 @@ interface UseAuditEventsParams {
 
 export const useAuditEvents = ({
   actionFilter,
+  entityTypeFilter,
   startDate,
   endDate,
   limit = 100,
@@ -29,7 +31,7 @@ export const useAuditEvents = ({
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['audit_events', user?.id, actionFilter, startDate?.toISOString(), endDate?.toISOString(), limit],
+    queryKey: ['audit_events', user?.id, actionFilter, entityTypeFilter, startDate?.toISOString(), endDate?.toISOString(), limit],
     queryFn: async () => {
       let query = supabase
         .from('audit_events')
@@ -39,6 +41,10 @@ export const useAuditEvents = ({
 
       if (actionFilter && actionFilter !== 'all') {
         query = query.eq('action', actionFilter);
+      }
+
+      if (entityTypeFilter && entityTypeFilter !== 'all') {
+        query = query.eq('entity_type', entityTypeFilter);
       }
 
       if (startDate) {
@@ -76,4 +82,20 @@ export const ENTITY_TYPE_LABELS: Record<string, string> = {
   liability: 'Liability',
   receivable: 'Receivable',
   entity: 'Entity',
+  loan_schedule: 'Loan Schedule',
+  loan_payment: 'Loan Payment',
 };
+
+export const ENTITY_TYPES = [
+  { value: 'all', label: 'All Types' },
+  { value: 'asset', label: 'Asset' },
+  { value: 'collection', label: 'Collection' },
+  { value: 'liability', label: 'Liability' },
+  { value: 'receivable', label: 'Receivable' },
+  { value: 'entity', label: 'Entity' },
+  { value: 'document', label: 'Document' },
+  { value: 'shared_access', label: 'Shared Access' },
+  { value: 'balance_sheet', label: 'Balance Sheet' },
+  { value: 'loan_schedule', label: 'Loan Schedule' },
+  { value: 'loan_payment', label: 'Loan Payment' },
+];
