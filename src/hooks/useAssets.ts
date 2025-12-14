@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { OwnershipAllocation, parseOwnershipAllocation } from '@/lib/types';
+import { useAuditLog } from './useAuditLog';
 
 export type Asset = Tables<'assets'> & {
   parsed_ownership_allocation?: OwnershipAllocation[] | null;
@@ -33,6 +34,7 @@ export const useAssets = () => {
 export const useCreateAsset = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async (asset: Omit<AssetInsert, 'user_id'>) => {
@@ -47,14 +49,21 @@ export const useCreateAsset = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['assets'] });
+      logEvent({
+        action: 'create',
+        entityType: 'asset',
+        entityId: data.id,
+        metadata: { name: data.name, type: data.type },
+      });
     },
   });
 };
 
 export const useUpdateAsset = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Asset> & { id: string }) => {
@@ -68,26 +77,40 @@ export const useUpdateAsset = () => {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['assets'] });
+      logEvent({
+        action: 'update',
+        entityType: 'asset',
+        entityId: data.id,
+        metadata: { name: data.name, type: data.type },
+      });
     },
   });
 };
 
 export const useDeleteAsset = () => {
   const queryClient = useQueryClient();
+  const { logEvent } = useAuditLog();
 
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, name }: { id: string; name?: string }) => {
       const { error } = await supabase
         .from('assets')
         .delete()
         .eq('id', id);
 
       if (error) throw error;
+      return { id, name };
     },
-    onSuccess: () => {
+    onSuccess: ({ id, name }) => {
       queryClient.invalidateQueries({ queryKey: ['assets'] });
+      logEvent({
+        action: 'delete',
+        entityType: 'asset',
+        entityId: id,
+        metadata: { name },
+      });
     },
   });
 };

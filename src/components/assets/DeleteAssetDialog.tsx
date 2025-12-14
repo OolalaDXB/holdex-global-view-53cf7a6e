@@ -25,7 +25,7 @@ export function DeleteAssetDialog({ asset, open, onOpenChange }: DeleteAssetDial
     if (!asset) return;
 
     try {
-      await deleteAsset.mutateAsync(asset.id);
+      await deleteAsset.mutateAsync({ id: asset.id, name: asset.name });
       toast({
         title: "Asset deleted",
         description: `${asset.name} has been removed from your portfolio.`,

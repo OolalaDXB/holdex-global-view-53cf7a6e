@@ -17,6 +17,7 @@ import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { FavoriteCitiesSelect } from '@/components/settings/FavoriteCitiesSelect';
 import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
 import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
+import { AuditLogViewer } from '@/components/settings/AuditLogViewer';
 import { X, Check, XCircle, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -674,6 +675,17 @@ const SettingsPage = () => {
                 {invitePartner.isPending ? 'Inviting...' : 'Invite'}
               </Button>
             </div>
+          </section>
+
+          <Separator />
+
+          {/* Audit Log Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Activity Log</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              View your recent account activity and data changes.
+            </p>
+            <AuditLogViewer />
           </section>
 
           <Separator />
