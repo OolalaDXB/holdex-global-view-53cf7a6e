@@ -40,7 +40,8 @@ import { useSharedOwnerProfile } from '@/hooks/useSharedAccess';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useBlur } from '@/contexts/BlurContext';
 import { convertToEUR, convertFromEUR, fallbackRates, formatCurrency } from '@/lib/currency';
-import { Camera, Info, Eye, X } from 'lucide-react';
+import { Camera, Info, Eye, X, UserPlus } from 'lucide-react';
+import { ShareAdvisorDialog } from '@/components/sharing/ShareAdvisorDialog';
 import { DataStatusBadge } from '@/components/ui/data-status-badge';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -447,23 +448,26 @@ const Dashboard = () => {
               <ViewToggle config={viewConfig} onChange={setViewConfig} />
               <CurrencySwitcher />
               {!isViewingShared && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={handleSaveSnapshot}
-                      disabled={saveSnapshot.isPending}
-                      className="gap-2"
-                    >
-                      <Camera size={14} />
-                      {saveSnapshot.isPending ? 'Saving...' : 'Snapshot'}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Save your current portfolio value for accurate historical tracking</p>
-                  </TooltipContent>
-                </Tooltip>
+                <>
+                  <ShareAdvisorDialog />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={handleSaveSnapshot}
+                        disabled={saveSnapshot.isPending}
+                        className="gap-2"
+                      >
+                        <Camera size={14} />
+                        {saveSnapshot.isPending ? 'Saving...' : 'Snapshot'}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Save your current portfolio value for accurate historical tracking</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </>
               )}
             </div>
           </div>
