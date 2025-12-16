@@ -520,22 +520,33 @@ CREATE TABLE public.documents (
   updated_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FKs for documents
+-- Exactly one parent link constraint (prevents orphans and multi-parent ambiguity)
+ALTER TABLE public.documents
+  ADD CONSTRAINT documents_exactly_one_link CHECK (
+    (CASE WHEN asset_id      IS NOT NULL THEN 1 ELSE 0 END) +
+    (CASE WHEN collection_id IS NOT NULL THEN 1 ELSE 0 END) +
+    (CASE WHEN liability_id  IS NOT NULL THEN 1 ELSE 0 END) +
+    (CASE WHEN entity_id     IS NOT NULL THEN 1 ELSE 0 END) +
+    (CASE WHEN receivable_id IS NOT NULL THEN 1 ELSE 0 END)
+    = 1
+  );
+
+-- Composite FKs for documents (all CASCADE to delete docs when parent is deleted)
 ALTER TABLE public.documents
   ADD CONSTRAINT documents_asset_user_fk
-  FOREIGN KEY (asset_id, user_id) REFERENCES public.assets(id, user_id);
+  FOREIGN KEY (asset_id, user_id) REFERENCES public.assets(id, user_id) ON DELETE CASCADE;
 ALTER TABLE public.documents
   ADD CONSTRAINT documents_collection_user_fk
-  FOREIGN KEY (collection_id, user_id) REFERENCES public.collections(id, user_id);
+  FOREIGN KEY (collection_id, user_id) REFERENCES public.collections(id, user_id) ON DELETE CASCADE;
 ALTER TABLE public.documents
   ADD CONSTRAINT documents_liability_user_fk
-  FOREIGN KEY (liability_id, user_id) REFERENCES public.liabilities(id, user_id);
+  FOREIGN KEY (liability_id, user_id) REFERENCES public.liabilities(id, user_id) ON DELETE CASCADE;
 ALTER TABLE public.documents
   ADD CONSTRAINT documents_entity_user_fk
-  FOREIGN KEY (entity_id, user_id) REFERENCES public.entities(id, user_id);
+  FOREIGN KEY (entity_id, user_id) REFERENCES public.entities(id, user_id) ON DELETE CASCADE;
 ALTER TABLE public.documents
   ADD CONSTRAINT documents_receivable_user_fk
-  FOREIGN KEY (receivable_id, user_id) REFERENCES public.receivables(id, user_id);
+  FOREIGN KEY (receivable_id, user_id) REFERENCES public.receivables(id, user_id) ON DELETE CASCADE;
 
 -- Table: loan_schedules
 CREATE TABLE public.loan_schedules (
