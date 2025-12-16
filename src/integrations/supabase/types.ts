@@ -1052,6 +1052,13 @@ export type Database = {
             referencedRelation: "receivables"
             referencedColumns: ["id", "user_id"]
           },
+          {
+            foreignKeyName: "receivable_payments_user_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       receivables: {

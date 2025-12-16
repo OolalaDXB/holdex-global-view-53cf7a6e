@@ -476,7 +476,7 @@ ALTER TABLE public.receivables
 -- Table: receivable_payments
 CREATE TABLE public.receivable_payments (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL,
   receivable_id uuid NOT NULL,
   amount numeric NOT NULL,
   currency text NOT NULL,
@@ -487,10 +487,13 @@ CREATE TABLE public.receivable_payments (
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK for receivable_payments
+-- Constraints for receivable_payments
+ALTER TABLE public.receivable_payments
+  ADD CONSTRAINT receivable_payments_user_fk
+  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.receivable_payments
   ADD CONSTRAINT payments_receivable_user_fk
-  FOREIGN KEY (receivable_id, user_id) REFERENCES public.receivables(id, user_id);
+  FOREIGN KEY (receivable_id, user_id) REFERENCES public.receivables(id, user_id) ON DELETE CASCADE;
 
 -- Table: documents
 CREATE TABLE public.documents (
