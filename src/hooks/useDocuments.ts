@@ -170,7 +170,8 @@ export const useDeleteDocument = (): UseMutationResult<DeleteDocumentParams, Err
 
 interface DocumentUploadResult {
   uploadDocument: (file: File, documentId: string) => Promise<string>;
-  deleteDocument: (fileUrl: string) => Promise<void>;
+  deleteFile: (filePath: string) => Promise<void>;
+  getSignedUrl: (filePath: string) => Promise<string>;
 }
 
 export const useDocumentUpload = (): DocumentUploadResult => {
@@ -200,36 +201,31 @@ export const useDocumentUpload = (): DocumentUploadResult => {
 
     if (error) throw error;
 
-    // Get signed URL for private bucket
-    const { data: signedData, error: signedError } = await supabase.storage
-      .from('documents')
-      .createSignedUrl(data.path, 60 * 60 * 24 * 365); // 1 year
-
-    if (signedError) throw signedError;
-
-    return signedData.signedUrl;
+    // Return the PATH, not a signed URL - signed URLs are generated at runtime
+    return data.path;
   };
 
-  const deleteDocument = async (fileUrl: string): Promise<void> => {
+  const deleteFile = async (filePath: string): Promise<void> => {
     if (!user) throw new Error('Not authenticated');
-
-    // Extract path from signed URL
-    const urlParts = fileUrl.split('/documents/');
-    if (urlParts.length < 2) return;
-    
-    const pathWithParams = urlParts[1];
-    const path = pathWithParams?.split('?')[0];
-
-    if (!path) return;
+    if (!filePath) return;
 
     const { error } = await supabase.storage
       .from('documents')
-      .remove([path]);
+      .remove([filePath]);
 
     if (error) throw error;
   };
 
-  return { uploadDocument, deleteDocument };
+  const getSignedUrl = async (filePath: string): Promise<string> => {
+    const { data, error } = await supabase.storage
+      .from('documents')
+      .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year
+
+    if (error) throw error;
+    return data.signedUrl;
+  };
+
+  return { uploadDocument, deleteFile, getSignedUrl };
 };
 
 export type ExpiryStatus = 'expired' | 'expiring' | 'valid' | null;

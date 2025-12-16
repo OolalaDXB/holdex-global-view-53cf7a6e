@@ -1,9 +1,10 @@
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { FileText, Calendar, AlertTriangle, ExternalLink, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Document, DOCUMENT_TYPES, getExpiryStatus } from '@/hooks/useDocuments';
+import { Document, DOCUMENT_TYPES, getExpiryStatus, useDocumentUpload } from '@/hooks/useDocuments';
 import { useAuditLog } from '@/hooks/useAuditLog';
 
 interface DocumentCardProps {
@@ -14,17 +15,34 @@ interface DocumentCardProps {
 
 export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentCardProps) => {
   const { logEvent } = useAuditLog();
+  const { getSignedUrl } = useDocumentUpload();
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const typeInfo = DOCUMENT_TYPES.find(t => t.value === document.type);
   const expiryStatus = getExpiryStatus(document.expiry_date);
 
+  useEffect(() => {
+    const fetchSignedUrl = async () => {
+      if (document.file_path) {
+        try {
+          const url = await getSignedUrl(document.file_path);
+          setSignedUrl(url);
+        } catch (error) {
+          console.error('Failed to get signed URL:', error);
+        }
+      }
+    };
+    fetchSignedUrl();
+  }, [document.file_path, getSignedUrl]);
+
   const handleDownload = () => {
+    if (!signedUrl) return;
     logEvent({
       action: 'download',
       entityType: 'document',
       entityId: document.id,
       metadata: { name: document.name, file_type: document.file_type },
     });
-    window.open(document.file_url, '_blank');
+    window.open(signedUrl, '_blank');
   };
 
   const formatFileSize = (bytes: number) => {
