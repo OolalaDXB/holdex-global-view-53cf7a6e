@@ -560,14 +560,11 @@ CREATE TABLE public.loan_schedules (
   updated_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK and unique constraint for loan_schedules
+-- Unique constraint and composite FK for loan_schedules (user_id FK is inline above)
 ALTER TABLE public.loan_schedules ADD CONSTRAINT loan_schedules_id_user_id_unique UNIQUE (id, user_id);
 ALTER TABLE public.loan_schedules
   ADD CONSTRAINT loan_schedules_liability_user_fk
   FOREIGN KEY (liability_id, user_id) REFERENCES public.liabilities(id, user_id);
-ALTER TABLE public.loan_schedules
-  ADD CONSTRAINT loan_schedules_user_fk
-  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 
 -- Table: loan_payments
 CREATE TABLE public.loan_payments (
@@ -587,13 +584,10 @@ CREATE TABLE public.loan_payments (
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK for loan_payments
+-- Composite FK for loan_payments (user_id FK is inline above)
 ALTER TABLE public.loan_payments
   ADD CONSTRAINT loan_payments_schedule_user_fk
   FOREIGN KEY (loan_schedule_id, user_id) REFERENCES public.loan_schedules(id, user_id);
-ALTER TABLE public.loan_payments
-  ADD CONSTRAINT loan_payments_user_fk
-  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 
 -- Table: payment_schedules (off-plan property payments)
 CREATE TABLE public.payment_schedules (
@@ -616,13 +610,10 @@ CREATE TABLE public.payment_schedules (
   updated_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK for payment_schedules
+-- Composite FK for payment_schedules (user_id FK is inline above)
 ALTER TABLE public.payment_schedules
   ADD CONSTRAINT schedules_asset_user_fk
   FOREIGN KEY (asset_id, user_id) REFERENCES public.assets(id, user_id);
-ALTER TABLE public.payment_schedules
-  ADD CONSTRAINT payment_schedules_user_fk
-  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 
 -- Table: net_worth_history
 CREATE TABLE public.net_worth_history (
