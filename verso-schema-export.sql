@@ -537,7 +537,7 @@ ALTER TABLE public.documents
 -- Table: loan_schedules
 CREATE TABLE public.loan_schedules (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL,  -- tenant key (validated via composite FK to liabilities)
   liability_id uuid NOT NULL,
   principal_amount numeric NOT NULL,
   interest_rate numeric,
@@ -560,16 +560,17 @@ CREATE TABLE public.loan_schedules (
   updated_at timestamp with time zone DEFAULT now()
 );
 
--- Unique constraint and composite FK for loan_schedules (user_id FK is inline above)
+-- Unique constraint and composite FK for loan_schedules
+-- user_id validated transitively: loan_schedules -> liabilities -> profiles
 ALTER TABLE public.loan_schedules ADD CONSTRAINT loan_schedules_id_user_id_unique UNIQUE (id, user_id);
 ALTER TABLE public.loan_schedules
   ADD CONSTRAINT loan_schedules_liability_user_fk
-  FOREIGN KEY (liability_id, user_id) REFERENCES public.liabilities(id, user_id);
+  FOREIGN KEY (liability_id, user_id) REFERENCES public.liabilities(id, user_id) ON DELETE CASCADE;
 
 -- Table: loan_payments
 CREATE TABLE public.loan_payments (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL,  -- tenant key (validated via composite FK to loan_schedules)
   loan_schedule_id uuid NOT NULL,
   payment_number integer NOT NULL,
   payment_date date NOT NULL,
@@ -584,15 +585,16 @@ CREATE TABLE public.loan_payments (
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK for loan_payments (user_id FK is inline above)
+-- Composite FK for loan_payments
+-- user_id validated transitively: loan_payments -> loan_schedules -> liabilities -> profiles
 ALTER TABLE public.loan_payments
   ADD CONSTRAINT loan_payments_schedule_user_fk
-  FOREIGN KEY (loan_schedule_id, user_id) REFERENCES public.loan_schedules(id, user_id);
+  FOREIGN KEY (loan_schedule_id, user_id) REFERENCES public.loan_schedules(id, user_id) ON DELETE CASCADE;
 
 -- Table: payment_schedules (off-plan property payments)
 CREATE TABLE public.payment_schedules (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL,  -- tenant key (validated via composite FK to assets)
   asset_id uuid NOT NULL,
   payment_number integer NOT NULL,
   due_date date NOT NULL,
@@ -610,10 +612,11 @@ CREATE TABLE public.payment_schedules (
   updated_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK for payment_schedules (user_id FK is inline above)
+-- Composite FK for payment_schedules
+-- user_id validated transitively: payment_schedules -> assets -> profiles
 ALTER TABLE public.payment_schedules
   ADD CONSTRAINT schedules_asset_user_fk
-  FOREIGN KEY (asset_id, user_id) REFERENCES public.assets(id, user_id);
+  FOREIGN KEY (asset_id, user_id) REFERENCES public.assets(id, user_id) ON DELETE CASCADE;
 
 -- Table: net_worth_history
 CREATE TABLE public.net_worth_history (
