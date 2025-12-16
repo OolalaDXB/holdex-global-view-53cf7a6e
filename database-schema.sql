@@ -1,20 +1,602 @@
 -- ============================================================
--- VERSO DATABASE SCHEMA EXPORT
+-- VERSO WEALTH PLATFORM - COMPLETE DATABASE SCHEMA
 -- Generated: 2025-12-16
--- Database: PostgreSQL (Supabase)
+-- Includes: Tables, RLS Policies, Functions, Triggers, Indexes,
+--           Foreign Keys (including composite FKs), Storage Policies
 -- ============================================================
 
 -- ============================================================
--- FUNCTIONS
+-- PART 1: TABLES
 -- ============================================================
 
--- Function to check circular ownership in entities
+-- Profiles table (user settings and preferences)
+CREATE TABLE public.profiles (
+  id UUID PRIMARY KEY,
+  email TEXT NOT NULL,
+  full_name TEXT,
+  base_currency TEXT DEFAULT 'EUR',
+  secondary_currency_1 TEXT DEFAULT 'USD',
+  secondary_currency_2 TEXT DEFAULT 'AED',
+  dark_mode BOOLEAN DEFAULT true,
+  blur_amounts BOOLEAN DEFAULT false,
+  area_unit TEXT DEFAULT 'sqm',
+  monthly_income NUMERIC,
+  monthly_income_currency TEXT DEFAULT 'EUR',
+  fiscal_year_start TEXT DEFAULT '01-01',
+  compliance_mode TEXT DEFAULT 'none',
+  news_sources JSONB DEFAULT '["bloomberg", "reuters"]'::jsonb,
+  dashboard_widgets JSONB DEFAULT '["net_worth", "chart", "breakdown_type", "breakdown_country", "breakdown_currency", "leasehold_reminders", "expiring_documents"]'::jsonb,
+  favorite_cities JSONB DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Entities table (ownership structures)
+CREATE TABLE public.entities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'personal',
+  icon TEXT DEFAULT '👤',
+  color TEXT DEFAULT '#C4785A',
+  country TEXT,
+  jurisdiction TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  notes TEXT,
+  avatar_url TEXT,
+  -- Individual fields
+  date_of_birth DATE,
+  nationality TEXT,
+  tax_residence TEXT,
+  -- Couple fields
+  matrimonial_regime TEXT,
+  marriage_date DATE,
+  marriage_country TEXT,
+  -- Company/Holding/SPV fields
+  legal_name TEXT,
+  legal_form TEXT,
+  registration_number TEXT,
+  share_capital NUMERIC,
+  share_capital_currency TEXT DEFAULT 'EUR',
+  formation_date DATE,
+  dissolution_date DATE,
+  -- Trust fields
+  trustee_name TEXT,
+  trust_type TEXT,
+  beneficiaries JSONB,
+  -- HUF fields
+  karta_name TEXT,
+  coparceners JSONB,
+  -- Ownership hierarchy
+  owned_by_entity_id UUID,
+  ownership_percentage NUMERIC DEFAULT 100,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Unique constraint for composite FK
+CREATE UNIQUE INDEX entities_id_user_unique ON public.entities (id, user_id);
+
+-- Assets table
+CREATE TABLE public.assets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  entity_id UUID,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  country TEXT NOT NULL,
+  currency TEXT NOT NULL,
+  current_value NUMERIC NOT NULL,
+  purchase_value NUMERIC,
+  purchase_date DATE,
+  certainty TEXT DEFAULT 'certain',
+  ownership_percentage NUMERIC DEFAULT 100,
+  ownership_allocation JSONB,
+  notes TEXT,
+  image_url TEXT,
+  -- Bank account fields
+  institution TEXT,
+  reference_balance NUMERIC,
+  reference_date DATE,
+  -- Investment/Crypto fields
+  ticker TEXT,
+  quantity NUMERIC,
+  platform TEXT,
+  -- Real estate fields
+  address TEXT,
+  latitude NUMERIC,
+  longitude NUMERIC,
+  property_type TEXT,
+  rooms INTEGER,
+  size_sqm NUMERIC,
+  rental_income NUMERIC,
+  tenure_type TEXT,
+  lease_end_date DATE,
+  liquidity_status TEXT DEFAULT 'liquid',
+  property_status TEXT DEFAULT 'owned',
+  -- Off-plan fields
+  developer TEXT,
+  project_name TEXT,
+  unit_number TEXT,
+  total_price NUMERIC,
+  amount_paid NUMERIC,
+  expected_delivery DATE,
+  -- Islamic finance fields
+  is_shariah_compliant BOOLEAN DEFAULT false,
+  shariah_certification TEXT,
+  -- Acquisition tracking
+  acquisition_type TEXT DEFAULT 'purchase',
+  acquisition_from TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Unique constraint for composite FK
+CREATE UNIQUE INDEX assets_id_user_unique ON public.assets (id, user_id);
+
+-- Collections table
+CREATE TABLE public.collections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  entity_id UUID,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  country TEXT NOT NULL,
+  currency TEXT NOT NULL,
+  current_value NUMERIC NOT NULL,
+  purchase_value NUMERIC,
+  purchase_date DATE,
+  certainty TEXT DEFAULT 'probable',
+  ownership_percentage NUMERIC DEFAULT 100,
+  ownership_allocation JSONB,
+  notes TEXT,
+  image_url TEXT,
+  description TEXT,
+  -- Type-specific fields
+  brand TEXT,
+  model TEXT,
+  year INTEGER,
+  -- LP/Fund fields
+  fund_name TEXT,
+  commitment_amount NUMERIC,
+  called_amount NUMERIC,
+  distribution_status TEXT,
+  -- Acquisition tracking
+  acquisition_type TEXT DEFAULT 'purchase',
+  acquisition_from TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Unique constraint for composite FK
+CREATE UNIQUE INDEX collections_id_user_unique ON public.collections (id, user_id);
+
+-- Liabilities table
+CREATE TABLE public.liabilities (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  entity_id UUID,
+  linked_asset_id UUID,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  country TEXT NOT NULL,
+  currency TEXT NOT NULL,
+  current_balance NUMERIC NOT NULL,
+  original_amount NUMERIC,
+  interest_rate NUMERIC,
+  monthly_payment NUMERIC,
+  start_date DATE,
+  end_date DATE,
+  institution TEXT,
+  certainty TEXT DEFAULT 'certain',
+  notes TEXT,
+  -- Islamic finance fields
+  financing_type TEXT DEFAULT 'conventional',
+  is_shariah_compliant BOOLEAN DEFAULT false,
+  shariah_advisor TEXT,
+  cost_price NUMERIC,
+  profit_margin NUMERIC,
+  monthly_rental NUMERIC,
+  residual_value NUMERIC,
+  bank_ownership_percentage NUMERIC,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Unique constraint for composite FK
+CREATE UNIQUE INDEX liabilities_id_user_unique ON public.liabilities (id, user_id);
+
+-- Receivables table
+CREATE TABLE public.receivables (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  entity_id UUID,
+  linked_asset_id UUID,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  currency TEXT NOT NULL,
+  original_amount NUMERIC NOT NULL,
+  current_balance NUMERIC NOT NULL,
+  debtor_name TEXT NOT NULL,
+  debtor_type TEXT,
+  debtor_contact TEXT,
+  status TEXT NOT NULL DEFAULT 'pending',
+  certainty TEXT DEFAULT 'contractual',
+  issue_date DATE,
+  due_date DATE,
+  interest_rate NUMERIC,
+  repayment_schedule TEXT,
+  recovery_probability TEXT,
+  deposit_type TEXT,
+  refund_conditions TEXT,
+  description TEXT,
+  notes TEXT,
+  last_payment_date DATE,
+  last_payment_amount NUMERIC,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Unique constraint for composite FK
+CREATE UNIQUE INDEX receivables_id_user_unique ON public.receivables (id, user_id);
+
+-- Receivable payments table
+CREATE TABLE public.receivable_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  receivable_id UUID NOT NULL,
+  amount NUMERIC NOT NULL,
+  currency TEXT NOT NULL,
+  payment_date DATE NOT NULL,
+  payment_method TEXT,
+  reference TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Documents table
+CREATE TABLE public.documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  asset_id UUID,
+  collection_id UUID,
+  liability_id UUID,
+  entity_id UUID,
+  receivable_id UUID,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  file_name TEXT NOT NULL,
+  file_type TEXT NOT NULL,
+  file_size INTEGER NOT NULL,
+  file_url TEXT NOT NULL,
+  document_date DATE,
+  expiry_date DATE,
+  is_verified BOOLEAN DEFAULT false,
+  verification_date DATE,
+  tags TEXT[],
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Loan schedules table
+CREATE TABLE public.loan_schedules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  liability_id UUID NOT NULL,
+  principal_amount NUMERIC NOT NULL,
+  interest_rate NUMERIC,
+  start_date DATE NOT NULL,
+  end_date DATE,
+  term_months INTEGER,
+  monthly_payment NUMERIC,
+  total_interest NUMERIC,
+  total_cost NUMERIC,
+  payments_made INTEGER DEFAULT 0,
+  next_payment_date DATE,
+  remaining_principal NUMERIC,
+  loan_type TEXT DEFAULT 'amortizing',
+  rate_type TEXT DEFAULT 'fixed',
+  payment_frequency TEXT DEFAULT 'monthly',
+  is_imported BOOLEAN DEFAULT false,
+  imported_schedule JSONB,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Unique constraint for composite FK
+CREATE UNIQUE INDEX loan_schedules_id_user_unique ON public.loan_schedules (id, user_id);
+
+-- Loan payments table
+CREATE TABLE public.loan_payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  loan_schedule_id UUID NOT NULL,
+  payment_number INTEGER NOT NULL,
+  payment_date DATE NOT NULL,
+  principal_amount NUMERIC,
+  interest_amount NUMERIC,
+  total_amount NUMERIC,
+  remaining_principal NUMERIC,
+  status TEXT DEFAULT 'scheduled',
+  actual_payment_date DATE,
+  actual_amount NUMERIC,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Payment schedules table (for off-plan properties)
+CREATE TABLE public.payment_schedules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  asset_id UUID NOT NULL,
+  payment_number INTEGER NOT NULL,
+  amount NUMERIC NOT NULL,
+  percentage NUMERIC,
+  due_date DATE NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'AED',
+  status TEXT DEFAULT 'pending',
+  paid_date DATE,
+  paid_amount NUMERIC,
+  payment_reference TEXT,
+  receipt_url TEXT,
+  description TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Net worth history table
+CREATE TABLE public.net_worth_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  snapshot_date DATE NOT NULL,
+  total_assets_eur NUMERIC NOT NULL,
+  total_collections_eur NUMERIC NOT NULL,
+  total_liabilities_eur NUMERIC NOT NULL,
+  net_worth_eur NUMERIC NOT NULL,
+  breakdown_by_type JSONB,
+  breakdown_by_country JSONB,
+  breakdown_by_currency JSONB,
+  certainty_breakdown_assets JSONB,
+  certainty_breakdown_liabilities JSONB,
+  exchange_rates_snapshot JSONB,
+  crypto_prices_snapshot JSONB,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Shared access table
+CREATE TABLE public.shared_access (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id UUID NOT NULL,
+  shared_with_email TEXT NOT NULL,
+  shared_with_id UUID,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Audit events table
+CREATE TABLE public.audit_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  action TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id UUID,
+  metadata JSONB DEFAULT '{}'::jsonb,
+  ip_address TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- PART 2: FOREIGN KEYS (including Composite FKs for tenant safety)
+-- ============================================================
+
+-- Profiles
+-- (id references auth.users - handled by Supabase)
+
+-- Entities
+ALTER TABLE public.entities
+  ADD CONSTRAINT entities_user_id_fkey 
+    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
+  ADD CONSTRAINT entities_owned_by_entity_id_fkey 
+    FOREIGN KEY (owned_by_entity_id) REFERENCES entities(id) ON DELETE SET NULL,
+  ADD CONSTRAINT entities_owned_by_user_fk 
+    FOREIGN KEY (owned_by_entity_id, user_id) REFERENCES entities(id, user_id) ON DELETE SET NULL;
+
+-- Assets
+ALTER TABLE public.assets
+  ADD CONSTRAINT assets_user_id_fkey 
+    FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE,
+  ADD CONSTRAINT assets_entity_id_fkey 
+    FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE SET NULL,
+  ADD CONSTRAINT assets_entity_user_fk 
+    FOREIGN KEY (entity_id, user_id) REFERENCES entities(id, user_id) ON DELETE SET NULL;
+
+-- Collections
+ALTER TABLE public.collections
+  ADD CONSTRAINT collections_user_id_fkey 
+    FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE,
+  ADD CONSTRAINT collections_entity_id_fkey 
+    FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE SET NULL,
+  ADD CONSTRAINT collections_entity_user_fk 
+    FOREIGN KEY (entity_id, user_id) REFERENCES entities(id, user_id) ON DELETE SET NULL;
+
+-- Liabilities
+ALTER TABLE public.liabilities
+  ADD CONSTRAINT liabilities_user_id_fkey 
+    FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE,
+  ADD CONSTRAINT liabilities_entity_id_fkey 
+    FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE SET NULL,
+  ADD CONSTRAINT liabilities_linked_asset_id_fkey 
+    FOREIGN KEY (linked_asset_id) REFERENCES assets(id) ON DELETE SET NULL,
+  ADD CONSTRAINT liabilities_entity_user_fk 
+    FOREIGN KEY (entity_id, user_id) REFERENCES entities(id, user_id) ON DELETE SET NULL,
+  ADD CONSTRAINT liabilities_asset_user_fk 
+    FOREIGN KEY (linked_asset_id, user_id) REFERENCES assets(id, user_id) ON DELETE SET NULL;
+
+-- Receivables
+ALTER TABLE public.receivables
+  ADD CONSTRAINT receivables_user_id_fkey 
+    FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE,
+  ADD CONSTRAINT receivables_entity_id_fkey 
+    FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE SET NULL,
+  ADD CONSTRAINT receivables_linked_asset_id_fkey 
+    FOREIGN KEY (linked_asset_id) REFERENCES assets(id) ON DELETE SET NULL,
+  ADD CONSTRAINT receivables_entity_user_fk 
+    FOREIGN KEY (entity_id, user_id) REFERENCES entities(id, user_id) ON DELETE SET NULL;
+
+-- Receivable Payments
+ALTER TABLE public.receivable_payments
+  ADD CONSTRAINT receivable_payments_receivable_id_fkey 
+    FOREIGN KEY (receivable_id) REFERENCES receivables(id) ON DELETE CASCADE,
+  ADD CONSTRAINT payments_receivable_user_fk 
+    FOREIGN KEY (receivable_id, user_id) REFERENCES receivables(id, user_id) ON DELETE CASCADE;
+
+-- Documents
+ALTER TABLE public.documents
+  ADD CONSTRAINT documents_user_id_fkey 
+    FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE,
+  ADD CONSTRAINT documents_asset_id_fkey 
+    FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
+  ADD CONSTRAINT documents_collection_id_fkey 
+    FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+  ADD CONSTRAINT documents_liability_id_fkey 
+    FOREIGN KEY (liability_id) REFERENCES liabilities(id) ON DELETE CASCADE,
+  ADD CONSTRAINT documents_entity_id_fkey 
+    FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE,
+  ADD CONSTRAINT documents_receivable_id_fkey 
+    FOREIGN KEY (receivable_id) REFERENCES receivables(id) ON DELETE CASCADE,
+  ADD CONSTRAINT documents_asset_user_fk 
+    FOREIGN KEY (asset_id, user_id) REFERENCES assets(id, user_id) ON DELETE SET NULL,
+  ADD CONSTRAINT documents_entity_user_fk 
+    FOREIGN KEY (entity_id, user_id) REFERENCES entities(id, user_id) ON DELETE SET NULL;
+
+-- Loan Schedules
+ALTER TABLE public.loan_schedules
+  ADD CONSTRAINT loan_schedules_liability_id_fkey 
+    FOREIGN KEY (liability_id) REFERENCES liabilities(id) ON DELETE CASCADE,
+  ADD CONSTRAINT loan_schedules_liability_user_fk 
+    FOREIGN KEY (liability_id, user_id) REFERENCES liabilities(id, user_id) ON DELETE CASCADE;
+
+-- Loan Payments
+ALTER TABLE public.loan_payments
+  ADD CONSTRAINT loan_payments_loan_schedule_id_fkey 
+    FOREIGN KEY (loan_schedule_id) REFERENCES loan_schedules(id) ON DELETE CASCADE,
+  ADD CONSTRAINT loan_payments_schedule_user_fk 
+    FOREIGN KEY (loan_schedule_id, user_id) REFERENCES loan_schedules(id, user_id) ON DELETE CASCADE;
+
+-- Payment Schedules
+ALTER TABLE public.payment_schedules
+  ADD CONSTRAINT payment_schedules_asset_id_fkey 
+    FOREIGN KEY (asset_id) REFERENCES assets(id) ON DELETE CASCADE,
+  ADD CONSTRAINT schedules_asset_user_fk 
+    FOREIGN KEY (asset_id, user_id) REFERENCES assets(id, user_id) ON DELETE CASCADE;
+
+-- Net Worth History
+ALTER TABLE public.net_worth_history
+  ADD CONSTRAINT net_worth_history_user_id_fkey 
+    FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE;
+
+-- Shared Access
+ALTER TABLE public.shared_access
+  ADD CONSTRAINT shared_access_owner_id_fkey 
+    FOREIGN KEY (owner_id) REFERENCES profiles(id) ON DELETE CASCADE,
+  ADD CONSTRAINT shared_access_shared_with_id_fkey 
+    FOREIGN KEY (shared_with_id) REFERENCES profiles(id) ON DELETE CASCADE;
+
+-- Audit Events
+ALTER TABLE public.audit_events
+  ADD CONSTRAINT audit_events_user_id_fkey 
+    FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+-- ============================================================
+-- PART 3: INDEXES (Performance optimization)
+-- ============================================================
+
+-- Assets indexes
+CREATE INDEX idx_assets_user_id ON public.assets (user_id);
+CREATE INDEX idx_assets_user_entity ON public.assets (user_id, entity_id);
+CREATE INDEX idx_assets_type ON public.assets (type);
+
+-- Collections indexes
+CREATE INDEX idx_collections_user_id ON public.collections (user_id);
+CREATE INDEX idx_collections_user_entity ON public.collections (user_id, entity_id);
+CREATE INDEX idx_collections_type ON public.collections (type);
+
+-- Liabilities indexes
+CREATE INDEX idx_liabilities_user_id ON public.liabilities (user_id);
+CREATE INDEX idx_liabilities_user_entity ON public.liabilities (user_id, entity_id);
+CREATE INDEX idx_liabilities_linked_asset ON public.liabilities (linked_asset_id);
+
+-- Receivables indexes
+CREATE INDEX idx_receivables_user_id ON public.receivables (user_id);
+CREATE INDEX idx_receivables_user_entity ON public.receivables (user_id, entity_id);
+CREATE INDEX idx_receivables_status ON public.receivables (status);
+CREATE INDEX idx_receivables_due_date ON public.receivables (due_date);
+
+-- Receivable payments indexes
+CREATE INDEX idx_receivable_payments_receivable ON public.receivable_payments (receivable_id);
+CREATE INDEX idx_receivable_payments_user ON public.receivable_payments (user_id);
+
+-- Documents indexes
+CREATE INDEX idx_documents_user_id ON public.documents (user_id);
+CREATE INDEX idx_documents_asset_id ON public.documents (asset_id);
+CREATE INDEX idx_documents_collection_id ON public.documents (collection_id);
+CREATE INDEX idx_documents_liability_id ON public.documents (liability_id);
+CREATE INDEX idx_documents_entity_id ON public.documents (entity_id);
+CREATE INDEX idx_documents_receivable_id ON public.documents (receivable_id);
+CREATE INDEX idx_documents_type ON public.documents (type);
+CREATE INDEX idx_documents_expiry_date ON public.documents (expiry_date);
+CREATE INDEX idx_documents_expiry ON public.documents (user_id, expiry_date);
+
+-- Entities indexes
+CREATE INDEX idx_entities_user_id ON public.entities (user_id);
+CREATE INDEX idx_entities_owned_by ON public.entities (owned_by_entity_id);
+
+-- Loan schedules indexes
+CREATE INDEX idx_loan_schedules_liability ON public.loan_schedules (liability_id);
+CREATE INDEX idx_loan_schedules_user ON public.loan_schedules (user_id);
+
+-- Loan payments indexes
+CREATE INDEX idx_loan_payments_schedule ON public.loan_payments (loan_schedule_id);
+CREATE INDEX idx_loan_payments_user ON public.loan_payments (user_id);
+CREATE INDEX idx_loan_payments_date ON public.loan_payments (payment_date);
+CREATE INDEX idx_loan_payments_status ON public.loan_payments (status);
+
+-- Payment schedules indexes
+CREATE INDEX idx_payment_schedules_asset ON public.payment_schedules (asset_id);
+CREATE INDEX idx_payment_schedules_user ON public.payment_schedules (user_id);
+CREATE INDEX idx_payment_schedules_status ON public.payment_schedules (status);
+
+-- Net worth history indexes
+CREATE INDEX idx_net_worth_history_user ON public.net_worth_history (user_id);
+CREATE INDEX idx_net_worth_history_date ON public.net_worth_history (snapshot_date);
+CREATE INDEX idx_net_worth_user_date ON public.net_worth_history (user_id, snapshot_date DESC);
+
+-- Shared access indexes
+CREATE INDEX idx_shared_access_owner ON public.shared_access (owner_id);
+CREATE INDEX idx_shared_access_receiver ON public.shared_access (shared_with_id);
+CREATE INDEX idx_shared_access_status ON public.shared_access (status);
+
+-- Audit events indexes
+CREATE INDEX idx_audit_events_user_id ON public.audit_events (user_id);
+CREATE INDEX idx_audit_events_action ON public.audit_events (action);
+CREATE INDEX idx_audit_events_entity_type ON public.audit_events (entity_type);
+CREATE INDEX idx_audit_events_created_at ON public.audit_events (created_at DESC);
+CREATE INDEX idx_audit_events_user_time ON public.audit_events (user_id, created_at DESC);
+
+-- ============================================================
+-- PART 4: FUNCTIONS
+-- ============================================================
+
+-- Function: Check circular ownership (prevents entity ownership loops)
 CREATE OR REPLACE FUNCTION public.check_circular_ownership()
- RETURNS trigger
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
 DECLARE
   current_id UUID;
   visited_ids UUID[];
@@ -36,57 +618,100 @@ BEGIN
   
   RETURN NEW;
 END;
-$function$;
+$$;
 
--- Function to ensure default entity is created for new users
+-- Function: Update receivable on payment (auto-updates balance and status)
+CREATE OR REPLACE FUNCTION public.update_receivable_on_payment()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO ''
+AS $$
+BEGIN
+  -- Validate payment amount
+  IF NEW.amount IS NULL OR NEW.amount <= 0 THEN
+    RAISE EXCEPTION 'Invalid payment amount';
+  END IF;
+
+  -- Update with tenant check
+  UPDATE public.receivables r
+  SET
+    current_balance = GREATEST(r.current_balance - NEW.amount, 0),
+    last_payment_date = NEW.payment_date,
+    last_payment_amount = NEW.amount,
+    status = CASE
+      WHEN (r.current_balance - NEW.amount) <= 0 THEN 'paid'
+      WHEN (r.current_balance - NEW.amount) < r.original_amount THEN 'partial'
+      ELSE r.status
+    END,
+    updated_at = now()
+  WHERE r.id = NEW.receivable_id
+    AND r.user_id = NEW.user_id;
+
+  -- FAIL if no matching receivable found (defense in depth)
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Receivable not found or tenant mismatch';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+-- Function: Ensure default entity (creates Personal entity on user signup)
 CREATE OR REPLACE FUNCTION public.ensure_default_entity()
- RETURNS trigger
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
 BEGIN
   INSERT INTO public.entities (user_id, name, type, icon, color)
   VALUES (NEW.id, 'Personal', 'personal', '👤', '#C4785A')
   ON CONFLICT DO NOTHING;
   RETURN NEW;
 END;
-$function$;
+$$;
 
--- Function to update receivable on payment
-CREATE OR REPLACE FUNCTION public.update_receivable_on_payment()
- RETURNS trigger
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
+-- Function: Log audit event (server-side audit logging)
+CREATE OR REPLACE FUNCTION public.log_audit_event()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO ''
+AS $$
 BEGIN
-  UPDATE public.receivables
-  SET 
-    current_balance = current_balance - NEW.amount,
-    last_payment_date = NEW.payment_date,
-    last_payment_amount = NEW.amount,
-    status = CASE 
-      WHEN current_balance - NEW.amount <= 0 THEN 'paid'
-      WHEN current_balance - NEW.amount < original_amount THEN 'partial'
-      ELSE status
-    END,
-    updated_at = now()
-  WHERE id = NEW.receivable_id;
+  INSERT INTO public.audit_events (user_id, action, entity_type, entity_id, metadata, created_at)
+  VALUES (
+    COALESCE(auth.uid(), CASE WHEN TG_OP = 'DELETE' THEN OLD.user_id ELSE NEW.user_id END),
+    TG_OP,
+    TG_TABLE_NAME,
+    CASE WHEN TG_OP = 'DELETE' THEN OLD.id ELSE NEW.id END,
+    jsonb_build_object(
+      'changed_at', now(),
+      'entity_name', CASE WHEN TG_OP = 'DELETE' THEN OLD.name ELSE NEW.name END
+    ),
+    now()
+  );
   
-  RETURN NEW;
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  ELSE
+    RETURN NEW;
+  END IF;
 END;
-$function$;
+$$;
 
--- Function to enforce receiver update restrictions on shared_access
+-- Function: Enforce receiver update restrictions (shared_access)
 CREATE OR REPLACE FUNCTION public.enforce_receiver_update_restrictions()
- RETURNS trigger
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
 BEGIN
+  -- If the updater is the receiver (not the owner)
   IF OLD.shared_with_id = auth.uid() AND OLD.owner_id != auth.uid() THEN
+    -- Ensure only status can be changed
     IF NEW.owner_id != OLD.owner_id 
        OR NEW.shared_with_email != OLD.shared_with_email 
        OR NEW.shared_with_id IS DISTINCT FROM OLD.shared_with_id
@@ -94,6 +719,7 @@ BEGIN
       RAISE EXCEPTION 'Receivers can only update the status field';
     END IF;
     
+    -- Receivers can only set status to 'accepted' or 'declined'
     IF NEW.status NOT IN ('accepted', 'declined') AND NEW.status != OLD.status THEN
       RAISE EXCEPTION 'Receivers can only set status to accepted or declined';
     END IF;
@@ -101,14 +727,14 @@ BEGIN
   
   RETURN NEW;
 END;
-$function$;
+$$;
 
--- Function to validate ownership allocation percentages
+-- Function: Validate ownership allocation (ensures percentages sum ≤ 100)
 CREATE OR REPLACE FUNCTION public.validate_ownership_allocation(allocation jsonb)
- RETURNS boolean
- LANGUAGE plpgsql
- IMMUTABLE
-AS $function$
+RETURNS boolean
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
 DECLARE
   total_percentage numeric := 0;
   item jsonb;
@@ -124,407 +750,125 @@ BEGIN
   
   RETURN total_percentage <= 100;
 END;
-$function$;
+$$;
 
--- Function to handle new user registration
+-- Function: Handle new user (creates profile on auth.users insert)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
- RETURNS trigger
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
 BEGIN
   INSERT INTO public.profiles (id, email, full_name)
   VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data->>'full_name');
   RETURN NEW;
 END;
-$function$;
+$$;
 
--- Function to auto-update updated_at timestamp
+-- Function: Update updated_at timestamp
 CREATE OR REPLACE FUNCTION public.update_updated_at()
- RETURNS trigger
- LANGUAGE plpgsql
- SET search_path TO 'public'
-AS $function$
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO ''
+AS $$
 BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$function$;
+$$;
 
 -- ============================================================
--- TABLES
+-- PART 5: TRIGGERS
 -- ============================================================
 
--- Profiles table (user settings and preferences)
-CREATE TABLE public.profiles (
-  id uuid NOT NULL PRIMARY KEY,
-  email text NOT NULL,
-  full_name text,
-  base_currency text DEFAULT 'EUR'::text,
-  secondary_currency_1 text DEFAULT 'USD'::text,
-  secondary_currency_2 text DEFAULT 'AED'::text,
-  dark_mode boolean DEFAULT true,
-  blur_amounts boolean DEFAULT false,
-  area_unit text DEFAULT 'sqm'::text,
-  monthly_income numeric,
-  monthly_income_currency text DEFAULT 'EUR'::text,
-  fiscal_year_start text DEFAULT '01-01'::text,
-  compliance_mode text DEFAULT 'none'::text,
-  news_sources jsonb DEFAULT '["bloomberg", "reuters"]'::jsonb,
-  dashboard_widgets jsonb DEFAULT '["net_worth", "chart", "breakdown_type", "breakdown_country", "breakdown_currency", "leasehold_reminders", "expiring_documents"]'::jsonb,
-  favorite_cities jsonb DEFAULT '[]'::jsonb,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now()
-);
+-- Trigger: Create profile on new user signup
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
 
--- Entities table (ownership structures: personal, company, trust, etc.)
-CREATE TABLE public.entities (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  name text NOT NULL,
-  type text NOT NULL DEFAULT 'personal'::text,
-  icon text DEFAULT '👤'::text,
-  color text DEFAULT '#C4785A'::text,
-  country text,
-  jurisdiction text,
-  is_active boolean NOT NULL DEFAULT true,
-  notes text,
-  avatar_url text,
-  -- Individual fields
-  date_of_birth date,
-  nationality text,
-  tax_residence text,
-  -- Couple fields
-  matrimonial_regime text,
-  marriage_date date,
-  marriage_country text,
-  -- Company/Holding/SPV fields
-  legal_name text,
-  legal_form text,
-  registration_number text,
-  share_capital numeric,
-  share_capital_currency text DEFAULT 'EUR'::text,
-  formation_date date,
-  dissolution_date date,
-  -- Trust fields
-  trust_type text,
-  trustee_name text,
-  beneficiaries jsonb,
-  -- HUF fields
-  karta_name text,
-  coparceners jsonb,
-  -- Ownership hierarchy
-  owned_by_entity_id uuid,
-  ownership_percentage numeric DEFAULT 100,
-  created_at timestamp with time zone NOT NULL DEFAULT now(),
-  updated_at timestamp with time zone NOT NULL DEFAULT now()
-);
+-- Trigger: Create default entity on profile creation
+CREATE TRIGGER on_profile_created
+  AFTER INSERT ON public.profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.ensure_default_entity();
 
--- Assets table (real estate, investments, bank accounts, crypto, business)
-CREATE TABLE public.assets (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  entity_id uuid,
-  name text NOT NULL,
-  type text NOT NULL,
-  country text NOT NULL,
-  currency text NOT NULL,
-  current_value numeric NOT NULL,
-  purchase_value numeric,
-  purchase_date date,
-  certainty text DEFAULT 'certain'::text,
-  notes text,
-  image_url text,
-  -- Ownership
-  ownership_percentage numeric DEFAULT 100,
-  ownership_allocation jsonb,
-  acquisition_type text DEFAULT 'purchase'::text,
-  acquisition_from text,
-  -- Real estate specific
-  address text,
-  latitude numeric,
-  longitude numeric,
-  property_type text,
-  property_status text DEFAULT 'owned'::text,
-  tenure_type text,
-  lease_end_date date,
-  size_sqm numeric,
-  rooms integer,
-  rental_income numeric,
-  -- Off-plan real estate
-  developer text,
-  project_name text,
-  unit_number text,
-  expected_delivery date,
-  total_price numeric,
-  amount_paid numeric,
-  -- Bank account specific
-  institution text,
-  reference_balance numeric,
-  reference_date date,
-  -- Investment/Crypto specific
-  ticker text,
-  quantity numeric,
-  platform text,
-  -- Shariah compliance
-  is_shariah_compliant boolean DEFAULT false,
-  shariah_certification text,
-  -- Status
-  liquidity_status text DEFAULT 'liquid'::text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now()
-);
+-- Trigger: Check circular ownership on entities
+CREATE TRIGGER check_circular_ownership_trigger
+  BEFORE INSERT OR UPDATE ON public.entities
+  FOR EACH ROW
+  EXECUTE FUNCTION public.check_circular_ownership();
 
--- Collections table (watches, vehicles, art, jewelry, wine, vinyl, etc.)
-CREATE TABLE public.collections (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  entity_id uuid,
-  name text NOT NULL,
-  type text NOT NULL,
-  country text NOT NULL,
-  currency text NOT NULL,
-  current_value numeric NOT NULL,
-  purchase_value numeric,
-  purchase_date date,
-  certainty text DEFAULT 'probable'::text,
-  notes text,
-  image_url text,
-  description text,
-  -- Ownership
-  ownership_percentage numeric DEFAULT 100,
-  ownership_allocation jsonb,
-  acquisition_type text DEFAULT 'purchase'::text,
-  acquisition_from text,
-  -- Collection specific
-  brand text,
-  model text,
-  year integer,
-  -- LP/Fund specific
-  fund_name text,
-  commitment_amount numeric,
-  called_amount numeric,
-  distribution_status text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now()
-);
+-- Trigger: Update receivable on payment
+CREATE TRIGGER trg_update_receivable_on_payment
+  AFTER INSERT ON public.receivable_payments
+  FOR EACH ROW
+  EXECUTE FUNCTION public.update_receivable_on_payment();
 
--- Liabilities table (mortgages, loans, credit cards, etc.)
-CREATE TABLE public.liabilities (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  entity_id uuid,
-  linked_asset_id uuid,
-  name text NOT NULL,
-  type text NOT NULL,
-  country text NOT NULL,
-  currency text NOT NULL,
-  current_balance numeric NOT NULL,
-  original_amount numeric,
-  interest_rate numeric,
-  monthly_payment numeric,
-  start_date date,
-  end_date date,
-  institution text,
-  certainty text DEFAULT 'certain'::text,
-  notes text,
-  -- Islamic finance fields
-  financing_type text DEFAULT 'conventional'::text,
-  is_shariah_compliant boolean DEFAULT false,
-  shariah_advisor text,
-  cost_price numeric,
-  profit_margin numeric,
-  monthly_rental numeric,
-  residual_value numeric,
-  bank_ownership_percentage numeric,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now()
-);
+-- Trigger: Enforce receiver update restrictions on shared_access
+CREATE TRIGGER enforce_receiver_restrictions
+  BEFORE UPDATE ON public.shared_access
+  FOR EACH ROW
+  EXECUTE FUNCTION public.enforce_receiver_update_restrictions();
 
--- Receivables table (money owed TO the user)
-CREATE TABLE public.receivables (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  entity_id uuid,
-  linked_asset_id uuid,
-  name text NOT NULL,
-  type text NOT NULL,
-  debtor_name text NOT NULL,
-  debtor_type text,
-  debtor_contact text,
-  currency text NOT NULL,
-  original_amount numeric NOT NULL,
-  current_balance numeric NOT NULL,
-  interest_rate numeric,
-  issue_date date,
-  due_date date,
-  repayment_schedule text,
-  status text NOT NULL DEFAULT 'pending'::text,
-  certainty text DEFAULT 'contractual'::text,
-  recovery_probability text,
-  notes text,
-  description text,
-  -- Deposit specific
-  deposit_type text,
-  refund_conditions text,
-  -- Payment tracking
-  last_payment_date date,
-  last_payment_amount numeric,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now()
-);
+-- Trigger: Audit logging for critical tables
+CREATE TRIGGER audit_assets AFTER INSERT OR UPDATE OR DELETE ON public.assets
+  FOR EACH ROW EXECUTE FUNCTION public.log_audit_event();
 
--- Receivable payments table
-CREATE TABLE public.receivable_payments (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  receivable_id uuid NOT NULL,
-  amount numeric NOT NULL,
-  currency text NOT NULL,
-  payment_date date NOT NULL,
-  payment_method text,
-  reference text,
-  notes text,
-  created_at timestamp with time zone DEFAULT now()
-);
+CREATE TRIGGER audit_liabilities AFTER INSERT OR UPDATE OR DELETE ON public.liabilities
+  FOR EACH ROW EXECUTE FUNCTION public.log_audit_event();
 
--- Documents table (proofs and certificates)
-CREATE TABLE public.documents (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  asset_id uuid,
-  collection_id uuid,
-  liability_id uuid,
-  entity_id uuid,
-  receivable_id uuid,
-  name text NOT NULL,
-  type text NOT NULL,
-  file_name text NOT NULL,
-  file_url text NOT NULL,
-  file_type text NOT NULL,
-  file_size integer NOT NULL,
-  document_date date,
-  expiry_date date,
-  is_verified boolean DEFAULT false,
-  verification_date date,
-  tags text[],
-  notes text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now()
-);
+CREATE TRIGGER audit_entities AFTER INSERT OR UPDATE OR DELETE ON public.entities
+  FOR EACH ROW EXECUTE FUNCTION public.log_audit_event();
 
--- Payment schedules table (off-plan property installments)
-CREATE TABLE public.payment_schedules (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  asset_id uuid NOT NULL,
-  payment_number integer NOT NULL,
-  amount numeric NOT NULL,
-  percentage numeric,
-  currency text NOT NULL DEFAULT 'AED'::text,
-  due_date date NOT NULL,
-  status text DEFAULT 'pending'::text,
-  description text,
-  paid_date date,
-  paid_amount numeric,
-  payment_reference text,
-  receipt_url text,
-  notes text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now()
-);
+CREATE TRIGGER audit_collections AFTER INSERT OR UPDATE OR DELETE ON public.collections
+  FOR EACH ROW EXECUTE FUNCTION public.log_audit_event();
 
--- Loan schedules table (amortization tracking)
-CREATE TABLE public.loan_schedules (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  liability_id uuid NOT NULL,
-  principal_amount numeric NOT NULL,
-  interest_rate numeric,
-  start_date date NOT NULL,
-  end_date date,
-  term_months integer,
-  loan_type text DEFAULT 'amortizing'::text,
-  rate_type text DEFAULT 'fixed'::text,
-  payment_frequency text DEFAULT 'monthly'::text,
-  monthly_payment numeric,
-  total_interest numeric,
-  total_cost numeric,
-  payments_made integer DEFAULT 0,
-  next_payment_date date,
-  remaining_principal numeric,
-  is_imported boolean DEFAULT false,
-  imported_schedule jsonb,
-  notes text,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now()
-);
+CREATE TRIGGER audit_receivables AFTER INSERT OR UPDATE OR DELETE ON public.receivables
+  FOR EACH ROW EXECUTE FUNCTION public.log_audit_event();
 
--- Loan payments table (individual payment records)
-CREATE TABLE public.loan_payments (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  loan_schedule_id uuid NOT NULL,
-  payment_number integer NOT NULL,
-  payment_date date NOT NULL,
-  principal_amount numeric,
-  interest_amount numeric,
-  total_amount numeric,
-  remaining_principal numeric,
-  status text DEFAULT 'scheduled'::text,
-  actual_payment_date date,
-  actual_amount numeric,
-  notes text,
-  created_at timestamp with time zone DEFAULT now()
-);
+-- Triggers: Auto-update updated_at timestamps
+CREATE TRIGGER update_profiles_updated_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
--- Net worth history table (snapshots)
-CREATE TABLE public.net_worth_history (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  snapshot_date date NOT NULL,
-  total_assets_eur numeric NOT NULL,
-  total_collections_eur numeric NOT NULL,
-  total_liabilities_eur numeric NOT NULL,
-  net_worth_eur numeric NOT NULL,
-  breakdown_by_type jsonb,
-  breakdown_by_country jsonb,
-  breakdown_by_currency jsonb,
-  certainty_breakdown_assets jsonb,
-  certainty_breakdown_liabilities jsonb,
-  exchange_rates_snapshot jsonb,
-  crypto_prices_snapshot jsonb,
-  created_at timestamp with time zone DEFAULT now()
-);
+CREATE TRIGGER update_entities_updated_at
+  BEFORE UPDATE ON public.entities
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
--- Shared access table (partner/advisor sharing)
-CREATE TABLE public.shared_access (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  owner_id uuid NOT NULL,
-  shared_with_email text NOT NULL,
-  shared_with_id uuid,
-  status text DEFAULT 'pending'::text,
-  created_at timestamp with time zone DEFAULT now()
-);
+CREATE TRIGGER update_assets_updated_at
+  BEFORE UPDATE ON public.assets
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
--- Audit events table (activity logging)
-CREATE TABLE public.audit_events (
-  id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id uuid NOT NULL,
-  action text NOT NULL,
-  entity_type text NOT NULL,
-  entity_id uuid,
-  metadata jsonb DEFAULT '{}'::jsonb,
-  ip_address text,
-  created_at timestamp with time zone NOT NULL DEFAULT now()
-);
+CREATE TRIGGER update_collections_updated_at
+  BEFORE UPDATE ON public.collections
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_liabilities_updated_at
+  BEFORE UPDATE ON public.liabilities
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_receivables_updated_at
+  BEFORE UPDATE ON public.receivables
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_documents_updated_at
+  BEFORE UPDATE ON public.documents
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_payment_schedules_updated_at
+  BEFORE UPDATE ON public.payment_schedules
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+CREATE TRIGGER update_loan_schedules_updated_at
+  BEFORE UPDATE ON public.loan_schedules
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
 -- ============================================================
--- ROW LEVEL SECURITY (RLS)
+-- PART 6: ENABLE ROW LEVEL SECURITY
 -- ============================================================
 
--- Enable RLS on all tables
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.entities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.assets ENABLE ROW LEVEL SECURITY;
@@ -533,17 +877,18 @@ ALTER TABLE public.liabilities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.receivables ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.receivable_payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.documents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.payment_schedules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.loan_schedules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.loan_payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_schedules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.net_worth_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shared_access ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_events ENABLE ROW LEVEL SECURITY;
 
 -- ============================================================
--- RLS POLICIES: profiles
+-- PART 7: ROW LEVEL SECURITY POLICIES
 -- ============================================================
 
+-- Profiles policies
 CREATE POLICY "Users can view own profile" ON public.profiles
   FOR SELECT USING (auth.uid() = id);
 
@@ -553,12 +898,15 @@ CREATE POLICY "Users can insert own profile" ON public.profiles
 CREATE POLICY "Users can update own profile" ON public.profiles
   FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
--- ============================================================
--- RLS POLICIES: entities
--- ============================================================
-
+-- Entities policies (with shared_access support)
 CREATE POLICY "Users can view own entities" ON public.entities
-  FOR SELECT USING (user_id = auth.uid());
+  FOR SELECT USING (
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
+  );
 
 CREATE POLICY "Users can insert own entities" ON public.entities
   FOR INSERT WITH CHECK (user_id = auth.uid());
@@ -569,18 +917,14 @@ CREATE POLICY "Users can update own entities" ON public.entities
 CREATE POLICY "Users can delete own entities" ON public.entities
   FOR DELETE USING (user_id = auth.uid());
 
--- ============================================================
--- RLS POLICIES: assets (with shared access)
--- ============================================================
-
+-- Assets policies (with shared_access support)
 CREATE POLICY "Users can view own assets" ON public.assets
   FOR SELECT USING (
-    (user_id = auth.uid()) OR 
-    (user_id IN (
-      SELECT shared_access.owner_id FROM shared_access
-      WHERE shared_access.shared_with_id = auth.uid() 
-        AND shared_access.status = 'accepted'::text
-    ))
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
   );
 
 CREATE POLICY "Users can insert own assets" ON public.assets
@@ -592,18 +936,14 @@ CREATE POLICY "Users can update own assets" ON public.assets
 CREATE POLICY "Users can delete own assets" ON public.assets
   FOR DELETE USING (user_id = auth.uid());
 
--- ============================================================
--- RLS POLICIES: collections (with shared access)
--- ============================================================
-
+-- Collections policies (with shared_access support)
 CREATE POLICY "Users can view own collections" ON public.collections
   FOR SELECT USING (
-    (user_id = auth.uid()) OR 
-    (user_id IN (
-      SELECT shared_access.owner_id FROM shared_access
-      WHERE shared_access.shared_with_id = auth.uid() 
-        AND shared_access.status = 'accepted'::text
-    ))
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
   );
 
 CREATE POLICY "Users can insert own collections" ON public.collections
@@ -615,18 +955,14 @@ CREATE POLICY "Users can update own collections" ON public.collections
 CREATE POLICY "Users can delete own collections" ON public.collections
   FOR DELETE USING (user_id = auth.uid());
 
--- ============================================================
--- RLS POLICIES: liabilities (with shared access)
--- ============================================================
-
+-- Liabilities policies (with shared_access support)
 CREATE POLICY "Users can view own liabilities" ON public.liabilities
   FOR SELECT USING (
-    (user_id = auth.uid()) OR 
-    (user_id IN (
-      SELECT shared_access.owner_id FROM shared_access
-      WHERE shared_access.shared_with_id = auth.uid() 
-        AND shared_access.status = 'accepted'::text
-    ))
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
   );
 
 CREATE POLICY "Users can insert own liabilities" ON public.liabilities
@@ -638,18 +974,14 @@ CREATE POLICY "Users can update own liabilities" ON public.liabilities
 CREATE POLICY "Users can delete own liabilities" ON public.liabilities
   FOR DELETE USING (user_id = auth.uid());
 
--- ============================================================
--- RLS POLICIES: receivables (with shared access)
--- ============================================================
-
+-- Receivables policies (with shared_access support)
 CREATE POLICY "Users can view own receivables" ON public.receivables
   FOR SELECT USING (
-    (user_id = auth.uid()) OR 
-    (user_id IN (
-      SELECT shared_access.owner_id FROM shared_access
-      WHERE shared_access.shared_with_id = auth.uid() 
-        AND shared_access.status = 'accepted'::text
-    ))
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
   );
 
 CREATE POLICY "Users can insert own receivables" ON public.receivables
@@ -661,28 +993,52 @@ CREATE POLICY "Users can update own receivables" ON public.receivables
 CREATE POLICY "Users can delete own receivables" ON public.receivables
   FOR DELETE USING (user_id = auth.uid());
 
--- ============================================================
--- RLS POLICIES: receivable_payments
--- ============================================================
-
+-- Receivable payments policies (with shared_access support)
 CREATE POLICY "Users can view own payments" ON public.receivable_payments
-  FOR SELECT USING (user_id = auth.uid());
+  FOR SELECT USING (
+    (user_id = auth.uid() AND EXISTS (
+      SELECT 1 FROM public.receivables r 
+      WHERE r.id = receivable_payments.receivable_id AND r.user_id = auth.uid()
+    ))
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
+  );
 
 CREATE POLICY "Users can insert own payments" ON public.receivable_payments
-  FOR INSERT WITH CHECK (user_id = auth.uid());
+  FOR INSERT WITH CHECK (
+    user_id = auth.uid() AND EXISTS (
+      SELECT 1 FROM public.receivables r 
+      WHERE r.id = receivable_payments.receivable_id AND r.user_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "Users can update own payments" ON public.receivable_payments
-  FOR UPDATE USING (user_id = auth.uid());
+  FOR UPDATE USING (
+    user_id = auth.uid() AND EXISTS (
+      SELECT 1 FROM public.receivables r 
+      WHERE r.id = receivable_payments.receivable_id AND r.user_id = auth.uid()
+    )
+  );
 
 CREATE POLICY "Users can delete own payments" ON public.receivable_payments
-  FOR DELETE USING (user_id = auth.uid());
+  FOR DELETE USING (
+    user_id = auth.uid() AND EXISTS (
+      SELECT 1 FROM public.receivables r 
+      WHERE r.id = receivable_payments.receivable_id AND r.user_id = auth.uid()
+    )
+  );
 
--- ============================================================
--- RLS POLICIES: documents
--- ============================================================
-
+-- Documents policies (with shared_access support)
 CREATE POLICY "Users can view own documents" ON public.documents
-  FOR SELECT USING (user_id = auth.uid());
+  FOR SELECT USING (
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
+  );
 
 CREATE POLICY "Users can insert own documents" ON public.documents
   FOR INSERT WITH CHECK (user_id = auth.uid());
@@ -693,28 +1049,15 @@ CREATE POLICY "Users can update own documents" ON public.documents
 CREATE POLICY "Users can delete own documents" ON public.documents
   FOR DELETE USING (user_id = auth.uid());
 
--- ============================================================
--- RLS POLICIES: payment_schedules
--- ============================================================
-
-CREATE POLICY "Users can view own payment schedules" ON public.payment_schedules
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own payment schedules" ON public.payment_schedules
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own payment schedules" ON public.payment_schedules
-  FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can delete own payment schedules" ON public.payment_schedules
-  FOR DELETE USING (auth.uid() = user_id);
-
--- ============================================================
--- RLS POLICIES: loan_schedules
--- ============================================================
-
+-- Loan schedules policies (with shared_access support)
 CREATE POLICY "Users can view own loan_schedules" ON public.loan_schedules
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
+  );
 
 CREATE POLICY "Users can insert own loan_schedules" ON public.loan_schedules
   FOR INSERT WITH CHECK (auth.uid() = user_id);
@@ -725,12 +1068,15 @@ CREATE POLICY "Users can update own loan_schedules" ON public.loan_schedules
 CREATE POLICY "Users can delete own loan_schedules" ON public.loan_schedules
   FOR DELETE USING (auth.uid() = user_id);
 
--- ============================================================
--- RLS POLICIES: loan_payments
--- ============================================================
-
+-- Loan payments policies (with shared_access support)
 CREATE POLICY "Users can view own loan_payments" ON public.loan_payments
-  FOR SELECT USING (auth.uid() = user_id);
+  FOR SELECT USING (
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
+  );
 
 CREATE POLICY "Users can insert own loan_payments" ON public.loan_payments
   FOR INSERT WITH CHECK (auth.uid() = user_id);
@@ -741,18 +1087,33 @@ CREATE POLICY "Users can update own loan_payments" ON public.loan_payments
 CREATE POLICY "Users can delete own loan_payments" ON public.loan_payments
   FOR DELETE USING (auth.uid() = user_id);
 
--- ============================================================
--- RLS POLICIES: net_worth_history (with shared access)
--- ============================================================
+-- Payment schedules policies (with shared_access support)
+CREATE POLICY "Users can view own payment schedules" ON public.payment_schedules
+  FOR SELECT USING (
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
+  );
 
+CREATE POLICY "Users can insert own payment schedules" ON public.payment_schedules
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own payment schedules" ON public.payment_schedules
+  FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete own payment schedules" ON public.payment_schedules
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Net worth history policies (with shared_access support)
 CREATE POLICY "Users can view own history" ON public.net_worth_history
   FOR SELECT USING (
-    (user_id = auth.uid()) OR 
-    (user_id IN (
-      SELECT shared_access.owner_id FROM shared_access
-      WHERE shared_access.shared_with_id = auth.uid() 
-        AND shared_access.status = 'accepted'::text
-    ))
+    user_id = auth.uid() 
+    OR user_id IN (
+      SELECT owner_id FROM public.shared_access 
+      WHERE shared_with_id = auth.uid() AND status = 'accepted'
+    )
   );
 
 CREATE POLICY "Users can insert own history" ON public.net_worth_history
@@ -761,14 +1122,9 @@ CREATE POLICY "Users can insert own history" ON public.net_worth_history
 CREATE POLICY "Users can delete own history" ON public.net_worth_history
   FOR DELETE USING (user_id = auth.uid());
 
--- Note: No UPDATE policy - snapshots are immutable
-
--- ============================================================
--- RLS POLICIES: shared_access
--- ============================================================
-
+-- Shared access policies
 CREATE POLICY "Users can view shares they own or received" ON public.shared_access
-  FOR SELECT USING ((owner_id = auth.uid()) OR (shared_with_id = auth.uid()));
+  FOR SELECT USING (owner_id = auth.uid() OR shared_with_id = auth.uid());
 
 CREATE POLICY "Users can create shares" ON public.shared_access
   FOR INSERT WITH CHECK (owner_id = auth.uid());
@@ -778,68 +1134,115 @@ CREATE POLICY "Owners can update their shares" ON public.shared_access
 
 CREATE POLICY "Receivers can accept shares" ON public.shared_access
   FOR UPDATE USING (shared_with_id = auth.uid())
-  WITH CHECK (
-    (shared_with_id = auth.uid()) AND 
-    (owner_id = (SELECT owner_id FROM shared_access WHERE id = shared_access.id))
-  );
+  WITH CHECK (shared_with_id = auth.uid() AND owner_id = (
+    SELECT shared_access_1.owner_id FROM shared_access shared_access_1 
+    WHERE shared_access_1.id = shared_access_1.id
+  ));
 
 CREATE POLICY "Users can delete shares they own" ON public.shared_access
   FOR DELETE USING (owner_id = auth.uid());
 
--- ============================================================
--- RLS POLICIES: audit_events
--- ============================================================
-
+-- Audit events policies (read-only for users)
 CREATE POLICY "Users can view own audit events" ON public.audit_events
   FOR SELECT USING (user_id = auth.uid());
 
-CREATE POLICY "Users can insert own audit events" ON public.audit_events
-  FOR INSERT WITH CHECK (user_id = auth.uid());
-
--- Note: No UPDATE or DELETE policies - audit log is append-only
-
 -- ============================================================
--- TRIGGERS
+-- PART 8: STORAGE BUCKETS AND POLICIES
 -- ============================================================
 
--- Trigger: Create profile on new user signup
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-
--- Trigger: Create default entity on new profile
-CREATE TRIGGER on_profile_created
-  AFTER INSERT ON public.profiles
-  FOR EACH ROW EXECUTE FUNCTION public.ensure_default_entity();
-
--- Trigger: Check circular ownership in entities
-CREATE TRIGGER check_entity_circular_ownership
-  BEFORE INSERT OR UPDATE ON public.entities
-  FOR EACH ROW EXECUTE FUNCTION public.check_circular_ownership();
-
--- Trigger: Update receivable on payment
-CREATE TRIGGER on_receivable_payment_created
-  AFTER INSERT ON public.receivable_payments
-  FOR EACH ROW EXECUTE FUNCTION public.update_receivable_on_payment();
-
--- Trigger: Enforce receiver update restrictions on shared_access
-CREATE TRIGGER enforce_shared_access_receiver_restrictions
-  BEFORE UPDATE ON public.shared_access
-  FOR EACH ROW EXECUTE FUNCTION public.enforce_receiver_update_restrictions();
-
--- ============================================================
--- STORAGE BUCKETS
--- ============================================================
-
--- Asset images bucket (public)
+-- Create storage buckets (private)
 INSERT INTO storage.buckets (id, name, public) 
-VALUES ('asset-images', 'asset-images', true)
+VALUES ('asset-images', 'asset-images', false)
 ON CONFLICT (id) DO NOTHING;
 
--- Documents bucket (private)
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('documents', 'documents', false)
 ON CONFLICT (id) DO NOTHING;
+
+-- Storage policies for asset-images bucket
+CREATE POLICY "Users can view own images" ON storage.objects
+  FOR SELECT USING (
+    bucket_id = 'asset-images' 
+    AND (auth.uid())::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Users can upload own images" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'asset-images' 
+    AND (auth.uid())::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Users can update own images" ON storage.objects
+  FOR UPDATE USING (
+    bucket_id = 'asset-images' 
+    AND (auth.uid())::text = (storage.foldername(name))[1]
+  ) WITH CHECK (
+    bucket_id = 'asset-images' 
+    AND (auth.uid())::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Users can delete own images" ON storage.objects
+  FOR DELETE USING (
+    bucket_id = 'asset-images' 
+    AND (auth.uid())::text = (storage.foldername(name))[1]
+  );
+
+-- Storage policies for documents bucket
+CREATE POLICY "Users can view own documents" ON storage.objects
+  FOR SELECT USING (
+    bucket_id = 'documents' 
+    AND (auth.uid())::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Users can upload own documents" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'documents' 
+    AND (auth.uid())::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Users can update own documents" ON storage.objects
+  FOR UPDATE USING (
+    bucket_id = 'documents' 
+    AND (auth.uid())::text = (storage.foldername(name))[1]
+  );
+
+CREATE POLICY "Users can delete own documents" ON storage.objects
+  FOR DELETE USING (
+    bucket_id = 'documents' 
+    AND (auth.uid())::text = (storage.foldername(name))[1]
+  );
+
+-- ============================================================
+-- PART 9: DATA INTEGRITY CONSTRAINTS
+-- ============================================================
+
+-- Ownership percentage constraints
+ALTER TABLE public.assets 
+  ADD CONSTRAINT chk_assets_ownership_pct CHECK (ownership_percentage >= 0 AND ownership_percentage <= 100);
+
+ALTER TABLE public.collections 
+  ADD CONSTRAINT chk_collections_ownership_pct CHECK (ownership_percentage >= 0 AND ownership_percentage <= 100);
+
+ALTER TABLE public.entities 
+  ADD CONSTRAINT chk_entities_ownership_pct CHECK (ownership_percentage >= 0 AND ownership_percentage <= 100);
+
+-- Balance constraints
+ALTER TABLE public.liabilities 
+  ADD CONSTRAINT chk_liabilities_balance CHECK (current_balance >= 0);
+
+-- Interest rate constraints
+ALTER TABLE public.liabilities 
+  ADD CONSTRAINT chk_liabilities_interest CHECK (interest_rate IS NULL OR (interest_rate >= 0 AND interest_rate <= 100));
+
+ALTER TABLE public.loan_schedules 
+  ADD CONSTRAINT chk_loan_schedules_interest CHECK (interest_rate IS NULL OR (interest_rate >= 0 AND interest_rate <= 100));
+
+-- Ownership allocation validation (using function)
+ALTER TABLE public.assets 
+  ADD CONSTRAINT chk_assets_allocation CHECK (validate_ownership_allocation(ownership_allocation));
+
+ALTER TABLE public.collections 
+  ADD CONSTRAINT chk_collections_allocation CHECK (validate_ownership_allocation(ownership_allocation));
 
 -- ============================================================
 -- END OF SCHEMA
