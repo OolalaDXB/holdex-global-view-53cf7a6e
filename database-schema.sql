@@ -1,6 +1,6 @@
 -- =====================================================
 -- VERSO DATABASE SCHEMA - PRODUCTION READY
--- Generated: 2024-12-16
+-- Generated: 2025-12-16
 -- All security fixes applied
 -- =====================================================
 
@@ -54,7 +54,10 @@ BEGIN
       RAISE EXCEPTION 'Circular ownership detected';
     END IF;
     visited_ids := array_append(visited_ids, current_id);
-    SELECT owned_by_entity_id INTO current_id FROM public.entities WHERE id = current_id;
+    SELECT owned_by_entity_id INTO current_id 
+    FROM public.entities 
+    WHERE id = current_id 
+      AND user_id = NEW.user_id;  -- tenant scope
   END LOOP;
   
   RETURN NEW;
@@ -1084,36 +1087,41 @@ ON CONFLICT (id) DO NOTHING;
 -- SECTION 8: STORAGE POLICIES
 -- =====================================================
 
--- Documents bucket policies
+-- Documents bucket policies (TO authenticated restricts to logged-in users only)
 CREATE POLICY "Users can view own documents" ON storage.objects
-  FOR SELECT USING (bucket_id = 'documents' AND (auth.uid())::text = (storage.foldername(name))[1]);
+  FOR SELECT TO authenticated
+  USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can upload own documents" ON storage.objects
-  FOR INSERT WITH CHECK (bucket_id = 'documents' AND (auth.uid())::text = (storage.foldername(name))[1]);
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can update own documents" ON storage.objects
-  FOR UPDATE USING (bucket_id = 'documents' AND (auth.uid())::text = (storage.foldername(name))[1]);
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1])
+  WITH CHECK (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can delete own documents" ON storage.objects
-  FOR DELETE USING (bucket_id = 'documents' AND (auth.uid())::text = (storage.foldername(name))[1]);
+  FOR DELETE TO authenticated
+  USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
 
--- Asset images bucket policies
+-- Asset images bucket policies (TO authenticated restricts to logged-in users only)
 CREATE POLICY "Users can view own images" ON storage.objects
-  FOR SELECT USING (bucket_id = 'asset-images' AND (auth.uid())::text = (storage.foldername(name))[1]);
+  FOR SELECT TO authenticated
+  USING (bucket_id = 'asset-images' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can upload own images" ON storage.objects
-  FOR INSERT WITH CHECK (bucket_id = 'asset-images' AND (auth.uid())::text = (storage.foldername(name))[1]);
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'asset-images' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can update own images" ON storage.objects
-  FOR UPDATE USING (bucket_id = 'asset-images' AND (auth.uid())::text = (storage.foldername(name))[1])
-  WITH CHECK (bucket_id = 'asset-images' AND (auth.uid())::text = (storage.foldername(name))[1]);
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'asset-images' AND auth.uid()::text = (storage.foldername(name))[1])
+  WITH CHECK (bucket_id = 'asset-images' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can delete own images" ON storage.objects
-  FOR DELETE USING (bucket_id = 'asset-images' AND (auth.uid())::text = (storage.foldername(name))[1]);
-
--- Public read access for asset images (for signed URL fallback)
-CREATE POLICY "Public read access for asset images" ON storage.objects
-  FOR SELECT USING (bucket_id = 'asset-images');
+  FOR DELETE TO authenticated
+  USING (bucket_id = 'asset-images' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 -- =====================================================
 -- END OF SCHEMA
