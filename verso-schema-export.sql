@@ -276,13 +276,13 @@ CREATE TABLE public.entities (
   updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
+-- Unique constraint for composite FK references (must be created BEFORE self-FK)
+ALTER TABLE public.entities ADD CONSTRAINT entities_id_user_id_unique UNIQUE (id, user_id);
+
 -- Self-referential FK for entities
 ALTER TABLE public.entities
   ADD CONSTRAINT entities_owned_by_user_fk
   FOREIGN KEY (owned_by_entity_id, user_id) REFERENCES public.entities(id, user_id);
-
--- Unique constraint for composite FK references
-ALTER TABLE public.entities ADD CONSTRAINT entities_id_user_id_unique UNIQUE (id, user_id);
 
 -- Table: assets
 CREATE TABLE public.assets (
@@ -337,11 +337,16 @@ CREATE TABLE public.assets (
   updated_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK and unique constraint for assets
+-- Unique constraint and composite FK for assets
 ALTER TABLE public.assets ADD CONSTRAINT assets_id_user_id_unique UNIQUE (id, user_id);
 ALTER TABLE public.assets
   ADD CONSTRAINT assets_entity_user_fk
   FOREIGN KEY (entity_id, user_id) REFERENCES public.entities(id, user_id);
+
+-- CHECK constraint for ownership_allocation validation
+ALTER TABLE public.assets
+  ADD CONSTRAINT assets_ownership_allocation_check
+  CHECK (public.validate_ownership_allocation(ownership_allocation));
 
 -- Table: collections
 CREATE TABLE public.collections (
@@ -376,11 +381,16 @@ CREATE TABLE public.collections (
   updated_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK and unique constraint for collections
+-- Unique constraint and composite FK for collections
 ALTER TABLE public.collections ADD CONSTRAINT collections_id_user_id_unique UNIQUE (id, user_id);
 ALTER TABLE public.collections
   ADD CONSTRAINT collections_entity_user_fk
   FOREIGN KEY (entity_id, user_id) REFERENCES public.entities(id, user_id);
+
+-- CHECK constraint for ownership_allocation validation
+ALTER TABLE public.collections
+  ADD CONSTRAINT collections_ownership_allocation_check
+  CHECK (public.validate_ownership_allocation(ownership_allocation));
 
 -- Table: liabilities
 CREATE TABLE public.liabilities (
