@@ -151,9 +151,9 @@ export function useAllUpcomingLoanPayments(): UseQueryResult<UpcomingLoanPayment
         .from('loan_payments')
         .select(`
           *,
-          loan_schedules!inner(
+          loan_schedules!loan_payments_loan_schedule_id_fkey(
             liability_id,
-            liabilities!inner(name, currency)
+            liabilities!loan_schedules_liability_id_fkey(name, currency)
           )
         `)
         .eq('user_id', user.id)
