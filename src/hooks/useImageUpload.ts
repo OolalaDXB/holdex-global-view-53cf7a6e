@@ -36,13 +36,15 @@ export const useImageUpload = () => {
 
       if (error) throw error;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
+      // Get signed URL for private bucket (valid for 1 year)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('asset-images')
-        .getPublicUrl(data.path);
+        .createSignedUrl(data.path, 60 * 60 * 24 * 365);
+
+      if (signedUrlError) throw signedUrlError;
 
       setProgress(100);
-      return publicUrl;
+      return signedUrlData.signedUrl;
     } finally {
       setIsUploading(false);
     }
