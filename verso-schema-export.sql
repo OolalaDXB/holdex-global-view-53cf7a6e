@@ -560,9 +560,11 @@ CREATE TABLE public.loan_schedules (
   updated_at timestamp with time zone DEFAULT now()
 );
 
--- Unique constraint and composite FK for loan_schedules
--- user_id validated transitively: loan_schedules -> liabilities -> profiles
+-- Constraints for loan_schedules
 ALTER TABLE public.loan_schedules ADD CONSTRAINT loan_schedules_id_user_id_unique UNIQUE (id, user_id);
+ALTER TABLE public.loan_schedules
+  ADD CONSTRAINT loan_schedules_user_fk
+  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.loan_schedules
   ADD CONSTRAINT loan_schedules_liability_user_fk
   FOREIGN KEY (liability_id, user_id) REFERENCES public.liabilities(id, user_id) ON DELETE CASCADE;
@@ -585,8 +587,10 @@ CREATE TABLE public.loan_payments (
   created_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK for loan_payments
--- user_id validated transitively: loan_payments -> loan_schedules -> liabilities -> profiles
+-- Constraints for loan_payments
+ALTER TABLE public.loan_payments
+  ADD CONSTRAINT loan_payments_user_fk
+  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.loan_payments
   ADD CONSTRAINT loan_payments_schedule_user_fk
   FOREIGN KEY (loan_schedule_id, user_id) REFERENCES public.loan_schedules(id, user_id) ON DELETE CASCADE;
@@ -612,8 +616,10 @@ CREATE TABLE public.payment_schedules (
   updated_at timestamp with time zone DEFAULT now()
 );
 
--- Composite FK for payment_schedules
--- user_id validated transitively: payment_schedules -> assets -> profiles
+-- Constraints for payment_schedules
+ALTER TABLE public.payment_schedules
+  ADD CONSTRAINT payment_schedules_user_fk
+  FOREIGN KEY (user_id) REFERENCES public.profiles(id) ON DELETE CASCADE;
 ALTER TABLE public.payment_schedules
   ADD CONSTRAINT schedules_asset_user_fk
   FOREIGN KEY (asset_id, user_id) REFERENCES public.assets(id, user_id) ON DELETE CASCADE;
