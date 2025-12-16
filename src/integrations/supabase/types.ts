@@ -708,6 +708,13 @@ export type Database = {
             referencedRelation: "loan_schedules"
             referencedColumns: ["id", "user_id"]
           },
+          {
+            foreignKeyName: "loan_payments_user_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       loan_schedules: {
@@ -790,6 +797,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "liabilities"
             referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "loan_schedules_user_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -914,6 +928,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payment_schedules_user_fk"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "schedules_asset_user_fk"
             columns: ["asset_id", "user_id"]
