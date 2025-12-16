@@ -227,6 +227,12 @@ CREATE TABLE public.profiles (
   updated_at timestamp with time zone DEFAULT now()
 );
 
+-- Link profiles to auth.users
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_id_auth_users_fk
+  FOREIGN KEY (id) REFERENCES auth.users(id)
+  ON DELETE CASCADE;
+
 -- Table: entities
 CREATE TABLE public.entities (
   id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -1074,7 +1080,8 @@ WITH CHECK (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(n
 CREATE POLICY "Users can update own documents"
 ON storage.objects FOR UPDATE
 TO authenticated
-USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
+USING (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1])
+WITH CHECK (bucket_id = 'documents' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can delete own documents"
 ON storage.objects FOR DELETE
@@ -1095,7 +1102,8 @@ WITH CHECK (bucket_id = 'asset-images' AND auth.uid()::text = (storage.foldernam
 CREATE POLICY "Users can update own asset images"
 ON storage.objects FOR UPDATE
 TO authenticated
-USING (bucket_id = 'asset-images' AND auth.uid()::text = (storage.foldername(name))[1]);
+USING (bucket_id = 'asset-images' AND auth.uid()::text = (storage.foldername(name))[1])
+WITH CHECK (bucket_id = 'asset-images' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 CREATE POLICY "Users can delete own asset images"
 ON storage.objects FOR DELETE
