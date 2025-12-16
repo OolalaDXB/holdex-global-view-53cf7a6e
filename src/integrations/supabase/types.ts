@@ -155,13 +155,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "assets_entity_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "entities"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "assets_entity_user_fk"
             columns: ["entity_id", "user_id"]
             isOneToOne: false
@@ -300,13 +293,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "collections_entity_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "entities"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "collections_entity_user_fk"
             columns: ["entity_id", "user_id"]
             isOneToOne: false
@@ -331,9 +317,9 @@ export type Database = {
           entity_id: string | null
           expiry_date: string | null
           file_name: string
+          file_path: string
           file_size: number
           file_type: string
-          file_url: string
           id: string
           is_verified: boolean | null
           liability_id: string | null
@@ -354,9 +340,9 @@ export type Database = {
           entity_id?: string | null
           expiry_date?: string | null
           file_name: string
+          file_path: string
           file_size: number
           file_type: string
-          file_url: string
           id?: string
           is_verified?: boolean | null
           liability_id?: string | null
@@ -377,9 +363,9 @@ export type Database = {
           entity_id?: string | null
           expiry_date?: string | null
           file_name?: string
+          file_path?: string
           file_size?: number
           file_type?: string
-          file_url?: string
           id?: string
           is_verified?: boolean | null
           liability_id?: string | null
@@ -394,13 +380,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "documents_asset_id_fkey"
-            columns: ["asset_id"]
-            isOneToOne: false
-            referencedRelation: "assets"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "documents_asset_user_fk"
             columns: ["asset_id", "user_id"]
             isOneToOne: false
@@ -408,39 +387,11 @@ export type Database = {
             referencedColumns: ["id", "user_id"]
           },
           {
-            foreignKeyName: "documents_collection_id_fkey"
-            columns: ["collection_id"]
-            isOneToOne: false
-            referencedRelation: "collections"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documents_entity_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "entities"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "documents_entity_user_fk"
             columns: ["entity_id", "user_id"]
             isOneToOne: false
             referencedRelation: "entities"
             referencedColumns: ["id", "user_id"]
-          },
-          {
-            foreignKeyName: "documents_liability_id_fkey"
-            columns: ["liability_id"]
-            isOneToOne: false
-            referencedRelation: "liabilities"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "documents_receivable_id_fkey"
-            columns: ["receivable_id"]
-            isOneToOne: false
-            referencedRelation: "receivables"
-            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "documents_user_id_fkey"
@@ -559,13 +510,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "entities_owned_by_entity_id_fkey"
-            columns: ["owned_by_entity_id"]
-            isOneToOne: false
-            referencedRelation: "entities"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "entities_owned_by_user_fk"
             columns: ["owned_by_entity_id", "user_id"]
             isOneToOne: false
@@ -671,25 +615,11 @@ export type Database = {
             referencedColumns: ["id", "user_id"]
           },
           {
-            foreignKeyName: "liabilities_entity_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "entities"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "liabilities_entity_user_fk"
             columns: ["entity_id", "user_id"]
             isOneToOne: false
             referencedRelation: "entities"
             referencedColumns: ["id", "user_id"]
-          },
-          {
-            foreignKeyName: "liabilities_linked_asset_id_fkey"
-            columns: ["linked_asset_id"]
-            isOneToOne: false
-            referencedRelation: "assets"
-            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "liabilities_user_id_fkey"
@@ -750,13 +680,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "loan_payments_loan_schedule_id_fkey"
-            columns: ["loan_schedule_id"]
-            isOneToOne: false
-            referencedRelation: "loan_schedules"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "loan_payments_schedule_user_fk"
             columns: ["loan_schedule_id", "user_id"]
@@ -840,13 +763,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "loan_schedules_liability_id_fkey"
-            columns: ["liability_id"]
-            isOneToOne: false
-            referencedRelation: "liabilities"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "loan_schedules_liability_user_fk"
             columns: ["liability_id", "user_id"]
@@ -978,13 +894,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "payment_schedules_asset_id_fkey"
-            columns: ["asset_id"]
-            isOneToOne: false
-            referencedRelation: "assets"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "schedules_asset_user_fk"
             columns: ["asset_id", "user_id"]
             isOneToOne: false
@@ -1101,13 +1010,6 @@ export type Database = {
             referencedRelation: "receivables"
             referencedColumns: ["id", "user_id"]
           },
-          {
-            foreignKeyName: "receivable_payments_receivable_id_fkey"
-            columns: ["receivable_id"]
-            isOneToOne: false
-            referencedRelation: "receivables"
-            referencedColumns: ["id"]
-          },
         ]
       }
       receivables: {
@@ -1200,25 +1102,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "receivables_entity_id_fkey"
-            columns: ["entity_id"]
-            isOneToOne: false
-            referencedRelation: "entities"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "receivables_entity_user_fk"
             columns: ["entity_id", "user_id"]
             isOneToOne: false
             referencedRelation: "entities"
             referencedColumns: ["id", "user_id"]
-          },
-          {
-            foreignKeyName: "receivables_linked_asset_id_fkey"
-            columns: ["linked_asset_id"]
-            isOneToOne: false
-            referencedRelation: "assets"
-            referencedColumns: ["id"]
           },
         ]
       }

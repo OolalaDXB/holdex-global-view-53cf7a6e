@@ -111,7 +111,7 @@ export const AddDocumentDialog = ({
       await createDocument.mutateAsync({
         name: name || file.name,
         type,
-        file_url: fileUrl,
+        file_path: fileUrl, // This is now a path, not a signed URL
         file_name: file.name,
         file_size: file.size,
         file_type: file.type,

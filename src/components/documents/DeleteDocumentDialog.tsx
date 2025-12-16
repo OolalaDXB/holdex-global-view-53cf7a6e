@@ -24,14 +24,14 @@ export const DeleteDocumentDialog = ({
 }: DeleteDocumentDialogProps) => {
   const { toast } = useToast();
   const deleteDocument = useDeleteDocument();
-  const { deleteDocument: deleteFile } = useDocumentUpload();
+  const { deleteFile } = useDocumentUpload();
 
   const handleDelete = async () => {
     if (!document) return;
 
     try {
-      // Delete file from storage
-      await deleteFile(document.file_url);
+      // Delete file from storage using the path
+      await deleteFile(document.file_path);
       
       // Delete document record
       await deleteDocument.mutateAsync({ id: document.id, name: document.name });
