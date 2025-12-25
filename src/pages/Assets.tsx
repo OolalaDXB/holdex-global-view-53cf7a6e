@@ -325,7 +325,7 @@ const AssetsPage = () => {
 
   return (
     <AppLayout>
-      <div className="p-8 lg:p-12 max-w-7xl">
+      <div className="p-4 sm:p-6 lg:p-12 max-w-7xl">
         <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>

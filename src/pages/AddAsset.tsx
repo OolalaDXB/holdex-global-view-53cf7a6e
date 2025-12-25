@@ -270,7 +270,7 @@ const AddAssetPage = () => {
 
   return (
     <AppLayout>
-      <div className="p-8 lg:p-12 max-w-3xl">
+      <div className="p-4 sm:p-6 lg:p-12 max-w-3xl">
         <header className="mb-8">
           <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Add Asset</h1>
           <p className="text-muted-foreground">Add a new asset to your wealth portfolio.</p>

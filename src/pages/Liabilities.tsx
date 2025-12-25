@@ -206,7 +206,7 @@ const LiabilitiesPage = () => {
   
   return (
     <AppLayout>
-      <div className="p-8 lg:p-12 max-w-5xl">
+      <div className="p-4 sm:p-6 lg:p-12 max-w-5xl">
         <header className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>

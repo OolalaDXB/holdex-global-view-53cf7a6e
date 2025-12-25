@@ -406,7 +406,7 @@ const Dashboard = () => {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="p-8 lg:p-12 max-w-7xl flex items-center justify-center min-h-[60vh]">
+        <div className="p-4 sm:p-6 lg:p-12 max-w-7xl flex items-center justify-center min-h-[60vh]">
           <div className="text-muted-foreground">Loading your wealth data...</div>
         </div>
       </AppLayout>
@@ -434,7 +434,7 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
-      <div className="p-8 lg:p-12 max-w-7xl">
+      <div className="p-4 sm:p-6 lg:p-12 max-w-7xl">
         {/* Read-only banner when viewing shared portfolio */}
         {isViewingShared && (
           <Alert className="mb-6 bg-secondary border-border">

@@ -263,7 +263,7 @@ const SettingsPage = () => {
   if (profileLoading) {
     return (
       <AppLayout>
-        <div className="p-8 lg:p-12 max-w-2xl flex items-center justify-center min-h-[60vh]">
+        <div className="p-4 sm:p-6 lg:p-12 max-w-2xl flex items-center justify-center min-h-[60vh]">
           <p className="text-muted-foreground">Loading settings...</p>
         </div>
       </AppLayout>
@@ -272,7 +272,7 @@ const SettingsPage = () => {
 
   return (
     <AppLayout>
-      <div className="p-8 lg:p-12 max-w-2xl">
+      <div className="p-4 sm:p-6 lg:p-12 max-w-2xl">
         <header className="mb-8">
           <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Settings</h1>
           <p className="text-muted-foreground">Manage your account and preferences.</p>

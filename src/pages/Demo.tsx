@@ -380,7 +380,7 @@ const Demo = () => {
 
   return (
     <AppLayout isDemo>
-      <div className="p-8 lg:p-12 max-w-7xl">
+      <div className="p-4 sm:p-6 lg:p-12 max-w-7xl">
         {/* Demo Banner */}
         <div className="mb-8 p-4 rounded-lg bg-primary/10 border border-primary/20 flex items-start gap-3">
           <Info size={20} className="text-primary mt-0.5 flex-shrink-0" />
