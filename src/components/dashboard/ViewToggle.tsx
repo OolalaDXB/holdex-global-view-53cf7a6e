@@ -83,20 +83,27 @@ export function useViewConfig() {
 interface ViewToggleProps {
   config: ViewConfig;
   onChange: (config: ViewConfig) => void;
+  isMobileDrawer?: boolean;
 }
 
-export function ViewToggle({ config, onChange }: ViewToggleProps) {
-  const [open, setOpen] = useState(false);
-
+// Shared content for both popover and drawer
+function ViewToggleContent({ 
+  config, 
+  onChange,
+  onClose 
+}: { 
+  config: ViewConfig; 
+  onChange: (config: ViewConfig) => void;
+  onClose?: () => void;
+}) {
   const handleModeChange = (mode: ViewMode) => {
     if (mode === 'custom' && config.mode !== 'custom') {
-      // When switching to custom, initialize with all types
       onChange({ ...config, mode, customTypes: ASSET_TYPES.map(t => t.id) });
     } else {
       onChange({ ...config, mode });
     }
-    if (mode !== 'custom') {
-      setOpen(false);
+    if (mode !== 'custom' && onClose) {
+      onClose();
     }
   };
 
@@ -111,6 +118,91 @@ export function ViewToggle({ config, onChange }: ViewToggleProps) {
     onChange({ ...config, includeFrozenBlocked: !config.includeFrozenBlocked });
   };
 
+  return (
+    <div className="space-y-1">
+      {/* Mode options */}
+      <button
+        onClick={() => handleModeChange('all')}
+        className={cn(
+          "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors",
+          config.mode === 'all' 
+            ? "bg-primary/10 text-foreground" 
+            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+        )}
+      >
+        <span>All Assets</span>
+        {config.mode === 'all' && <Check size={14} />}
+      </button>
+      
+      <button
+        onClick={() => handleModeChange('financial')}
+        className={cn(
+          "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors",
+          config.mode === 'financial' 
+            ? "bg-primary/10 text-foreground" 
+            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+        )}
+      >
+        <span>Financial Only</span>
+        {config.mode === 'financial' && <Check size={14} />}
+      </button>
+
+      <button
+        onClick={() => handleModeChange('custom')}
+        className={cn(
+          "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors",
+          config.mode === 'custom' 
+            ? "bg-primary/10 text-foreground" 
+            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+        )}
+      >
+        <span>Custom</span>
+        {config.mode === 'custom' && <Check size={14} />}
+      </button>
+
+      {/* Custom type selection */}
+      {config.mode === 'custom' && (
+        <div className="pt-2 mt-2 border-t border-border space-y-2">
+          {ASSET_TYPES.map((type) => (
+            <div key={type.id} className="flex items-center gap-2 px-3">
+              <Checkbox
+                id={`type-${type.id}`}
+                checked={config.customTypes.includes(type.id)}
+                onCheckedChange={() => handleTypeToggle(type.id)}
+              />
+              <Label 
+                htmlFor={`type-${type.id}`}
+                className="text-sm text-muted-foreground cursor-pointer"
+              >
+                {type.label}
+              </Label>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Frozen/Blocked toggle */}
+      <Separator className="my-2" />
+      <div className="flex items-center gap-2 px-3 py-1">
+        <Checkbox
+          id="include-frozen"
+          checked={config.includeFrozenBlocked}
+          onCheckedChange={handleFrozenToggle}
+        />
+        <Label 
+          htmlFor="include-frozen"
+          className="text-sm text-muted-foreground cursor-pointer"
+        >
+          Include frozen/blocked
+        </Label>
+      </div>
+    </div>
+  );
+}
+
+export function ViewToggle({ config, onChange, isMobileDrawer = false }: ViewToggleProps) {
+  const [open, setOpen] = useState(false);
+
   const getModeLabel = () => {
     switch (config.mode) {
       case 'all':
@@ -121,6 +213,15 @@ export function ViewToggle({ config, onChange }: ViewToggleProps) {
         return `Custom (${config.customTypes.length})`;
     }
   };
+
+  // For mobile drawer, just render the content inline
+  if (isMobileDrawer) {
+    return (
+      <div className="bg-secondary/50 rounded-lg p-3">
+        <ViewToggleContent config={config} onChange={onChange} />
+      </div>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -136,84 +237,7 @@ export function ViewToggle({ config, onChange }: ViewToggleProps) {
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-2" align="end">
-        <div className="space-y-1">
-          {/* Mode options */}
-          <button
-            onClick={() => handleModeChange('all')}
-            className={cn(
-              "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors",
-              config.mode === 'all' 
-                ? "bg-primary/10 text-foreground" 
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-            )}
-          >
-            <span>All Assets</span>
-            {config.mode === 'all' && <Check size={14} />}
-          </button>
-          
-          <button
-            onClick={() => handleModeChange('financial')}
-            className={cn(
-              "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors",
-              config.mode === 'financial' 
-                ? "bg-primary/10 text-foreground" 
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-            )}
-          >
-            <span>Financial Only</span>
-            {config.mode === 'financial' && <Check size={14} />}
-          </button>
-
-          <button
-            onClick={() => handleModeChange('custom')}
-            className={cn(
-              "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors",
-              config.mode === 'custom' 
-                ? "bg-primary/10 text-foreground" 
-                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-            )}
-          >
-            <span>Custom</span>
-            {config.mode === 'custom' && <Check size={14} />}
-          </button>
-
-          {/* Custom type selection */}
-          {config.mode === 'custom' && (
-            <div className="pt-2 mt-2 border-t border-border space-y-2">
-              {ASSET_TYPES.map((type) => (
-                <div key={type.id} className="flex items-center gap-2 px-3">
-                  <Checkbox
-                    id={`type-${type.id}`}
-                    checked={config.customTypes.includes(type.id)}
-                    onCheckedChange={() => handleTypeToggle(type.id)}
-                  />
-                  <Label 
-                    htmlFor={`type-${type.id}`}
-                    className="text-sm text-muted-foreground cursor-pointer"
-                  >
-                    {type.label}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Frozen/Blocked toggle */}
-          <Separator className="my-2" />
-          <div className="flex items-center gap-2 px-3 py-1">
-            <Checkbox
-              id="include-frozen"
-              checked={config.includeFrozenBlocked}
-              onCheckedChange={handleFrozenToggle}
-            />
-            <Label 
-              htmlFor="include-frozen"
-              className="text-sm text-muted-foreground cursor-pointer"
-            >
-              Include frozen/blocked
-            </Label>
-          </div>
-        </div>
+        <ViewToggleContent config={config} onChange={onChange} onClose={() => setOpen(false)} />
       </PopoverContent>
     </Popover>
   );
