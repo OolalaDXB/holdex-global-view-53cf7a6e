@@ -8,10 +8,52 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useDemo } from '@/contexts/DemoContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { FavoriteCitiesSelect } from '@/components/settings/FavoriteCitiesSelect';
 import { DashboardWidgetsSelect } from '@/components/settings/DashboardWidgetsSelect';
 import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
 import { FavoriteCity } from '@/hooks/useProfile';
+import { cn } from '@/lib/utils';
+
+// Theme Selector Component
+function ThemeSelector() {
+  const { theme, setTheme } = useTheme();
+  
+  return (
+    <div className="flex gap-3">
+      <button
+        onClick={() => setTheme('club')}
+        className={cn(
+          "flex-1 p-4 rounded-lg border-2 transition-all text-left",
+          theme === 'club' 
+            ? "border-primary bg-primary/10" 
+            : "border-border hover:border-primary/50"
+        )}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">🌲</span>
+          <span className="font-medium text-foreground">Club</span>
+        </div>
+        <p className="text-xs text-muted-foreground">Vert club privé</p>
+      </button>
+      <button
+        onClick={() => setTheme('carbon')}
+        className={cn(
+          "flex-1 p-4 rounded-lg border-2 transition-all text-left",
+          theme === 'carbon' 
+            ? "border-primary bg-primary/10" 
+            : "border-border hover:border-primary/50"
+        )}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">⚫</span>
+          <span className="font-medium text-foreground">Carbon</span>
+        </div>
+        <p className="text-xs text-muted-foreground">Cockpit analyste</p>
+      </button>
+    </div>
+  );
+}
 
 const FISCAL_YEAR_OPTIONS = [
   { value: '01-01', label: 'January 1 (Default)' },
@@ -292,6 +334,17 @@ const DemoSettings = () => {
 
           <Separator />
 
+          {/* Theme Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Theme</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose your preferred visual theme.
+            </p>
+            <ThemeSelector />
+          </section>
+
+          <Separator />
+
           {/* Privacy Section */}
           <section>
             <h2 className="font-serif text-xl font-medium text-foreground mb-4">Privacy</h2>
@@ -307,31 +360,6 @@ const DemoSettings = () => {
                   onCheckedChange={setBlurAmounts}
                 />
               </div>
-            </div>
-          </section>
-
-          <Separator />
-
-          {/* Fiscal Year Section */}
-          <section>
-            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Fiscal Year</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Set your fiscal year start for charts and annual calculations.
-            </p>
-            <div className="space-y-2">
-              <Label htmlFor="fiscalYear">Fiscal Year Starts</Label>
-              <Select value={fiscalYearStart} onValueChange={setFiscalYearStart}>
-                <SelectTrigger className="w-64">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {FISCAL_YEAR_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </section>
 

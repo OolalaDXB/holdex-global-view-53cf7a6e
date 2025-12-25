@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme, Theme } from '@/contexts/ThemeContext';
 import { useProfile, useUpdateProfile, Profile, FavoriteCity } from '@/hooks/useProfile';
 import { useSharedAccess, useInvitePartner, useRevokeAccess, useReceivedInvitations, useRespondToInvitation, ReceivedInvitation } from '@/hooks/useSharedAccess';
 import { useAssets } from '@/hooks/useAssets';
@@ -20,8 +21,48 @@ import { NewsSourcesSelect } from '@/components/settings/NewsSourcesSelect';
 import { AuditLogViewer } from '@/components/settings/AuditLogViewer';
 import { X, Check, XCircle, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 
+// Theme Selector Component
+function ThemeSelector() {
+  const { theme, setTheme } = useTheme();
+  
+  return (
+    <div className="flex gap-3">
+      <button
+        onClick={() => setTheme('club')}
+        className={cn(
+          "flex-1 p-4 rounded-lg border-2 transition-all text-left",
+          theme === 'club' 
+            ? "border-primary bg-primary/10" 
+            : "border-border hover:border-primary/50"
+        )}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">🌲</span>
+          <span className="font-medium text-foreground">Club</span>
+        </div>
+        <p className="text-xs text-muted-foreground">Vert club privé</p>
+      </button>
+      <button
+        onClick={() => setTheme('carbon')}
+        className={cn(
+          "flex-1 p-4 rounded-lg border-2 transition-all text-left",
+          theme === 'carbon' 
+            ? "border-primary bg-primary/10" 
+            : "border-border hover:border-primary/50"
+        )}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">⚫</span>
+          <span className="font-medium text-foreground">Carbon</span>
+        </div>
+        <p className="text-xs text-muted-foreground">Cockpit analyste</p>
+      </button>
+    </div>
+  );
+}
 
 const FISCAL_YEAR_OPTIONS = [
   { value: '01-01', label: 'January 1 (Default)' },
@@ -209,7 +250,7 @@ const SettingsPage = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `verso-export-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `beau-export-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 
@@ -399,21 +440,21 @@ const SettingsPage = () => {
 
           <Separator />
 
+          {/* Theme Section */}
+          <section>
+            <h2 className="font-serif text-xl font-medium text-foreground mb-4">Theme</h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose your preferred visual theme.
+            </p>
+            <ThemeSelector />
+          </section>
+
+          <Separator />
+
           {/* Display Preferences Section */}
           <section>
             <h2 className="font-serif text-xl font-medium text-foreground mb-4">Display</h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="darkMode">Dark Mode</Label>
-                  <p className="text-xs text-muted-foreground">Use dark theme for the interface.</p>
-                </div>
-                <Switch
-                  id="darkMode"
-                  checked={darkMode}
-                  onCheckedChange={setDarkMode}
-                />
-              </div>
               <div className="flex items-center justify-between">
                 <div>
                   <Label htmlFor="areaUnit">Property Size in Square Feet</Label>

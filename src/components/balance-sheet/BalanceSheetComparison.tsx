@@ -324,7 +324,7 @@ export const BalanceSheetComparison = ({
           This comparative statement is prepared for informational purposes only.
         </p>
         <p className="text-[9px] text-muted-foreground/40 mt-1">
-          Generated on {format(new Date(), 'MMMM d, yyyy')} • Verso
+          Generated on {format(new Date(), 'MMMM d, yyyy')} • BEAU
         </p>
       </div>
     </div>

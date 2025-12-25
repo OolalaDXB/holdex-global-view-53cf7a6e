@@ -72,7 +72,7 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
   const displayName = isDemo 
     ? 'Lucas Soleil' 
     : (user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User');
-  const displayEmail = isDemo ? 'demo@verso.app' : user?.email;
+  const displayEmail = isDemo ? 'demo@beau.app' : user?.email;
 
   return (
     <aside 
@@ -88,12 +88,12 @@ export function Sidebar({ isDemo = false }: SidebarProps) {
           collapsed ? "justify-center" : "justify-between"
         )}>
           {!collapsed && (
-            <h1 className="font-serif text-3xl font-semibold tracking-wide" style={{ color: '#F5F5F5' }}>
-              Verso
+            <h1 className="font-serif text-3xl font-semibold tracking-wide text-foreground">
+              BEAU
             </h1>
           )}
           {collapsed && (
-            <span className="font-serif text-2xl font-semibold" style={{ color: '#F5F5F5' }}>V</span>
+            <span className="font-serif text-2xl font-semibold text-foreground">B</span>
           )}
           <button
             onClick={toggle}

@@ -152,7 +152,7 @@ const AuthPage = () => {
         } else {
           toast({
             title: "Account created",
-            description: "Welcome to Verso. You are now signed in.",
+            description: "Welcome to BEAU. You are now signed in.",
           });
         }
       }
@@ -181,12 +181,9 @@ const AuthPage = () => {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-12">
-          <h1 className="font-serif text-5xl font-medium tracking-wide" style={{ color: '#F5F5F5' }}>
-            Verso
+          <h1 className="font-serif text-5xl font-medium tracking-wide text-foreground">
+            BEAU
           </h1>
-          <p className="text-muted-foreground text-sm mt-2">
-            See what you own
-          </p>
         </div>
 
         {/* Password Reset Success */}

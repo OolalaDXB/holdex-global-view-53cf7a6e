@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <!-- Radial vignette vert club -->
+    <radialGradient id="vignetteB" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:#2a5c46"/>
+      <stop offset="100%" style="stop-color:#0f2a1e"/>
+    </radialGradient>
+    
+    <!-- Platine embossé -->
+    <linearGradient id="platinumB" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="10%" style="stop-color:#F0F0F0"/>
+      <stop offset="25%" style="stop-color:#E0E0E0"/>
+      <stop offset="40%" style="stop-color:#D0D0D0"/>
+      <stop offset="55%" style="stop-color:#B8B8B8"/>
+      <stop offset="70%" style="stop-color:#A0A0A0"/>
+      <stop offset="85%" style="stop-color:#888888"/>
+      <stop offset="100%" style="stop-color:#707070"/>
+    </linearGradient>
+    
+    <!-- Highlight -->
+    <linearGradient id="highlightB" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FFFFFF" stop-opacity="0"/>
+      <stop offset="30%" style="stop-color:#FFFFFF" stop-opacity="0.2"/>
+      <stop offset="50%" style="stop-color:#FFFFFF" stop-opacity="0.3"/>
+      <stop offset="70%" style="stop-color:#FFFFFF" stop-opacity="0.2"/>
+      <stop offset="100%" style="stop-color:#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    
+    <!-- Ombre emboss profonde -->
+    <filter id="embossB" x="-15%" y="-15%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#0a1a12" flood-opacity="0.7"/>
+      <feDropShadow dx="0" dy="-1" stdDeviation="0.5" flood-color="#FFFFFF" flood-opacity="0.2"/>
+    </filter>
+    
+    <!-- Noise -->
+    <filter id="noiseB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+  </defs>
+  
+  <!-- Fond vert club -->
+  <rect width="400" height="400" fill="url(#vignetteB)"/>
+  
+  <!-- Texture cuir -->
+  <rect width="400" height="400" filter="url(#noiseB)" opacity="0.08"/>
+  
+  <!-- B monogramme -->
+  <g filter="url(#embossB)">
+    <text 
+      x="200" 
+      y="280" 
+      font-family="Times New Roman, Garamond, Georgia, serif" 
+      font-size="240" 
+      font-weight="400"
+      text-anchor="middle"
+      fill="url(#platinumB)"
+    >
+      B
+    </text>
+  </g>
+  
+  <!-- Reflet highlight -->
+  <text 
+    x="200" 
+    y="280" 
+    font-family="Times New Roman, Garamond, Georgia, serif" 
+    font-size="240" 
+    font-weight="400"
+    text-anchor="middle"
+    fill="url(#highlightB)"
+    opacity="0.4"
+  >
+    B
+  </text>
+</svg>
