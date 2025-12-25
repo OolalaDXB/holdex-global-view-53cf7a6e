@@ -19,7 +19,7 @@ export function useGeocode() {
         {
           headers: {
             'Accept': 'application/json',
-            'User-Agent': 'Verso-WealthTracker/1.0'
+            'User-Agent': 'BEAU-WealthTracker/1.0'
           }
         }
       );

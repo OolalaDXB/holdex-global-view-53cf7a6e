@@ -198,7 +198,7 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
             </div>
             
             <h2 className="font-serif text-2xl md:text-3xl font-medium text-foreground mb-4">
-              Welcome to Verso
+              Welcome to BEAU
             </h2>
             
             <p className="text-muted-foreground max-w-md mx-auto mb-8">
@@ -429,7 +429,7 @@ export function OnboardingWizard({ userName }: OnboardingWizardProps) {
           </h2>
           
           <p className="text-muted-foreground max-w-md mx-auto mb-8">
-            Congratulations! You have successfully added your first asset to Verso. Continue adding more assets to build your complete wealth picture.
+            Congratulations! You have successfully added your first asset to BEAU. Continue adding more assets to build your complete wealth picture.
           </p>
           
           <div className="flex flex-wrap justify-center gap-4">

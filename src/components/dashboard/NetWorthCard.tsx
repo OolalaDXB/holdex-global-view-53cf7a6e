@@ -23,7 +23,7 @@ const currencySymbols: Record<string, string> = {
   RUB: '₽',
 };
 
-const STORAGE_KEY = 'verso-gross-net-view';
+const STORAGE_KEY = 'beau-gross-net-view';
 
 export function NetWorthCard({ 
   totalValue, 

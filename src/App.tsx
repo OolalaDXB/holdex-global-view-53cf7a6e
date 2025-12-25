@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { DemoProvider } from "@/contexts/DemoContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { BlurProvider } from "@/contexts/BlurContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import BalanceSheet from "./pages/BalanceSheet";
@@ -37,46 +38,48 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <CurrencyProvider>
-        <BlurProvider>
-          <DemoProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <Routes>
-                <Route path="/auth" element={<Auth />} />
-                  <Route path="/demo" element={<Demo />} />
-                  <Route path="/demo/assets" element={<DemoAssets />} />
-                  <Route path="/demo/collections" element={<DemoCollections />} />
-                  <Route path="/demo/add" element={<DemoAddAsset />} />
-                  <Route path="/demo/entities" element={<DemoEntities />} />
-                  <Route path="/demo/receivables" element={<DemoReceivables />} />
-                  <Route path="/demo/documents" element={<DemoDocuments />} />
-                  <Route path="/demo/liabilities" element={<DemoLiabilities />} />
-                  <Route path="/demo/add-liability" element={<DemoAddLiability />} />
-                  <Route path="/demo/balance-sheet" element={<DemoBalanceSheet />} />
-                  <Route path="/demo/settings" element={<DemoSettings />} />
-                  <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                  <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheet /></ProtectedRoute>} />
-                  <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
-                  <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
-                  <Route path="/entities" element={<ProtectedRoute><Entities /></ProtectedRoute>} />
-                  <Route path="/receivables" element={<ProtectedRoute><Receivables /></ProtectedRoute>} />
-                  <Route path="/liabilities" element={<ProtectedRoute><Liabilities /></ProtectedRoute>} />
-                  <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
-                  <Route path="/add" element={<ProtectedRoute><AddAsset /></ProtectedRoute>} />
-                  <Route path="/add-liability" element={<ProtectedRoute><AddLiability /></ProtectedRoute>} />
-                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </TooltipProvider>
-          </DemoProvider>
-        </BlurProvider>
-      </CurrencyProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CurrencyProvider>
+          <BlurProvider>
+            <DemoProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                  <Route path="/auth" element={<Auth />} />
+                    <Route path="/demo" element={<Demo />} />
+                    <Route path="/demo/assets" element={<DemoAssets />} />
+                    <Route path="/demo/collections" element={<DemoCollections />} />
+                    <Route path="/demo/add" element={<DemoAddAsset />} />
+                    <Route path="/demo/entities" element={<DemoEntities />} />
+                    <Route path="/demo/receivables" element={<DemoReceivables />} />
+                    <Route path="/demo/documents" element={<DemoDocuments />} />
+                    <Route path="/demo/liabilities" element={<DemoLiabilities />} />
+                    <Route path="/demo/add-liability" element={<DemoAddLiability />} />
+                    <Route path="/demo/balance-sheet" element={<DemoBalanceSheet />} />
+                    <Route path="/demo/settings" element={<DemoSettings />} />
+                    <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                    <Route path="/balance-sheet" element={<ProtectedRoute><BalanceSheet /></ProtectedRoute>} />
+                    <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
+                    <Route path="/collections" element={<ProtectedRoute><Collections /></ProtectedRoute>} />
+                    <Route path="/entities" element={<ProtectedRoute><Entities /></ProtectedRoute>} />
+                    <Route path="/receivables" element={<ProtectedRoute><Receivables /></ProtectedRoute>} />
+                    <Route path="/liabilities" element={<ProtectedRoute><Liabilities /></ProtectedRoute>} />
+                    <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+                    <Route path="/add" element={<ProtectedRoute><AddAsset /></ProtectedRoute>} />
+                    <Route path="/add-liability" element={<ProtectedRoute><AddLiability /></ProtectedRoute>} />
+                    <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </TooltipProvider>
+            </DemoProvider>
+          </BlurProvider>
+        </CurrencyProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

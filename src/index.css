@@ -1,97 +1,150 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* Verso Premium Dark Theme */
-    --background: 0 0% 10%; /* #1A1A1A */
-    --foreground: 48 14% 95%; /* #F5F5F0 warm white */
-
-    --card: 0 0% 12%;
-    --card-foreground: 48 14% 95%;
-
-    --popover: 0 0% 12%;
-    --popover-foreground: 48 14% 95%;
-
-    /* Terracotta accent */
-    --primary: 18 43% 56%; /* #C4785A */
-    --primary-foreground: 48 14% 95%;
-
-    --secondary: 0 0% 15%;
-    --secondary-foreground: 48 14% 90%;
-
-    --muted: 0 0% 18%;
-    --muted-foreground: 30 5% 65%; /* Increased from 55% for better contrast */
-
-    --accent: 0 0% 16%;
-    --accent-foreground: 48 14% 95%;
-
-    /* Status colors - muted, sophisticated */
-    --destructive: 0 25% 52%; /* Dusty rose #9B6B6B */
-    --destructive-foreground: 48 14% 95%;
+  /* ============================================
+     BEAU Theme System
+     ============================================ */
+  
+  /* THEME 1: CLUB (Default) - L'écrin vert club */
+  :root,
+  :root[data-theme="club"] {
+    /* Backgrounds */
+    --background: 152 35% 11%; /* #0f2a1e */
+    --card: 152 30% 17%; /* #1a3d2e */
+    --card-foreground: 0 0% 91%; /* #E8E8E8 */
+    --popover: 152 30% 17%;
+    --popover-foreground: 0 0% 91%;
+    --muted: 152 25% 26%; /* #2a5c46 */
+    --muted-foreground: 150 10% 58%; /* #8B9D94 */
     
-    --success: 100 10% 50%; /* Muted sage #7D8B75 */
-    --success-foreground: 48 14% 95%;
-
-    --border: 0 0% 22%; /* #3A3A3A */
-    --input: 0 0% 18%;
+    /* Text */
+    --foreground: 0 0% 91%; /* #E8E8E8 Platinum */
+    
+    /* Accents */
+    --primary: 18 43% 56%; /* #C4785A Copper */
+    --primary-foreground: 152 35% 11%;
+    --secondary: 152 25% 26%;
+    --secondary-foreground: 0 0% 91%;
+    --accent: 42 40% 56%; /* #C4A55A Gold */
+    --accent-foreground: 152 35% 11%;
+    
+    /* Borders */
+    --border: 152 25% 27%; /* #2d5a47 */
+    --input: 152 25% 27%;
     --ring: 18 43% 56%;
-
+    
+    /* Status */
+    --destructive: 10 38% 53%; /* #C45C4A */
+    --destructive-foreground: 0 0% 91%;
+    --success: 130 18% 45%; /* #5B8C6A */
+    --success-foreground: 0 0% 91%;
+    
+    /* Charts */
+    --chart-1: 18 43% 56%; /* Copper */
+    --chart-2: 42 40% 56%; /* Gold */
+    --chart-3: 130 18% 45%; /* Sage */
+    --chart-4: 195 25% 48%; /* #5A8C9C */
+    --chart-5: 20 20% 45%; /* #8C6A5B */
+    
     --radius: 0.375rem;
-
+    
     /* Custom tokens */
     --terracotta: 18 43% 56%;
-    --sage: 100 10% 50%;
-    --dusty-rose: 0 25% 52%;
-    --warm-gray: 30 5% 45%; /* Increased from 35% for better contrast */
-
+    --sage: 130 18% 45%;
+    --dusty-rose: 10 38% 53%;
+    --warm-gray: 150 10% 45%;
+    
     /* Sidebar */
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 48 14% 90%; /* Increased from 85% for better contrast */
+    --sidebar-background: 152 35% 8%;
+    --sidebar-foreground: 0 0% 88%;
     --sidebar-primary: 18 43% 56%;
-    --sidebar-primary-foreground: 48 14% 95%;
-    --sidebar-accent: 0 0% 14%;
-    --sidebar-accent-foreground: 48 14% 95%;
-    --sidebar-border: 0 0% 18%;
+    --sidebar-primary-foreground: 0 0% 91%;
+    --sidebar-accent: 152 30% 14%;
+    --sidebar-accent-foreground: 0 0% 91%;
+    --sidebar-border: 152 25% 18%;
     --sidebar-ring: 18 43% 56%;
   }
 
-  .light {
-    --background: 40 20% 97%; /* #FAF9F7 */
-    --foreground: 0 0% 15%;
+  /* THEME 2: CARBON - Le cockpit analyste */
+  :root[data-theme="carbon"] {
+    /* Backgrounds */
+    --background: 0 0% 4%; /* #0A0A0A */
+    --card: 0 0% 8%; /* #141414 */
+    --card-foreground: 0 0% 91%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 91%;
+    --muted: 0 0% 10%; /* #1A1A1A */
+    --muted-foreground: 0 0% 53%; /* #888888 */
+    
+    /* Text */
+    --foreground: 0 0% 91%; /* #E8E8E8 Platinum */
+    
+    /* Accents */
+    --primary: 18 43% 56%; /* #C4785A Copper */
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 91%;
+    --accent: 42 40% 56%; /* #C4A55A Gold */
+    --accent-foreground: 0 0% 4%;
+    
+    /* Borders */
+    --border: 0 0% 16%; /* #2A2A2A */
+    --input: 0 0% 16%;
+    --ring: 18 43% 56%;
+    
+    /* Status */
+    --destructive: 0 55% 58%; /* #D45555 */
+    --destructive-foreground: 0 0% 91%;
+    --success: 145 30% 45%; /* #4A9D6B */
+    --success-foreground: 0 0% 91%;
+    
+    /* Charts */
+    --chart-1: 18 43% 56%; /* Copper */
+    --chart-2: 42 40% 56%; /* Gold */
+    --chart-3: 145 30% 45%; /* #4A9D6B */
+    --chart-4: 200 35% 53%; /* #5599BB */
+    --chart-5: 25 30% 45%; /* #9D6B4A */
+    
+    /* Sidebar */
+    --sidebar-background: 0 0% 3%;
+    --sidebar-foreground: 0 0% 85%;
+    --sidebar-primary: 18 43% 56%;
+    --sidebar-primary-foreground: 0 0% 91%;
+    --sidebar-accent: 0 0% 7%;
+    --sidebar-accent-foreground: 0 0% 91%;
+    --sidebar-border: 0 0% 12%;
+    --sidebar-ring: 18 43% 56%;
+  }
 
+  /* Light mode (deprecated but kept for compatibility) */
+  .light {
+    --background: 40 20% 97%;
+    --foreground: 0 0% 15%;
     --card: 40 20% 99%;
     --card-foreground: 0 0% 15%;
-
     --popover: 40 20% 99%;
     --popover-foreground: 0 0% 15%;
-
     --primary: 18 43% 56%;
-    --primary-foreground: 48 14% 95%;
-
+    --primary-foreground: 0 0% 91%;
     --secondary: 40 15% 94%;
     --secondary-foreground: 0 0% 20%;
-
     --muted: 40 15% 92%;
     --muted-foreground: 30 5% 45%;
-
     --accent: 40 15% 94%;
     --accent-foreground: 0 0% 15%;
-
     --destructive: 0 25% 52%;
-    --destructive-foreground: 48 14% 95%;
-
-    --border: 40 10% 88%; /* #E5E3DF */
+    --destructive-foreground: 0 0% 91%;
+    --border: 40 10% 88%;
     --input: 40 10% 90%;
     --ring: 18 43% 56%;
-
     --sidebar-background: 40 20% 96%;
     --sidebar-foreground: 0 0% 25%;
     --sidebar-primary: 18 43% 56%;
-    --sidebar-primary-foreground: 48 14% 95%;
+    --sidebar-primary-foreground: 0 0% 91%;
     --sidebar-accent: 40 15% 92%;
     --sidebar-accent-foreground: 0 0% 15%;
     --sidebar-border: 40 10% 88%;
@@ -106,11 +159,11 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;
     @apply font-medium tracking-tight;
   }
 
@@ -122,12 +175,12 @@
 
 @layer components {
   .wealth-value {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
     @apply text-4xl md:text-5xl font-semibold tracking-tight tabular-nums;
   }
 
   .wealth-label {
-    font-family: 'Cormorant Garamond', serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;
     @apply text-sm uppercase tracking-widest text-muted-foreground;
   }
 
@@ -145,6 +198,11 @@
 
   .stat-bar-fill {
     @apply h-full rounded-full transition-all duration-500 ease-out;
+  }
+  
+  /* Progress bar with copper gradient */
+  .progress-bar-copper {
+    background: linear-gradient(90deg, hsl(18 43% 40%) 0%, hsl(18 43% 56%) 50%, hsl(18 43% 65%) 100%);
   }
 }
 
