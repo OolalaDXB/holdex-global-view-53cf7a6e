@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
+import { MobileHeader } from './MobileHeader';
 import { cn } from '@/lib/utils';
 import { SidebarProvider, useSidebarContext } from '@/contexts/SidebarContext';
 
@@ -9,15 +10,16 @@ interface AppLayoutProps {
 }
 
 function AppLayoutContent({ children, isDemo = false }: AppLayoutProps) {
-  const { collapsed } = useSidebarContext();
+  const { collapsed, isMobile } = useSidebarContext();
   
   return (
     <div className="min-h-screen bg-background">
       <Sidebar isDemo={isDemo} />
+      {isMobile && <MobileHeader />}
       <main 
         className={cn(
           "transition-all duration-300 ease-in-out min-h-screen",
-          collapsed ? "ml-16" : "ml-[200px]"
+          isMobile ? "ml-0 pt-14" : collapsed ? "ml-16" : "ml-[200px]"
         )}
       >
         <div className="min-h-screen">
