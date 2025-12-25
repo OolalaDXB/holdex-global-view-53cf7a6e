@@ -1,7 +1,8 @@
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
-import { ChevronDown, ChevronUp, ChevronsUpDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const COLLAPSED_STORAGE_KEY = 'dashboard-collapsed-sections';
 
@@ -32,12 +33,14 @@ interface CollapsibleContextType {
   allCollapsed: boolean;
   sectionStates: Record<string, boolean>;
   setSectionState: (id: string, isOpen: boolean) => void;
+  isMobileCollapsed: boolean;
 }
 
 const CollapsibleContext = createContext<CollapsibleContextType | null>(null);
 
 export function CollapsibleProvider({ children }: { children: React.ReactNode }) {
   const [registeredSections, setRegisteredSections] = useState<string[]>([]);
+  const isMobile = useIsMobile();
   const [sectionStates, setSectionStates] = useState<Record<string, boolean>>(() => {
     const collapsed = getCollapsedState();
     const states: Record<string, boolean> = {};
@@ -94,6 +97,7 @@ export function CollapsibleProvider({ children }: { children: React.ReactNode })
       allCollapsed,
       sectionStates,
       setSectionState,
+      isMobileCollapsed: isMobile,
     }}>
       {children}
     </CollapsibleContext.Provider>
@@ -140,8 +144,10 @@ export function CollapsibleSection({
   className,
 }: CollapsibleSectionProps) {
   const context = useCollapsibleContext();
+  const isMobile = useIsMobile();
   
   // Get initial state from context or localStorage
+  // On mobile, default to collapsed unless explicitly opened
   const getInitialState = () => {
     if (context?.sectionStates[id] !== undefined) {
       return context.sectionStates[id];
@@ -149,9 +155,9 @@ export function CollapsibleSection({
     const collapsed = getCollapsedState();
     if (collapsed.includes(id)) return false;
     if (localStorage.getItem(COLLAPSED_STORAGE_KEY) && !collapsed.includes(id)) {
-      return true;
+      return !isMobile; // On mobile, default closed
     }
-    return defaultOpen;
+    return isMobile ? false : defaultOpen; // On mobile, default closed
   };
 
   const [localIsOpen, setLocalIsOpen] = useState(getInitialState);
@@ -213,3 +219,37 @@ export function CollapsibleSection({
   );
 }
 
+// Mobile-specific wrapper that shows only first N sections with "Show more"
+interface MobileBreakdownsWrapperProps {
+  children: React.ReactNode;
+  initialVisible?: number;
+}
+
+export function MobileBreakdownsWrapper({ 
+  children, 
+  initialVisible = 2 
+}: MobileBreakdownsWrapperProps) {
+  const isMobile = useIsMobile();
+  const [showAll, setShowAll] = useState(false);
+  
+  const childArray = Array.isArray(children) ? children : [children];
+  const visibleChildren = showAll || !isMobile ? childArray : childArray.slice(0, initialVisible);
+  const hasMore = isMobile && childArray.length > initialVisible && !showAll;
+  const hiddenCount = childArray.length - initialVisible;
+
+  return (
+    <>
+      {visibleChildren}
+      {hasMore && (
+        <Button
+          variant="ghost"
+          className="w-full mt-4 text-muted-foreground hover:text-foreground gap-2"
+          onClick={() => setShowAll(true)}
+        >
+          <ChevronRight size={16} />
+          Show {hiddenCount} more section{hiddenCount > 1 ? 's' : ''}
+        </Button>
+      )}
+    </>
+  );
+}

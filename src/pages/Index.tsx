@@ -10,7 +10,7 @@ import { CurrencyBreakdown } from '@/components/dashboard/CurrencyBreakdown';
 import { CurrencySwitcher } from '@/components/dashboard/CurrencySwitcher';
 import { ViewToggle, useViewConfig } from '@/components/dashboard/ViewToggle';
 import { CollectionsGallery } from '@/components/dashboard/CollectionsGallery';
-import { CollapsibleSection, CollapsibleProvider, ExpandCollapseAllButton } from '@/components/dashboard/CollapsibleSection';
+import { CollapsibleSection, CollapsibleProvider, ExpandCollapseAllButton, MobileBreakdownsWrapper } from '@/components/dashboard/CollapsibleSection';
 import { ExpiringDocumentsWidget } from '@/components/dashboard/ExpiringDocumentsWidget';
 import { LeaseholdRemindersWidget } from '@/components/dashboard/LeaseholdRemindersWidget';
 import { WorldClocksWidget } from '@/components/dashboard/WorldClocksWidget';
@@ -25,6 +25,7 @@ import { CertaintyBreakdownWidget } from '@/components/dashboard/CertaintyBreakd
 import { DebtToIncomeWidget } from '@/components/dashboard/DebtToIncomeWidget';
 import { NetWorthProjectionWidget } from '@/components/dashboard/NetWorthProjectionWidget';
 import { PropertyEquityWidget } from '@/components/dashboard/PropertyEquityWidget';
+import { MobileControlsDrawer } from '@/components/dashboard/MobileControlsDrawer';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { OnboardingWizard } from '@/components/dashboard/OnboardingWizard';
 import { Button } from '@/components/ui/button';
@@ -41,6 +42,7 @@ import { useProfile, FavoriteCity } from '@/hooks/useProfile';
 import { useSharedOwnerProfile } from '@/hooks/useSharedAccess';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { useBlur } from '@/contexts/BlurContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { convertToEUR, convertFromEUR, fallbackRates, formatCurrency } from '@/lib/currency';
 import { Camera, Info, Eye, X, UserPlus } from 'lucide-react';
 import { ShareAdvisorDialog } from '@/components/sharing/ShareAdvisorDialog';
@@ -85,6 +87,7 @@ const Dashboard = () => {
   const { displayCurrency, convertToDisplay, formatInDisplayCurrency } = useCurrency();
   const { config: viewConfig, setConfig: setViewConfig, getIncludedTypes, includesCollections, shouldIncludeAsset } = useViewConfig();
   const { isBlurred, formatBlurred } = useBlur();
+  const isMobile = useIsMobile();
 
   // Get user preferences - default to minimal dashboard
   const favoriteCities: FavoriteCity[] = profile?.favorite_cities || [];
@@ -485,28 +488,59 @@ const Dashboard = () => {
             />
             <div className="flex items-center gap-2">
               <BlurToggle />
-              <ViewToggle config={viewConfig} onChange={setViewConfig} />
-              <CurrencySwitcher />
-              {!isViewingShared && (
+              {/* Mobile: Controls drawer */}
+              {isMobile ? (
                 <>
-                  <ShareAdvisorDialog />
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={handleSaveSnapshot}
-                        disabled={saveSnapshot.isPending}
-                        className="gap-2"
-                      >
-                        <Camera size={14} />
-                        {saveSnapshot.isPending ? 'Saving...' : 'Snapshot'}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Save your current portfolio value for accurate historical tracking</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <MobileControlsDrawer 
+                    viewConfig={viewConfig} 
+                    onViewConfigChange={setViewConfig}
+                    isViewingShared={isViewingShared}
+                  />
+                  {!isViewingShared && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleSaveSnapshot}
+                          disabled={saveSnapshot.isPending}
+                          className="gap-2"
+                        >
+                          <Camera size={14} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Save snapshot</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </>
+              ) : (
+                <>
+                  <ViewToggle config={viewConfig} onChange={setViewConfig} />
+                  <CurrencySwitcher />
+                  {!isViewingShared && (
+                    <>
+                      <ShareAdvisorDialog />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={handleSaveSnapshot}
+                            disabled={saveSnapshot.isPending}
+                            className="gap-2"
+                          >
+                            <Camera size={14} />
+                            {saveSnapshot.isPending ? 'Saving...' : 'Snapshot'}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Save your current portfolio value for accurate historical tracking</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </>
+                  )}
                 </>
               )}
             </div>
@@ -557,31 +591,33 @@ const Dashboard = () => {
                 <ExpandCollapseAllButton />
               </div>
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-              <CollapsibleSection id="breakdown_type" title="By Asset Type">
-                <BreakdownBar 
-                  items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
-                  delay={0}
-                  isBlurred={isBlurred}
-                />
-              </CollapsibleSection>
-              
-              <CollapsibleSection id="breakdown_country" title="By Country">
-                <BreakdownBar 
-                  items={assetsByCountry} 
-                  delay={0}
-                  isBlurred={isBlurred}
-                />
-              </CollapsibleSection>
-              
-              {currencyBreakdown.length > 0 && (
-                <CollapsibleSection id="breakdown_currency" title="By Currency">
-                  <CurrencyBreakdown items={currencyBreakdown} delay={0} isBlurred={isBlurred} />
+              <MobileBreakdownsWrapper initialVisible={2}>
+                <CollapsibleSection id="breakdown_type" title="By Asset Type">
+                  <BreakdownBar 
+                    items={assetsByType.filter(i => i.percentage > 0 && i.included)} 
+                    delay={0}
+                    isBlurred={isBlurred}
+                  />
                 </CollapsibleSection>
-              )}
-              
-              <CollapsibleSection id="breakdown_entity" title="By Entity">
-                <EntityBreakdown delay={0} isBlurred={isBlurred} />
-              </CollapsibleSection>
+                
+                <CollapsibleSection id="breakdown_country" title="By Country">
+                  <BreakdownBar 
+                    items={assetsByCountry} 
+                    delay={0}
+                    isBlurred={isBlurred}
+                  />
+                </CollapsibleSection>
+                
+                {currencyBreakdown.length > 0 && (
+                  <CollapsibleSection id="breakdown_currency" title="By Currency">
+                    <CurrencyBreakdown items={currencyBreakdown} delay={0} isBlurred={isBlurred} />
+                  </CollapsibleSection>
+                )}
+                
+                <CollapsibleSection id="breakdown_entity" title="By Entity">
+                  <EntityBreakdown delay={0} isBlurred={isBlurred} />
+                </CollapsibleSection>
+              </MobileBreakdownsWrapper>
             </section>
             </CollapsibleProvider>
 

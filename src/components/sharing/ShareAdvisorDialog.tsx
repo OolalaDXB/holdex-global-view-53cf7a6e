@@ -19,9 +19,10 @@ interface ShareAdvisorDialogProps {
   trigger?: React.ReactNode;
   className?: string;
   showBadge?: boolean;
+  isMobileDrawer?: boolean;
 }
 
-export function ShareAdvisorDialog({ trigger, className, showBadge = true }: ShareAdvisorDialogProps) {
+export function ShareAdvisorDialog({ trigger, className, showBadge = true, isMobileDrawer = false }: ShareAdvisorDialogProps) {
   const [open, setOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const { data: sharedAccess = [] } = useSharedAccess();
@@ -65,6 +66,55 @@ export function ShareAdvisorDialog({ trigger, className, showBadge = true }: Sha
   };
 
   const pendingCount = sharedAccess.filter(s => s.status === 'pending').length;
+
+  // For mobile drawer, render inline content
+  if (isMobileDrawer) {
+    return (
+      <div className="space-y-4">
+        {sharedAccess.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Current access</p>
+            {sharedAccess.map((share) => (
+              <div 
+                key={share.id} 
+                className="flex items-center justify-between py-2 px-3 bg-secondary rounded-md"
+              >
+                <div>
+                  <span className="text-sm text-foreground">{share.shared_with_email}</span>
+                  <span className="text-xs text-muted-foreground ml-2 capitalize">
+                    ({share.status})
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleRevoke(share.id, share.shared_with_email)}
+                  className="p-1 text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          <Input
+            placeholder="advisor@example.com"
+            className="flex-1"
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            type="email"
+            onKeyDown={(e) => e.key === 'Enter' && handleInvite()}
+          />
+          <Button
+            onClick={handleInvite}
+            disabled={!inviteEmail.trim() || invitePartner.isPending}
+          >
+            {invitePartner.isPending ? 'Inviting...' : 'Invite'}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
