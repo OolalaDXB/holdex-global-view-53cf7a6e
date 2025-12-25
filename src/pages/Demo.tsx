@@ -552,7 +552,7 @@ const Demo = () => {
         {recentAssets.length > 0 && (
           <section>
             <h3 className="font-serif text-lg font-medium text-foreground mb-6">Recent Updates</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
               {recentAssets.map((asset, index) => (
                 <AssetCard 
                   key={asset.id} 
@@ -560,7 +560,7 @@ const Demo = () => {
                   rates={rates}
                   cryptoPrices={prices}
                   displayCurrency={displayCurrency}
-                  delay={500 + (index * 100)} 
+                  delay={300 + (index * 50)} 
                   entities={entities as any}
                 />
               ))}

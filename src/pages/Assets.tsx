@@ -667,13 +667,13 @@ const AssetsPage = () => {
           </div>
         ) : (
           <>
-            {/* Assets Grid/List/Compact */}
+            {/* Assets Grid/List/Compact - auto compact on mobile */}
             <div className={cn(
               viewMode === 'grid' 
-                ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+                ? "grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
                 : viewMode === 'compact'
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
-                  : "flex flex-col gap-3"
+                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3"
+                  : "flex flex-col gap-2 sm:gap-3"
             )}>
               {filteredAndSortedAssets.map((asset, index) => (
                 <AssetCard 
@@ -682,7 +682,7 @@ const AssetsPage = () => {
                   rates={rates}
                   cryptoPrices={prices}
                   displayCurrency={displayCurrency}
-                  delay={index * 50}
+                  delay={index * 30}
                   onEdit={(a) => setEditingAsset(a as Asset)}
                   onDelete={(a) => setDeletingAsset(a as Asset)}
                   entities={entities}
