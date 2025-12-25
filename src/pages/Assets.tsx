@@ -1,9 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
 import { EditAssetDialog } from '@/components/assets/EditAssetDialog';
 import { DeleteAssetDialog } from '@/components/assets/DeleteAssetDialog';
+import { SwipeableCard } from '@/components/ui/swipeable-card';
+import { PullToRefresh } from '@/components/ui/pull-to-refresh';
 import { useAssets, Asset } from '@/hooks/useAssets';
 import { useEntities } from '@/hooks/useEntities';
 import { useExchangeRates } from '@/hooks/useExchangeRates';
@@ -152,8 +154,8 @@ const AssetsPage = () => {
     setViewMode('grid');
   };
   
-  const { data: assets = [], isLoading } = useAssets();
-  const { data: entities = [] } = useEntities();
+  const { data: assets = [], isLoading, refetch: refetchAssets } = useAssets();
+  const { data: entities = [], refetch: refetchEntities } = useEntities();
   const { data: exchangeRates, isStale: fxIsStale, isUnavailable: fxIsUnavailable, cacheTimestamp: fxCacheTimestamp, refetch: refetchFx, isFetching: fxFetching } = useExchangeRates();
   const { data: cryptoPrices, isLoading: cryptoLoading, dataUpdatedAt, isStale: cryptoIsStale, isUnavailable: cryptoIsUnavailable, cacheTimestamp, refetch: refetchCrypto, isFetching: cryptoFetching } = useCryptoPrices();
   const { data: profile } = useProfile();
@@ -322,10 +324,20 @@ const AssetsPage = () => {
   const lastCryptoUpdate = dataUpdatedAt 
     ? new Date(dataUpdatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
     : null;
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([
+      refetchAssets(),
+      refetchEntities(),
+      refetchFx(),
+      refetchCrypto(),
+    ]);
+  }, [refetchAssets, refetchEntities, refetchFx, refetchCrypto]);
 
   return (
     <AppLayout>
-      <div className="p-4 sm:p-6 lg:p-12 max-w-7xl">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="p-4 sm:p-6 lg:p-12 max-w-7xl">
         <header className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Assets</h1>
@@ -676,19 +688,24 @@ const AssetsPage = () => {
                   : "flex flex-col gap-2 sm:gap-3"
             )}>
               {filteredAndSortedAssets.map((asset, index) => (
-                <AssetCard 
-                  key={asset.id} 
-                  asset={asset} 
-                  rates={rates}
-                  cryptoPrices={prices}
-                  displayCurrency={displayCurrency}
-                  delay={index * 30}
-                  onEdit={(a) => setEditingAsset(a as Asset)}
-                  onDelete={(a) => setDeletingAsset(a as Asset)}
-                  entities={entities}
-                  areaUnit={areaUnit}
-                  compact={viewMode === 'compact'}
-                />
+                <SwipeableCard
+                  key={asset.id}
+                  onEdit={() => setEditingAsset(asset)}
+                  onDelete={() => setDeletingAsset(asset)}
+                >
+                  <AssetCard 
+                    asset={asset} 
+                    rates={rates}
+                    cryptoPrices={prices}
+                    displayCurrency={displayCurrency}
+                    delay={index * 30}
+                    onEdit={(a) => setEditingAsset(a as Asset)}
+                    onDelete={(a) => setDeletingAsset(a as Asset)}
+                    entities={entities}
+                    areaUnit={areaUnit}
+                    compact={viewMode === 'compact'}
+                  />
+                </SwipeableCard>
               ))}
             </div>
 
@@ -714,7 +731,8 @@ const AssetsPage = () => {
             )}
           </>
         )}
-      </div>
+        </div>
+      </PullToRefresh>
 
       {/* Edit Dialog */}
       <EditAssetDialog
