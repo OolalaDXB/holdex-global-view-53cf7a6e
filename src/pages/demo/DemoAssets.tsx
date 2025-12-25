@@ -297,11 +297,11 @@ const DemoAssetsPage = () => {
           )}
         </div>
 
-        {/* Assets Grid/List */}
+        {/* Assets Grid/List - optimized for mobile */}
         <div className={cn(
           viewMode === 'grid' 
-            ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
-            : "flex flex-col gap-3"
+            ? "grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4"
+            : "flex flex-col gap-2 sm:gap-3"
         )}>
           {filteredAndSortedAssets.map((asset, index) => (
             <AssetCard 
@@ -309,7 +309,7 @@ const DemoAssetsPage = () => {
               asset={asset}
               rates={rates}
               cryptoPrices={prices}
-              delay={index * 50}
+              delay={index * 30}
               onEdit={(a) => setEditingAsset(a as DemoAsset)}
               onDelete={(a) => setDeletingAsset(a as DemoAsset)}
               entities={entities}
