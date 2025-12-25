@@ -116,7 +116,7 @@ const DemoDocuments = () => {
 
   return (
     <AppLayout isDemo>
-      <div className="p-6 max-w-5xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-5xl mx-auto">
         <div className="mb-6 p-3 bg-primary/10 border border-primary/20 rounded-lg">
           <p className="text-sm text-primary text-center">Demo Mode — Sample documents</p>
         </div>

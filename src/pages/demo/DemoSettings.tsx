@@ -129,7 +129,7 @@ const DemoSettings = () => {
 
   return (
     <AppLayout isDemo>
-      <div className="p-8 lg:p-12 max-w-2xl">
+      <div className="p-4 sm:p-6 lg:p-12 max-w-2xl">
         {/* Demo banner */}
         <div className="mb-6 px-4 py-2 bg-primary/10 border border-primary/20 rounded-md">
           <p className="text-sm text-primary">Demo Mode — Changes are stored locally</p>

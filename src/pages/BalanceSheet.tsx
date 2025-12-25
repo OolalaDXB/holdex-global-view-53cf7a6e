@@ -167,7 +167,7 @@ const BalanceSheetPage = () => {
 
   return (
     <AppLayout>
-      <div className="p-6 lg:p-10 print:p-0">
+      <div className="p-4 sm:p-6 lg:p-10 print:p-0">
         {/* Controls Header */}
         <div className="max-w-[800px] mx-auto mb-8 print:hidden">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-4">

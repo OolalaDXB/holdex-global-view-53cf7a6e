@@ -88,7 +88,7 @@ const DemoAddLiabilityPage = () => {
 
   return (
     <AppLayout isDemo>
-      <div className="p-8 lg:p-12 max-w-2xl">
+      <div className="p-4 sm:p-6 lg:p-12 max-w-2xl">
         <Button
           variant="ghost"
           size="sm"

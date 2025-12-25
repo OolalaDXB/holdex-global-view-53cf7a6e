@@ -215,7 +215,7 @@ const DemoBalanceSheetPage = () => {
 
   return (
     <AppLayout isDemo>
-      <div className="p-6 lg:p-10 print:p-0">
+      <div className="p-4 sm:p-6 lg:p-10 print:p-0">
         {/* Demo Banner */}
         <div className="max-w-[800px] mx-auto mb-6 p-3 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-3 print:hidden">
           <Info size={16} className="text-primary flex-shrink-0" />

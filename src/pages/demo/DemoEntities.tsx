@@ -139,7 +139,7 @@ const DemoEntitiesPage = () => {
 
   return (
     <AppLayout isDemo>
-      <div className="p-8 lg:p-12">
+      <div className="p-4 sm:p-6 lg:p-12">
         {/* Demo Banner */}
         <div className="mb-6 p-3 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-3">
           <Info size={16} className="text-primary flex-shrink-0" />

@@ -183,7 +183,7 @@ const Entities = () => {
 
   return (
     <AppLayout>
-      <div className="p-8 lg:p-12 max-w-7xl">
+      <div className="p-4 sm:p-6 lg:p-12 max-w-7xl">
         <header className="mb-8">
           <div className="flex items-center justify-between">
             <div>
