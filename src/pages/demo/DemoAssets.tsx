@@ -1,7 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { AssetCard } from '@/components/assets/AssetCard';
+import { SwipeableCard } from '@/components/ui/swipeable-card';
+import { PullToRefresh } from '@/components/ui/pull-to-refresh';
 import { useDemo } from '@/contexts/DemoContext';
 import { fallbackRates } from '@/lib/currency';
 
@@ -24,6 +26,7 @@ import { DemoEditAssetDialog } from '@/components/demo/DemoEditAssetDialog';
 import { DemoDeleteAssetDialog } from '@/components/demo/DemoDeleteAssetDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { toast } from 'sonner';
 
 type FilterType = 'all' | 'real-estate' | 'bank' | 'investment' | 'crypto' | 'business';
 type SortOption = 'name' | 'value-desc' | 'value-asc' | 'date-desc' | 'date-asc';
@@ -139,9 +142,17 @@ const DemoAssetsPage = () => {
     return result;
   }, [assets, filter, searchQuery, propertyTypeFilter, minRooms, minSize, areaUnit, sortBy, certaintyFilter]);
 
+  // Demo pull to refresh
+  const handleRefresh = useCallback(async () => {
+    // Simulate refresh delay for demo
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast.success('Data refreshed');
+  }, []);
+
   return (
     <AppLayout isDemo>
-      <div className="p-4 sm:p-6 lg:p-12 max-w-7xl">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <div className="p-4 sm:p-6 lg:p-12 max-w-7xl">
         {/* Demo Banner */}
         <div className="mb-6 p-3 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-3">
           <Info size={16} className="text-primary flex-shrink-0" />
@@ -304,17 +315,22 @@ const DemoAssetsPage = () => {
             : "flex flex-col gap-2 sm:gap-3"
         )}>
           {filteredAndSortedAssets.map((asset, index) => (
-            <AssetCard 
-              key={asset.id} 
-              asset={asset}
-              rates={rates}
-              cryptoPrices={prices}
-              delay={index * 30}
-              onEdit={(a) => setEditingAsset(a as DemoAsset)}
-              onDelete={(a) => setDeletingAsset(a as DemoAsset)}
-              entities={entities}
-              areaUnit={areaUnit}
-            />
+            <SwipeableCard
+              key={asset.id}
+              onEdit={() => setEditingAsset(asset)}
+              onDelete={() => setDeletingAsset(asset)}
+            >
+              <AssetCard 
+                asset={asset}
+                rates={rates}
+                cryptoPrices={prices}
+                delay={index * 30}
+                onEdit={(a) => setEditingAsset(a as DemoAsset)}
+                onDelete={(a) => setDeletingAsset(a as DemoAsset)}
+                entities={entities}
+                areaUnit={areaUnit}
+              />
+            </SwipeableCard>
           ))}
         </div>
 
@@ -330,7 +346,8 @@ const DemoAssetsPage = () => {
             </p>
           </div>
         )}
-      </div>
+        </div>
+      </PullToRefresh>
 
       {/* Edit Dialog */}
       <DemoEditAssetDialog
