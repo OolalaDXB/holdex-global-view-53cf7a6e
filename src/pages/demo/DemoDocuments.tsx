@@ -21,6 +21,8 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { DocumentTagBadge } from '@/components/documents/DocumentTagBadge';
 import { DocumentInlineEditor } from '@/components/documents/DocumentInlineEditor';
+import { DocumentTypeIcon } from '@/components/documents/DocumentTypeIcon';
+import { getDocumentIcon } from '@/components/documents/DocumentIconMap';
 import { toast } from '@/hooks/use-toast';
 
 // Extended demo document type with tags
@@ -229,9 +231,17 @@ const DemoDocuments = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              {DOCUMENT_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>{type.icon} {type.label}</SelectItem>
-              ))}
+              {DOCUMENT_TYPES.map((type) => {
+                const Icon = getDocumentIcon(type.icon);
+                return (
+                  <SelectItem key={type.value} value={type.value}>
+                    <span className="flex items-center gap-2">
+                      <Icon className="w-4 h-4" />
+                      {type.label}
+                    </span>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
@@ -265,7 +275,7 @@ const DemoDocuments = () => {
                 showPreview && isPdf && "pb-0"
               )}>
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg">{typeInfo?.icon || '📄'}</div>
+                  <DocumentTypeIcon type={doc.type} size="md" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div>

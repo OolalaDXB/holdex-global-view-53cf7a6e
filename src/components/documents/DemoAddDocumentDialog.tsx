@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { DOCUMENT_TYPES } from '@/hooks/useDocuments';
 import { useDemo } from '@/contexts/DemoContext';
+import { getDocumentIcon } from './DocumentIconMap';
 
 interface DemoAddDocumentDialogProps {
   open: boolean;
@@ -256,11 +257,17 @@ export const DemoAddDocumentDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DOCUMENT_TYPES.map((docType) => (
-                  <SelectItem key={docType.value} value={docType.value}>
-                    {docType.icon} {docType.label}
-                  </SelectItem>
-                ))}
+                {DOCUMENT_TYPES.map((docType) => {
+                  const Icon = getDocumentIcon(docType.icon);
+                  return (
+                    <SelectItem key={docType.value} value={docType.value}>
+                      <span className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        {docType.label}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
