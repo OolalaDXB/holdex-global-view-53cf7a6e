@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CertaintyLevel, getDefaultCertainty } from '@/lib/certainty';
 import { useCurrencyList } from '@/hooks/useCurrencyList';
+import { DocumentsSection } from '@/components/documents/DocumentsSection';
 
 interface ReceivableDialogProps {
   open: boolean;
@@ -436,6 +437,13 @@ export function ReceivableDialog({ open, onOpenChange, receivable }: ReceivableD
                 rows={2}
               />
             </div>
+
+            {/* Documents Section - only show when editing */}
+            {isEditing && receivable && (
+              <div className="md:col-span-2 pt-4 border-t border-border">
+                <DocumentsSection linkType="receivable" linkId={receivable.id} />
+              </div>
+            )}
           </div>
 
           <div className="flex gap-4">
