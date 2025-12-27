@@ -1,24 +1,32 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Calendar, AlertTriangle, ExternalLink, Trash2 } from 'lucide-react';
+import { FileText, Calendar, AlertTriangle, ExternalLink, Trash2, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Document, DOCUMENT_TYPES, getExpiryStatus, useDocumentUpload } from '@/hooks/useDocuments';
 import { useAuditLog } from '@/hooks/useAuditLog';
+import { SwipeableCard } from '@/components/ui/swipeable-card';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface DocumentCardProps {
   document: Document;
   onDelete?: () => void;
+  onEdit?: () => void;
   showLink?: boolean;
 }
 
-export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentCardProps) => {
+export const DocumentCard = ({ document, onDelete, onEdit, showLink = false }: DocumentCardProps) => {
   const { logEvent } = useAuditLog();
   const { getSignedUrl } = useDocumentUpload();
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const isMobile = useIsMobile();
   const typeInfo = DOCUMENT_TYPES.find(t => t.value === document.type);
   const expiryStatus = getExpiryStatus(document.expiry_date);
+  
+  const isPdf = document.file_type === 'application/pdf';
 
   useEffect(() => {
     const fetchSignedUrl = async () => {
@@ -51,8 +59,11 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  return (
-    <Card className="p-4 bg-card border-border hover:border-primary/30 transition-colors">
+  const cardContent = (
+    <Card className={cn(
+      "p-4 bg-card border-border hover:border-primary/30 transition-colors",
+      showPreview && isPdf && "pb-0"
+    )}>
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg">
           {typeInfo?.icon || '📄'}
@@ -110,6 +121,18 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
         </div>
         
         <div className="flex items-center gap-1">
+          {/* PDF Preview toggle */}
+          {isPdf && signedUrl && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setShowPreview(!showPreview)}
+              title={showPreview ? "Hide preview" : "Show preview"}
+            >
+              {showPreview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -118,7 +141,19 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
           >
             <ExternalLink className="w-4 h-4" />
           </Button>
-          {onDelete && (
+          {/* Desktop-only edit button */}
+          {!isMobile && onEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={onEdit}
+            >
+              <Pencil className="w-4 h-4" />
+            </Button>
+          )}
+          {/* Desktop-only delete button */}
+          {!isMobile && onDelete && (
             <Button
               variant="ghost"
               size="icon"
@@ -130,6 +165,28 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
           )}
         </div>
       </div>
+      
+      {/* Inline PDF Preview */}
+      {showPreview && isPdf && signedUrl && (
+        <div className="mt-4 border-t border-border">
+          <iframe
+            src={`${signedUrl}#toolbar=0&navpanes=0`}
+            className="w-full h-[400px] rounded-b-lg"
+            title={`Preview of ${document.name}`}
+          />
+        </div>
+      )}
     </Card>
   );
+
+  // Wrap with SwipeableCard on mobile
+  if (isMobile && (onEdit || onDelete)) {
+    return (
+      <SwipeableCard onEdit={onEdit} onDelete={onDelete}>
+        {cardContent}
+      </SwipeableCard>
+    );
+  }
+
+  return cardContent;
 };
