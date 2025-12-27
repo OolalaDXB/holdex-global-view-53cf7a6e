@@ -19,9 +19,17 @@ import { SwipeableCard } from '@/components/ui/swipeable-card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { DocumentTagBadge } from '@/components/documents/DocumentTagBadge';
+import { DocumentInlineEditor } from '@/components/documents/DocumentInlineEditor';
+import { toast } from '@/hooks/use-toast';
+
+// Extended demo document type with tags
+export interface DemoDocumentWithTags extends DemoDocument {
+  tags?: string[] | null;
+}
 
 // Demo documents data
-const initialDemoDocuments: DemoDocument[] = [
+const initialDemoDocuments: DemoDocumentWithTags[] = [
   {
     id: 'doc-1',
     name: 'Titre de propriété Dubai Marina',
@@ -39,6 +47,7 @@ const initialDemoDocuments: DemoDocument[] = [
     expiry_date: null,
     is_verified: true,
     notes: 'Original title deed from Dubai Land Department',
+    tags: ['legal', 'important'],
   },
   {
     id: 'doc-2',
@@ -57,6 +66,7 @@ const initialDemoDocuments: DemoDocument[] = [
     expiry_date: '2030-05-10',
     is_verified: true,
     notes: 'French passport',
+    tags: ['personal', 'legal'],
   },
   {
     id: 'doc-3',
@@ -75,6 +85,7 @@ const initialDemoDocuments: DemoDocument[] = [
     expiry_date: '2025-03-15',
     is_verified: false,
     notes: 'Comprehensive coverage, Portugal',
+    tags: ['insurance', 'pending'],
   },
 ];
 
@@ -93,11 +104,12 @@ const getExpiryStatus = (expiryDate: string | null): 'expired' | 'expiring' | 'v
 
 const DemoDocuments = () => {
   const { assets, collections, entities, liabilities } = useDemo();
-  const [documents, setDocuments] = useState<DemoDocument[]>(initialDemoDocuments);
+  const [documents, setDocuments] = useState<DemoDocumentWithTags[]>(initialDemoDocuments);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [previewStates, setPreviewStates] = useState<Record<string, boolean>>({});
+  const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   const getLinkName = (doc: DemoDocument): string => {
@@ -128,13 +140,23 @@ const DemoDocuments = () => {
     setPreviewStates(prev => ({ ...prev, [docId]: !prev[docId] }));
   };
 
-  const handleEditDocument = (doc: DemoDocument) => {
-    // For demo, we just show a toast or similar - no actual edit dialog needed
-    console.log('Edit document:', doc.name);
+  const handleEditDocument = (docId: string) => {
+    setEditingDocId(docId);
+  };
+
+  const handleSaveDocument = (docId: string, data: { name: string; notes: string | null; expiry_date: string | null; tags: string[] | null }) => {
+    setDocuments(prev => prev.map(d => 
+      d.id === docId ? { ...d, name: data.name, notes: data.notes, expiry_date: data.expiry_date, tags: data.tags } : d
+    ));
+    setEditingDocId(null);
+    toast({
+      title: 'Document updated',
+      description: 'Your changes have been saved.',
+    });
   };
 
   const handleAddDocument = (doc: DemoDocument) => {
-    setDocuments(prev => [doc, ...prev]);
+    setDocuments(prev => [{ ...doc, tags: null }, ...prev]);
   };
 
   const filteredDocuments = useMemo(() => {
@@ -220,6 +242,22 @@ const DemoDocuments = () => {
             const expiryStatus = getExpiryStatus(doc.expiry_date);
             const isPdf = doc.file_type === 'application/pdf';
             const showPreview = previewStates[doc.id] || false;
+            const isEditing = editingDocId === doc.id;
+
+            // Show inline editor if editing
+            if (isEditing) {
+              return (
+                <DocumentInlineEditor
+                  key={doc.id}
+                  name={doc.name}
+                  notes={doc.notes}
+                  expiryDate={doc.expiry_date}
+                  tags={doc.tags || null}
+                  onSave={(data) => handleSaveDocument(doc.id, data)}
+                  onCancel={() => setEditingDocId(null)}
+                />
+              );
+            }
             
             const cardContent = (
               <Card className={cn(
@@ -243,6 +281,16 @@ const DemoDocuments = () => {
                         )}
                       </div>
                     </div>
+                    
+                    {/* Tags */}
+                    {doc.tags && doc.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {doc.tags.map((tag) => (
+                          <DocumentTagBadge key={tag} tag={tag} size="sm" />
+                        ))}
+                      </div>
+                    )}
+                    
                     {doc.expiry_date && (
                       <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                         <Calendar className="w-3 h-3" /> Expires: {format(new Date(doc.expiry_date), 'MMM d, yyyy')}
@@ -268,7 +316,7 @@ const DemoDocuments = () => {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => handleEditDocument(doc)}
+                        onClick={() => handleEditDocument(doc.id)}
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
@@ -303,7 +351,7 @@ const DemoDocuments = () => {
               return (
                 <SwipeableCard 
                   key={doc.id} 
-                  onEdit={() => handleEditDocument(doc)} 
+                  onEdit={() => handleEditDocument(doc.id)} 
                   onDelete={() => handleDeleteDocument(doc.id)}
                 >
                   {cardContent}

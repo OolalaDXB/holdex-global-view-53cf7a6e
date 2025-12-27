@@ -1,27 +1,31 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { FileText, Calendar, AlertTriangle, ExternalLink, Trash2, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, AlertTriangle, ExternalLink, Trash2, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Document, DOCUMENT_TYPES, getExpiryStatus, useDocumentUpload } from '@/hooks/useDocuments';
+import { Document, DOCUMENT_TYPES, getExpiryStatus, useDocumentUpload, useUpdateDocument } from '@/hooks/useDocuments';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import { SwipeableCard } from '@/components/ui/swipeable-card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { DocumentTagBadge } from './DocumentTagBadge';
+import { DocumentInlineEditor } from './DocumentInlineEditor';
+import { toast } from '@/hooks/use-toast';
 
 interface DocumentCardProps {
   document: Document;
   onDelete?: () => void;
-  onEdit?: () => void;
   showLink?: boolean;
 }
 
-export const DocumentCard = ({ document, onDelete, onEdit, showLink = false }: DocumentCardProps) => {
+export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentCardProps) => {
   const { logEvent } = useAuditLog();
   const { getSignedUrl } = useDocumentUpload();
+  const updateDocument = useUpdateDocument();
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const isMobile = useIsMobile();
   const typeInfo = DOCUMENT_TYPES.find(t => t.value === document.type);
   const expiryStatus = getExpiryStatus(document.expiry_date);
@@ -53,11 +57,49 @@ export const DocumentCard = ({ document, onDelete, onEdit, showLink = false }: D
     window.open(signedUrl, '_blank');
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = async (data: { name: string; notes: string | null; expiry_date: string | null; tags: string[] | null }) => {
+    try {
+      await updateDocument.mutateAsync({
+        id: document.id,
+        ...data,
+      });
+      setIsEditing(false);
+      toast({
+        title: 'Document updated',
+        description: 'Your changes have been saved.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update document.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
+
+  // Show inline editor
+  if (isEditing) {
+    return (
+      <DocumentInlineEditor
+        name={document.name}
+        notes={document.notes}
+        expiryDate={document.expiry_date}
+        tags={document.tags}
+        onSave={handleSave}
+        onCancel={() => setIsEditing(false)}
+      />
+    );
+  }
 
   const cardContent = (
     <Card className={cn(
@@ -98,6 +140,15 @@ export const DocumentCard = ({ document, onDelete, onEdit, showLink = false }: D
               )}
             </div>
           </div>
+
+          {/* Tags */}
+          {document.tags && document.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {document.tags.map((tag) => (
+                <DocumentTagBadge key={tag} tag={tag} size="sm" />
+              ))}
+            </div>
+          )}
           
           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
             {document.document_date && (
@@ -142,12 +193,12 @@ export const DocumentCard = ({ document, onDelete, onEdit, showLink = false }: D
             <ExternalLink className="w-4 h-4" />
           </Button>
           {/* Desktop-only edit button */}
-          {!isMobile && onEdit && (
+          {!isMobile && (
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={onEdit}
+              onClick={handleEdit}
             >
               <Pencil className="w-4 h-4" />
             </Button>
@@ -180,9 +231,9 @@ export const DocumentCard = ({ document, onDelete, onEdit, showLink = false }: D
   );
 
   // Wrap with SwipeableCard on mobile
-  if (isMobile && (onEdit || onDelete)) {
+  if (isMobile && (handleEdit || onDelete)) {
     return (
-      <SwipeableCard onEdit={onEdit} onDelete={onDelete}>
+      <SwipeableCard onEdit={handleEdit} onDelete={onDelete}>
         {cardContent}
       </SwipeableCard>
     );
