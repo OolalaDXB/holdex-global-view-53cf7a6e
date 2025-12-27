@@ -1,16 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
-import { X, Check, Plus, CalendarIcon, ShieldCheck, ShieldOff } from 'lucide-react';
+import { X, Check, Plus, CalendarIcon, ShieldCheck, ShieldOff, Link2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { DocumentTagBadge, SUGGESTED_TAGS } from './DocumentTagBadge';
 import { DocumentTypeIcon } from './DocumentTypeIcon';
 import { DOCUMENT_TYPES } from '@/hooks/useDocuments';
+import { useAssets } from '@/hooks/useAssets';
+import { useCollections } from '@/hooks/useCollections';
+import { useLiabilities } from '@/hooks/useLiabilities';
+import { useEntities } from '@/hooks/useEntities';
+import { useReceivables } from '@/hooks/useReceivables';
 import { cn } from '@/lib/utils';
+
+type LinkType = 'asset' | 'collection' | 'liability' | 'entity' | 'receivable' | 'none';
 
 interface DocumentInlineEditorProps {
   name: string;
@@ -20,6 +28,11 @@ interface DocumentInlineEditorProps {
   documentDate: string | null;
   tags: string[] | null;
   isVerified: boolean;
+  assetId: string | null;
+  collectionId: string | null;
+  liabilityId: string | null;
+  entityId: string | null;
+  receivableId: string | null;
   onSave: (data: { 
     name: string; 
     type: string;
@@ -28,6 +41,11 @@ interface DocumentInlineEditorProps {
     document_date: string | null;
     tags: string[] | null;
     is_verified: boolean;
+    asset_id: string | null;
+    collection_id: string | null;
+    liability_id: string | null;
+    entity_id: string | null;
+    receivable_id: string | null;
   }) => void;
   onCancel: () => void;
 }
@@ -40,9 +58,34 @@ export const DocumentInlineEditor = ({
   documentDate: initialDocumentDate,
   tags: initialTags,
   isVerified: initialIsVerified,
+  assetId: initialAssetId,
+  collectionId: initialCollectionId,
+  liabilityId: initialLiabilityId,
+  entityId: initialEntityId,
+  receivableId: initialReceivableId,
   onSave,
   onCancel,
 }: DocumentInlineEditorProps) => {
+  const { data: assets = [] } = useAssets();
+  const { data: collections = [] } = useCollections();
+  const { data: liabilities = [] } = useLiabilities();
+  const { data: entities = [] } = useEntities();
+  const { data: receivables = [] } = useReceivables();
+
+  // Determine initial link type
+  const getInitialLinkType = (): LinkType => {
+    if (initialAssetId) return 'asset';
+    if (initialCollectionId) return 'collection';
+    if (initialLiabilityId) return 'liability';
+    if (initialEntityId) return 'entity';
+    if (initialReceivableId) return 'receivable';
+    return 'none';
+  };
+
+  const getInitialLinkId = (): string => {
+    return initialAssetId || initialCollectionId || initialLiabilityId || initialEntityId || initialReceivableId || '';
+  };
+
   const [name, setName] = useState(initialName);
   const [type, setType] = useState(initialType);
   const [notes, setNotes] = useState(initialNotes || '');
@@ -54,6 +97,8 @@ export const DocumentInlineEditor = ({
   );
   const [tags, setTags] = useState<string[]>(initialTags || []);
   const [isVerified, setIsVerified] = useState(initialIsVerified);
+  const [linkType, setLinkType] = useState<LinkType>(getInitialLinkType());
+  const [linkId, setLinkId] = useState<string>(getInitialLinkId());
   const [newTag, setNewTag] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +106,23 @@ export const DocumentInlineEditor = ({
   useEffect(() => {
     nameInputRef.current?.focus();
   }, []);
+
+  const getLinkOptions = () => {
+    switch (linkType) {
+      case 'asset':
+        return assets.map(a => ({ id: a.id, name: a.name }));
+      case 'collection':
+        return collections.map(c => ({ id: c.id, name: c.name }));
+      case 'liability':
+        return liabilities.map(l => ({ id: l.id, name: l.name }));
+      case 'entity':
+        return entities.map(e => ({ id: e.id, name: e.name }));
+      case 'receivable':
+        return receivables.map(r => ({ id: r.id, name: r.name }));
+      default:
+        return [];
+    }
+  };
 
   const handleSave = () => {
     if (!name.trim()) return;
@@ -72,6 +134,11 @@ export const DocumentInlineEditor = ({
       document_date: documentDate ? format(documentDate, 'yyyy-MM-dd') : null,
       tags: tags.length > 0 ? tags : null,
       is_verified: isVerified,
+      asset_id: linkType === 'asset' ? linkId : null,
+      collection_id: linkType === 'collection' ? linkId : null,
+      liability_id: linkType === 'liability' ? linkId : null,
+      entity_id: linkType === 'entity' ? linkId : null,
+      receivable_id: linkType === 'receivable' ? linkId : null,
     });
   };
 
@@ -98,11 +165,18 @@ export const DocumentInlineEditor = ({
     }
   };
 
+  const handleLinkTypeChange = (newLinkType: string) => {
+    setLinkType(newLinkType as LinkType);
+    setLinkId('');
+  };
+
+  const linkOptions = getLinkOptions();
+
   return (
     <div className="space-y-3 p-4 bg-muted/50 rounded-lg border border-border" onClick={e => e.stopPropagation()}>
       {/* Name */}
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Name</label>
+        <Label className="text-xs text-muted-foreground mb-1 block">Name</Label>
         <Input
           ref={nameInputRef}
           value={name}
@@ -115,7 +189,7 @@ export const DocumentInlineEditor = ({
 
       {/* Type */}
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Type</label>
+        <Label className="text-xs text-muted-foreground mb-1 block">Type</Label>
         <Select value={type} onValueChange={setType}>
           <SelectTrigger className="h-8">
             <SelectValue>
@@ -138,9 +212,48 @@ export const DocumentInlineEditor = ({
         </Select>
       </div>
 
+      {/* Link To */}
+      <div>
+        <Label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1">
+          <Link2 className="w-3 h-3" />
+          Linked To
+        </Label>
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={linkType} onValueChange={handleLinkTypeChange}>
+            <SelectTrigger className="h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None</SelectItem>
+              <SelectItem value="asset">Asset</SelectItem>
+              <SelectItem value="collection">Collection</SelectItem>
+              <SelectItem value="liability">Liability</SelectItem>
+              <SelectItem value="entity">Entity</SelectItem>
+              <SelectItem value="receivable">Receivable</SelectItem>
+            </SelectContent>
+          </Select>
+          {linkType !== 'none' && (
+            <Select value={linkId} onValueChange={setLinkId}>
+              <SelectTrigger className="h-8">
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {linkOptions.length === 0 ? (
+                  <SelectItem value="" disabled>No items</SelectItem>
+                ) : (
+                  linkOptions.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
+
       {/* Tags */}
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Tags</label>
+        <Label className="text-xs text-muted-foreground mb-1 block">Tags</Label>
         <div className="flex flex-wrap gap-1.5">
           {tags.map((tag) => (
             <DocumentTagBadge
@@ -223,7 +336,7 @@ export const DocumentInlineEditor = ({
       {/* Dates */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Document Date</label>
+          <Label className="text-xs text-muted-foreground mb-1 block">Document Date</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -261,7 +374,7 @@ export const DocumentInlineEditor = ({
         </div>
 
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">Expiry Date</label>
+          <Label className="text-xs text-muted-foreground mb-1 block">Expiry Date</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -301,7 +414,7 @@ export const DocumentInlineEditor = ({
 
       {/* Verified toggle */}
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Verification Status</label>
+        <Label className="text-xs text-muted-foreground mb-1 block">Verification Status</Label>
         <Button
           type="button"
           variant={isVerified ? "default" : "outline"}
@@ -328,7 +441,7 @@ export const DocumentInlineEditor = ({
 
       {/* Notes */}
       <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Notes</label>
+        <Label className="text-xs text-muted-foreground mb-1 block">Notes</Label>
         <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}

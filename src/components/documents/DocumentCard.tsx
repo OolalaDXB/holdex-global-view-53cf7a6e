@@ -70,6 +70,11 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
     document_date: string | null;
     tags: string[] | null;
     is_verified: boolean;
+    asset_id: string | null;
+    collection_id: string | null;
+    liability_id: string | null;
+    entity_id: string | null;
+    receivable_id: string | null;
   }) => {
     try {
       await updateDocument.mutateAsync({
@@ -107,6 +112,11 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
         documentDate={document.document_date}
         tags={document.tags}
         isVerified={document.is_verified || false}
+        assetId={document.asset_id}
+        collectionId={document.collection_id}
+        liabilityId={document.liability_id}
+        entityId={document.entity_id}
+        receivableId={document.receivable_id}
         onSave={handleSave}
         onCancel={() => setIsEditing(false)}
       />
