@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, FileText, AlertTriangle, Filter, Calendar, Trash2, Plus } from 'lucide-react';
+import { Search, FileText, AlertTriangle, Filter, Calendar, Trash2, Plus, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -15,6 +15,9 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { useDemo } from '@/contexts/DemoContext';
 import { DOCUMENT_TYPES } from '@/hooks/useDocuments';
 import { DemoAddDocumentDialog, DemoDocument } from '@/components/documents/DemoAddDocumentDialog';
+import { SwipeableCard } from '@/components/ui/swipeable-card';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
 // Demo documents data
@@ -94,6 +97,8 @@ const DemoDocuments = () => {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [previewStates, setPreviewStates] = useState<Record<string, boolean>>({});
+  const isMobile = useIsMobile();
 
   const getLinkName = (doc: DemoDocument): string => {
     if (doc.asset_id) {
@@ -113,6 +118,19 @@ const DemoDocuments = () => {
       return liability?.name || 'Unknown Liability';
     }
     return 'Unlinked';
+  };
+
+  const handleDeleteDocument = (docId: string) => {
+    setDocuments(prev => prev.filter(d => d.id !== docId));
+  };
+
+  const togglePreview = (docId: string) => {
+    setPreviewStates(prev => ({ ...prev, [docId]: !prev[docId] }));
+  };
+
+  const handleEditDocument = (doc: DemoDocument) => {
+    // For demo, we just show a toast or similar - no actual edit dialog needed
+    console.log('Edit document:', doc.name);
   };
 
   const handleAddDocument = (doc: DemoDocument) => {
@@ -200,8 +218,14 @@ const DemoDocuments = () => {
           {filteredDocuments.map((doc) => {
             const typeInfo = DOCUMENT_TYPES.find(t => t.value === doc.type);
             const expiryStatus = getExpiryStatus(doc.expiry_date);
-            return (
-              <Card key={doc.id} className="p-4 bg-card border-border hover:border-primary/30 transition-colors">
+            const isPdf = doc.file_type === 'application/pdf';
+            const showPreview = previewStates[doc.id] || false;
+            
+            const cardContent = (
+              <Card className={cn(
+                "p-4 bg-card border-border hover:border-primary/30 transition-colors",
+                showPreview && isPdf && "pb-0"
+              )}>
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg">{typeInfo?.icon || '📄'}</div>
                   <div className="flex-1 min-w-0">
@@ -225,12 +249,69 @@ const DemoDocuments = () => {
                       </p>
                     )}
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDocuments(prev => prev.filter(d => d.id !== doc.id))}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    {/* PDF Preview toggle */}
+                    {isPdf && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => togglePreview(doc.id)}
+                        title={showPreview ? "Hide preview" : "Show preview"}
+                      >
+                        {showPreview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </Button>
+                    )}
+                    {/* Desktop-only edit button */}
+                    {!isMobile && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleEditDocument(doc)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {/* Desktop-only delete button */}
+                    {!isMobile && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive"
+                        onClick={() => handleDeleteDocument(doc.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
+                
+                {/* Inline PDF Preview (demo placeholder) */}
+                {showPreview && isPdf && (
+                  <div className="mt-4 border-t border-border">
+                    <div className="w-full h-[300px] bg-muted/50 rounded-b-lg flex items-center justify-center">
+                      <p className="text-muted-foreground text-sm">PDF Preview (Demo)</p>
+                    </div>
+                  </div>
+                )}
               </Card>
             );
+            
+            // Wrap with SwipeableCard on mobile
+            if (isMobile) {
+              return (
+                <SwipeableCard 
+                  key={doc.id} 
+                  onEdit={() => handleEditDocument(doc)} 
+                  onDelete={() => handleDeleteDocument(doc.id)}
+                >
+                  {cardContent}
+                </SwipeableCard>
+              );
+            }
+            
+            return <div key={doc.id}>{cardContent}</div>;
           })}
         </div>
 
