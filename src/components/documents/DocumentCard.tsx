@@ -11,6 +11,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { DocumentTagBadge } from './DocumentTagBadge';
 import { DocumentInlineEditor } from './DocumentInlineEditor';
+import { DocumentThumbnail } from './DocumentThumbnail';
 import { toast } from '@/hooks/use-toast';
 
 interface DocumentCardProps {
@@ -107,9 +108,14 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
       showPreview && isPdf && "pb-0"
     )}>
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-lg">
-          {typeInfo?.icon || '📄'}
-        </div>
+        <DocumentThumbnail
+          fileType={document.file_type}
+          filePath={document.file_path}
+          signedUrl={signedUrl}
+          documentType={document.type}
+          name={document.name}
+          size="md"
+        />
         
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">

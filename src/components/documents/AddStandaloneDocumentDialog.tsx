@@ -25,6 +25,7 @@ import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useEntities } from '@/hooks/useEntities';
 import { useReceivables } from '@/hooks/useReceivables';
+import { getDocumentIcon } from './DocumentIconMap';
 
 interface AddStandaloneDocumentDialogProps {
   open: boolean;
@@ -266,11 +267,17 @@ export const AddStandaloneDocumentDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {DOCUMENT_TYPES.map((docType) => (
-                  <SelectItem key={docType.value} value={docType.value}>
-                    {docType.icon} {docType.label}
-                  </SelectItem>
-                ))}
+                {DOCUMENT_TYPES.map((docType) => {
+                  const Icon = getDocumentIcon(docType.icon);
+                  return (
+                    <SelectItem key={docType.value} value={docType.value}>
+                      <span className="flex items-center gap-2">
+                        <Icon className="w-4 h-4" />
+                        {docType.label}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

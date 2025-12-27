@@ -13,6 +13,7 @@ import { useCollections } from '@/hooks/useCollections';
 import { useLiabilities } from '@/hooks/useLiabilities';
 import { useEntities } from '@/hooks/useEntities';
 import { useReceivables } from '@/hooks/useReceivables';
+import { getDocumentIcon } from '@/components/documents/DocumentIconMap';
 
 type FilterType = 'all' | 'expiring' | 'expired' | string;
 
@@ -131,22 +132,28 @@ const Documents = () => {
           </div>
           
           <div className="flex flex-wrap gap-2">
-            {filterOptions.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setFilter(option.value)}
-                className={cn(
-                  "px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200",
-                  filter === option.value
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground hover:bg-accent",
-                  option.value === 'expiring' && "text-orange-500",
-                  option.value === 'expired' && "text-destructive"
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
+            {filterOptions.map((option) => {
+              const docType = DOCUMENT_TYPES.find(t => t.value === option.value);
+              const Icon = docType ? getDocumentIcon(docType.icon) : null;
+              
+              return (
+                <button
+                  key={option.value}
+                  onClick={() => setFilter(option.value)}
+                  className={cn(
+                    "px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 flex items-center gap-2",
+                    filter === option.value
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground hover:bg-accent",
+                    option.value === 'expiring' && "text-orange-500",
+                    option.value === 'expired' && "text-destructive"
+                  )}
+                >
+                  {Icon && <Icon className="w-4 h-4" />}
+                  {option.label}
+                </button>
+              );
+            })}
           </div>
         </div>
 

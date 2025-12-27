@@ -8,16 +8,16 @@ export type Document = Tables<'documents'>;
 export type DocumentInsert = TablesInsert<'documents'>;
 
 export const DOCUMENT_TYPES = [
-  { value: 'title_deed', label: 'Title Deed', icon: '📜' },
-  { value: 'contract', label: 'Contract', icon: '📝' },
-  { value: 'invoice', label: 'Invoice', icon: '🧾' },
-  { value: 'passport', label: 'Passport', icon: '🛂' },
-  { value: 'tax_return', label: 'Tax Return', icon: '📊' },
-  { value: 'statement', label: 'Statement', icon: '📋' },
-  { value: 'insurance', label: 'Insurance', icon: '🛡️' },
-  { value: 'valuation', label: 'Valuation', icon: '💰' },
-  { value: 'certificate', label: 'Certificate', icon: '🏆' },
-  { value: 'other', label: 'Other', icon: '📄' },
+  { value: 'title_deed', label: 'Title Deed', icon: 'FileSignature' },
+  { value: 'contract', label: 'Contract', icon: 'FileText' },
+  { value: 'invoice', label: 'Invoice', icon: 'Receipt' },
+  { value: 'passport', label: 'Passport', icon: 'BookUser' },
+  { value: 'tax_return', label: 'Tax Return', icon: 'BarChart3' },
+  { value: 'statement', label: 'Statement', icon: 'ClipboardList' },
+  { value: 'insurance', label: 'Insurance', icon: 'Shield' },
+  { value: 'valuation', label: 'Valuation', icon: 'Banknote' },
+  { value: 'certificate', label: 'Certificate', icon: 'Award' },
+  { value: 'other', label: 'Other', icon: 'File' },
 ] as const;
 
 export type DocumentType = typeof DOCUMENT_TYPES[number]['value'];
