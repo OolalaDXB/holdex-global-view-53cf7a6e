@@ -62,7 +62,15 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
     setIsEditing(true);
   };
 
-  const handleSave = async (data: { name: string; notes: string | null; expiry_date: string | null; tags: string[] | null }) => {
+  const handleSave = async (data: { 
+    name: string; 
+    type: string;
+    notes: string | null; 
+    expiry_date: string | null; 
+    document_date: string | null;
+    tags: string[] | null;
+    is_verified: boolean;
+  }) => {
     try {
       await updateDocument.mutateAsync({
         id: document.id,
@@ -93,9 +101,12 @@ export const DocumentCard = ({ document, onDelete, showLink = false }: DocumentC
     return (
       <DocumentInlineEditor
         name={document.name}
+        type={document.type}
         notes={document.notes}
         expiryDate={document.expiry_date}
+        documentDate={document.document_date}
         tags={document.tags}
+        isVerified={document.is_verified || false}
         onSave={handleSave}
         onCancel={() => setIsEditing(false)}
       />

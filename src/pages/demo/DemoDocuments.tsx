@@ -146,9 +146,26 @@ const DemoDocuments = () => {
     setEditingDocId(docId);
   };
 
-  const handleSaveDocument = (docId: string, data: { name: string; notes: string | null; expiry_date: string | null; tags: string[] | null }) => {
+  const handleSaveDocument = (docId: string, data: { 
+    name: string; 
+    type: string;
+    notes: string | null; 
+    expiry_date: string | null; 
+    document_date: string | null;
+    tags: string[] | null;
+    is_verified: boolean;
+  }) => {
     setDocuments(prev => prev.map(d => 
-      d.id === docId ? { ...d, name: data.name, notes: data.notes, expiry_date: data.expiry_date, tags: data.tags } : d
+      d.id === docId ? { 
+        ...d, 
+        name: data.name, 
+        type: data.type,
+        notes: data.notes, 
+        expiry_date: data.expiry_date, 
+        document_date: data.document_date,
+        tags: data.tags,
+        is_verified: data.is_verified,
+      } : d
     ));
     setEditingDocId(null);
     toast({
@@ -260,9 +277,12 @@ const DemoDocuments = () => {
                 <DocumentInlineEditor
                   key={doc.id}
                   name={doc.name}
+                  type={doc.type}
                   notes={doc.notes}
                   expiryDate={doc.expiry_date}
+                  documentDate={doc.document_date}
                   tags={doc.tags || null}
+                  isVerified={doc.is_verified || false}
                   onSave={(data) => handleSaveDocument(doc.id, data)}
                   onCancel={() => setEditingDocId(null)}
                 />

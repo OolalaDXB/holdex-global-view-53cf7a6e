@@ -1,37 +1,59 @@
 import { useState, useRef, useEffect } from 'react';
 import { format } from 'date-fns';
-import { X, Check, Plus, CalendarIcon } from 'lucide-react';
+import { X, Check, Plus, CalendarIcon, ShieldCheck, ShieldOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DocumentTagBadge, SUGGESTED_TAGS } from './DocumentTagBadge';
+import { DocumentTypeIcon } from './DocumentTypeIcon';
+import { DOCUMENT_TYPES } from '@/hooks/useDocuments';
 import { cn } from '@/lib/utils';
 
 interface DocumentInlineEditorProps {
   name: string;
+  type: string;
   notes: string | null;
   expiryDate: string | null;
+  documentDate: string | null;
   tags: string[] | null;
-  onSave: (data: { name: string; notes: string | null; expiry_date: string | null; tags: string[] | null }) => void;
+  isVerified: boolean;
+  onSave: (data: { 
+    name: string; 
+    type: string;
+    notes: string | null; 
+    expiry_date: string | null; 
+    document_date: string | null;
+    tags: string[] | null;
+    is_verified: boolean;
+  }) => void;
   onCancel: () => void;
 }
 
 export const DocumentInlineEditor = ({
   name: initialName,
+  type: initialType,
   notes: initialNotes,
   expiryDate: initialExpiryDate,
+  documentDate: initialDocumentDate,
   tags: initialTags,
+  isVerified: initialIsVerified,
   onSave,
   onCancel,
 }: DocumentInlineEditorProps) => {
   const [name, setName] = useState(initialName);
+  const [type, setType] = useState(initialType);
   const [notes, setNotes] = useState(initialNotes || '');
   const [expiryDate, setExpiryDate] = useState<Date | undefined>(
     initialExpiryDate ? new Date(initialExpiryDate) : undefined
   );
+  const [documentDate, setDocumentDate] = useState<Date | undefined>(
+    initialDocumentDate ? new Date(initialDocumentDate) : undefined
+  );
   const [tags, setTags] = useState<string[]>(initialTags || []);
+  const [isVerified, setIsVerified] = useState(initialIsVerified);
   const [newTag, setNewTag] = useState('');
   const [showTagInput, setShowTagInput] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -44,9 +66,12 @@ export const DocumentInlineEditor = ({
     if (!name.trim()) return;
     onSave({
       name: name.trim(),
+      type,
       notes: notes.trim() || null,
       expiry_date: expiryDate ? format(expiryDate, 'yyyy-MM-dd') : null,
+      document_date: documentDate ? format(documentDate, 'yyyy-MM-dd') : null,
       tags: tags.length > 0 ? tags : null,
+      is_verified: isVerified,
     });
   };
 
@@ -86,6 +111,31 @@ export const DocumentInlineEditor = ({
           className="h-8"
           placeholder="Document name"
         />
+      </div>
+
+      {/* Type */}
+      <div>
+        <label className="text-xs text-muted-foreground mb-1 block">Type</label>
+        <Select value={type} onValueChange={setType}>
+          <SelectTrigger className="h-8">
+            <SelectValue>
+              <div className="flex items-center gap-2">
+                <DocumentTypeIcon type={type} className="w-4 h-4" />
+                {DOCUMENT_TYPES.find(t => t.value === type)?.label || type}
+              </div>
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {DOCUMENT_TYPES.map((docType) => (
+              <SelectItem key={docType.value} value={docType.value}>
+                <div className="flex items-center gap-2">
+                  <DocumentTypeIcon type={docType.value} className="w-4 h-4" />
+                  {docType.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Tags */}
@@ -170,43 +220,110 @@ export const DocumentInlineEditor = ({
         )}
       </div>
 
-      {/* Expiry Date */}
-      <div>
-        <label className="text-xs text-muted-foreground mb-1 block">Expiry Date</label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "h-8 w-full justify-start text-left font-normal",
-                !expiryDate && "text-muted-foreground"
+      {/* Dates */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Document Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "h-8 w-full justify-start text-left font-normal text-xs",
+                  !documentDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-3 w-3" />
+                {documentDate ? format(documentDate, 'MMM d, yyyy') : 'Select'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-popover" align="start">
+              <Calendar
+                mode="single"
+                selected={documentDate}
+                onSelect={setDocumentDate}
+                initialFocus
+              />
+              {documentDate && (
+                <div className="p-2 border-t border-border">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setDocumentDate(undefined)}
+                  >
+                    Clear
+                  </Button>
+                </div>
               )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {expiryDate ? format(expiryDate, 'PPP') : 'Select date'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 bg-popover" align="start">
-            <Calendar
-              mode="single"
-              selected={expiryDate}
-              onSelect={setExpiryDate}
-              initialFocus
-            />
-            {expiryDate && (
-              <div className="p-2 border-t border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setExpiryDate(undefined)}
-                >
-                  Clear date
-                </Button>
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">Expiry Date</label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "h-8 w-full justify-start text-left font-normal text-xs",
+                  !expiryDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-3 w-3" />
+                {expiryDate ? format(expiryDate, 'MMM d, yyyy') : 'Select'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-popover" align="start">
+              <Calendar
+                mode="single"
+                selected={expiryDate}
+                onSelect={setExpiryDate}
+                initialFocus
+              />
+              {expiryDate && (
+                <div className="p-2 border-t border-border">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => setExpiryDate(undefined)}
+                  >
+                    Clear
+                  </Button>
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      {/* Verified toggle */}
+      <div>
+        <label className="text-xs text-muted-foreground mb-1 block">Verification Status</label>
+        <Button
+          type="button"
+          variant={isVerified ? "default" : "outline"}
+          size="sm"
+          className={cn(
+            "gap-2",
+            isVerified && "bg-green-600 hover:bg-green-700"
+          )}
+          onClick={() => setIsVerified(!isVerified)}
+        >
+          {isVerified ? (
+            <>
+              <ShieldCheck className="w-4 h-4" />
+              Verified
+            </>
+          ) : (
+            <>
+              <ShieldOff className="w-4 h-4" />
+              Not Verified
+            </>
+          )}
+        </Button>
       </div>
 
       {/* Notes */}

@@ -40,7 +40,7 @@ export const AddDocumentDialog = ({
 }: AddDocumentDialogProps) => {
   const { toast } = useToast();
   const createDocument = useCreateDocument();
-  const { uploadDocument } = useDocumentUpload();
+  const { uploadDocument, triggerOcrExtraction } = useDocumentUpload();
   
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState('');
@@ -108,10 +108,10 @@ export const AddDocumentDialog = ({
         receivable_id: linkType === 'receivable' ? linkId : null,
       };
 
-      await createDocument.mutateAsync({
+      const createdDoc = await createDocument.mutateAsync({
         name: name || file.name,
         type,
-        file_path: fileUrl, // This is now a path, not a signed URL
+        file_path: fileUrl,
         file_name: file.name,
         file_size: file.size,
         file_type: file.type,
@@ -120,6 +120,11 @@ export const AddDocumentDialog = ({
         notes: notes || null,
         ...linkField,
       });
+
+      // Trigger OCR extraction for PDFs in the background
+      if (file.type === 'application/pdf') {
+        triggerOcrExtraction(createdDoc.id, fileUrl);
+      }
 
       toast({ title: 'Document uploaded successfully' });
       resetForm();
