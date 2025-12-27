@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, FileText, AlertTriangle, Filter, Calendar, ExternalLink, Trash2 } from 'lucide-react';
+import { Search, FileText, AlertTriangle, Filter, Calendar, Trash2, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -14,10 +14,11 @@ import { Button } from '@/components/ui/button';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useDemo } from '@/contexts/DemoContext';
 import { DOCUMENT_TYPES } from '@/hooks/useDocuments';
+import { DemoAddDocumentDialog, DemoDocument } from '@/components/documents/DemoAddDocumentDialog';
 import { format } from 'date-fns';
 
 // Demo documents data
-const initialDemoDocuments = [
+const initialDemoDocuments: DemoDocument[] = [
   {
     id: 'doc-1',
     name: 'Titre de propriété Dubai Marina',
@@ -27,6 +28,10 @@ const initialDemoDocuments = [
     file_size: 2500000,
     file_type: 'application/pdf',
     asset_id: 'asset-real-estate-1',
+    collection_id: null,
+    entity_id: null,
+    liability_id: null,
+    receivable_id: null,
     document_date: '2021-03-15',
     expiry_date: null,
     is_verified: true,
@@ -40,7 +45,11 @@ const initialDemoDocuments = [
     file_name: 'passport-fr.pdf',
     file_size: 1200000,
     file_type: 'application/pdf',
+    asset_id: null,
+    collection_id: null,
     entity_id: 'demo-entity-personal',
+    liability_id: null,
+    receivable_id: null,
     document_date: '2020-05-10',
     expiry_date: '2030-05-10',
     is_verified: true,
@@ -54,7 +63,11 @@ const initialDemoDocuments = [
     file_name: 'insurance-porsche.pdf',
     file_size: 850000,
     file_type: 'application/pdf',
+    asset_id: null,
     collection_id: 'collection-vehicle-1',
+    entity_id: null,
+    liability_id: null,
+    receivable_id: null,
     document_date: '2024-01-15',
     expiry_date: '2025-03-15',
     is_verified: false,
@@ -76,12 +89,13 @@ const getExpiryStatus = (expiryDate: string | null): 'expired' | 'expiring' | 'v
 };
 
 const DemoDocuments = () => {
-  const { assets, collections, entities } = useDemo();
-  const [documents, setDocuments] = useState(initialDemoDocuments);
+  const { assets, collections, entities, liabilities } = useDemo();
+  const [documents, setDocuments] = useState<DemoDocument[]>(initialDemoDocuments);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
-  const getLinkName = (doc: typeof documents[0]): string => {
+  const getLinkName = (doc: DemoDocument): string => {
     if (doc.asset_id) {
       const asset = assets.find(a => a.id === doc.asset_id);
       return asset?.name || 'Unknown Asset';
@@ -94,7 +108,15 @@ const DemoDocuments = () => {
       const entity = entities.find(e => e.id === doc.entity_id);
       return entity?.name || 'Unknown Entity';
     }
+    if (doc.liability_id) {
+      const liability = liabilities.find(l => l.id === doc.liability_id);
+      return liability?.name || 'Unknown Liability';
+    }
     return 'Unlinked';
+  };
+
+  const handleAddDocument = (doc: DemoDocument) => {
+    setDocuments(prev => [doc, ...prev]);
   };
 
   const filteredDocuments = useMemo(() => {
@@ -121,9 +143,15 @@ const DemoDocuments = () => {
           <p className="text-sm text-primary text-center">Demo Mode — Sample documents</p>
         </div>
 
-        <div className="mb-8">
-          <h1 className="text-2xl font-light text-foreground mb-2">Documents</h1>
-          <p className="text-muted-foreground">Proof and certificates linked to your assets</p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-light text-foreground mb-2">Documents</h1>
+            <p className="text-muted-foreground">Proof and certificates linked to your assets</p>
+          </div>
+          <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Document
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
@@ -205,6 +233,12 @@ const DemoDocuments = () => {
             );
           })}
         </div>
+
+        <DemoAddDocumentDialog
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+          onAddDocument={handleAddDocument}
+        />
       </div>
     </AppLayout>
   );

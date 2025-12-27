@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Search, FileText } from 'lucide-react';
+import { Search, FileText, Plus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { DocumentCard } from '@/components/documents/DocumentCard';
 import { DeleteDocumentDialog } from '@/components/documents/DeleteDocumentDialog';
+import { AddStandaloneDocumentDialog } from '@/components/documents/AddStandaloneDocumentDialog';
 import { useAllDocuments, DOCUMENT_TYPES, getExpiryStatus, Document } from '@/hooks/useDocuments';
 import { useAssets } from '@/hooks/useAssets';
 import { useCollections } from '@/hooks/useCollections';
@@ -25,6 +27,7 @@ const Documents = () => {
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
 
   const { data: documents = [], isLoading } = useAllDocuments();
   const { data: assets = [] } = useAssets();
@@ -104,9 +107,15 @@ const Documents = () => {
   return (
     <AppLayout>
       <div className="p-4 sm:p-6 lg:p-12 max-w-7xl">
-        <header className="mb-8">
-          <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Documents</h1>
-          <p className="text-muted-foreground">Proof and certificates linked to your assets.</p>
+        <header className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="font-serif text-3xl font-medium text-foreground mb-2">Documents</h1>
+            <p className="text-muted-foreground">Proof and certificates linked to your assets.</p>
+          </div>
+          <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add Document
+          </Button>
         </header>
 
         {/* Search and Filters */}
@@ -188,6 +197,11 @@ const Documents = () => {
         document={documentToDelete}
         open={!!documentToDelete}
         onOpenChange={(open) => !open && setDocumentToDelete(null)}
+      />
+
+      <AddStandaloneDocumentDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
       />
     </AppLayout>
   );
