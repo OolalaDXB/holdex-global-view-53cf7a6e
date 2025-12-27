@@ -154,6 +154,11 @@ const DemoDocuments = () => {
     document_date: string | null;
     tags: string[] | null;
     is_verified: boolean;
+    asset_id: string | null;
+    collection_id: string | null;
+    liability_id: string | null;
+    entity_id: string | null;
+    receivable_id: string | null;
   }) => {
     setDocuments(prev => prev.map(d => 
       d.id === docId ? { 
@@ -165,6 +170,11 @@ const DemoDocuments = () => {
         document_date: data.document_date,
         tags: data.tags,
         is_verified: data.is_verified,
+        asset_id: data.asset_id,
+        collection_id: data.collection_id,
+        liability_id: data.liability_id,
+        entity_id: data.entity_id,
+        receivable_id: data.receivable_id,
       } : d
     ));
     setEditingDocId(null);
@@ -283,6 +293,11 @@ const DemoDocuments = () => {
                   documentDate={doc.document_date}
                   tags={doc.tags || null}
                   isVerified={doc.is_verified || false}
+                  assetId={doc.asset_id}
+                  collectionId={doc.collection_id}
+                  liabilityId={doc.liability_id}
+                  entityId={doc.entity_id}
+                  receivableId={doc.receivable_id}
                   onSave={(data) => handleSaveDocument(doc.id, data)}
                   onCancel={() => setEditingDocId(null)}
                 />
