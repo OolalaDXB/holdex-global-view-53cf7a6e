@@ -42,6 +42,7 @@ import { formatCurrency, convertToEUR, convertFromEUR } from '@/lib/currency';
 import { EntityAvatar } from './EntityAvatar';
 import { LiabilityIcon, getLiabilityIcon } from '@/components/liabilities/LiabilityIcon';
 import { cn } from '@/lib/utils';
+import { DocumentsSection } from '@/components/documents/DocumentsSection';
 
 type Collection = Tables<'collections'>;
 type Liability = Tables<'liabilities'>;
@@ -357,6 +358,21 @@ export const EntityDetailDrawer = ({
                 Assets + Collections - Liabilities
               </p>
             </div>
+
+            {/* Documents Section */}
+            <Collapsible>
+              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium text-muted-foreground uppercase tracking-wide hover:text-foreground transition-colors">
+                <span>Documents</span>
+                <ChevronDown className="h-4 w-4" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="mt-2">
+                  <DocumentsSection linkType="entity" linkId={entity.id} />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Separator />
 
             {/* Quick Actions */}
             <div className="flex flex-col gap-2 pt-2">
