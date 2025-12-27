@@ -40,7 +40,7 @@ export const AddStandaloneDocumentDialog = ({
 }: AddStandaloneDocumentDialogProps) => {
   const { toast } = useToast();
   const createDocument = useCreateDocument();
-  const { uploadDocument } = useDocumentUpload();
+  const { uploadDocument, triggerOcrExtraction } = useDocumentUpload();
   
   const { data: assets = [] } = useAssets();
   const { data: collections = [] } = useCollections();
@@ -135,7 +135,7 @@ export const AddStandaloneDocumentDialog = ({
         receivable_id: linkType === 'receivable' ? linkId : null,
       };
 
-      await createDocument.mutateAsync({
+      const createdDoc = await createDocument.mutateAsync({
         name: name || file.name,
         type,
         file_path: fileUrl,
@@ -147,6 +147,11 @@ export const AddStandaloneDocumentDialog = ({
         notes: notes || null,
         ...linkField,
       });
+
+      // Trigger OCR extraction for PDFs in the background
+      if (file.type === 'application/pdf') {
+        triggerOcrExtraction(createdDoc.id, fileUrl);
+      }
 
       toast({ title: 'Document uploaded successfully' });
       resetForm();

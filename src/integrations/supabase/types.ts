@@ -325,6 +325,7 @@ export type Database = {
           liability_id: string | null
           name: string
           notes: string | null
+          ocr_text: string | null
           receivable_id: string | null
           tags: string[] | null
           type: string
@@ -348,6 +349,7 @@ export type Database = {
           liability_id?: string | null
           name: string
           notes?: string | null
+          ocr_text?: string | null
           receivable_id?: string | null
           tags?: string[] | null
           type: string
@@ -371,6 +373,7 @@ export type Database = {
           liability_id?: string | null
           name?: string
           notes?: string | null
+          ocr_text?: string | null
           receivable_id?: string | null
           tags?: string[] | null
           type?: string

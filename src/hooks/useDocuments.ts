@@ -172,10 +172,28 @@ interface DocumentUploadResult {
   uploadDocument: (file: File, documentId: string) => Promise<string>;
   deleteFile: (filePath: string) => Promise<void>;
   getSignedUrl: (filePath: string) => Promise<string>;
+  triggerOcrExtraction: (documentId: string, filePath: string) => Promise<void>;
 }
 
 export const useDocumentUpload = (): DocumentUploadResult => {
   const { user } = useAuth();
+
+  const triggerOcrExtraction = async (documentId: string, filePath: string): Promise<void> => {
+    try {
+      console.log('Triggering OCR extraction for document:', documentId);
+      const { error } = await supabase.functions.invoke('extract-ocr', {
+        body: { documentId, filePath },
+      });
+      
+      if (error) {
+        console.error('OCR extraction failed:', error);
+      } else {
+        console.log('OCR extraction triggered successfully');
+      }
+    } catch (err) {
+      console.error('OCR extraction error:', err);
+    }
+  };
 
   const uploadDocument = async (file: File, documentId: string): Promise<string> => {
     if (!user) throw new Error('Not authenticated');
@@ -201,7 +219,6 @@ export const useDocumentUpload = (): DocumentUploadResult => {
 
     if (error) throw error;
 
-    // Return the PATH, not a signed URL - signed URLs are generated at runtime
     return data.path;
   };
 
@@ -219,13 +236,13 @@ export const useDocumentUpload = (): DocumentUploadResult => {
   const getSignedUrl = async (filePath: string): Promise<string> => {
     const { data, error } = await supabase.storage
       .from('documents')
-      .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year
+      .createSignedUrl(filePath, 60 * 60 * 24 * 365);
 
     if (error) throw error;
     return data.signedUrl;
   };
 
-  return { uploadDocument, deleteFile, getSignedUrl };
+  return { uploadDocument, deleteFile, getSignedUrl, triggerOcrExtraction };
 };
 
 export type ExpiryStatus = 'expired' | 'expiring' | 'valid' | null;

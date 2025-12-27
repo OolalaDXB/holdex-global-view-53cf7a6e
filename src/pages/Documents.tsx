@@ -80,10 +80,14 @@ const Documents = () => {
         if (!searchQuery.trim()) return true;
         const query = searchQuery.toLowerCase();
         const linkName = getLinkName(doc);
+        // Search in name, file name, link name, notes, tags, and OCR text
         return (
           doc.name.toLowerCase().includes(query) ||
           doc.file_name.toLowerCase().includes(query) ||
-          linkName.toLowerCase().includes(query)
+          linkName.toLowerCase().includes(query) ||
+          (doc.notes && doc.notes.toLowerCase().includes(query)) ||
+          (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(query))) ||
+          ((doc as any).ocr_text && (doc as any).ocr_text.toLowerCase().includes(query))
         );
       });
   }, [documents, filter, searchQuery, assets, collections, liabilities, entities, receivables]);
